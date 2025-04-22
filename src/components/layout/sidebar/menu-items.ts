@@ -1,3 +1,4 @@
+
 import { MenuItem } from "@/types/menu";
 
 export const menuItems = [
@@ -115,23 +116,3 @@ export const demoPagesItems: MenuItem[] = [
     path: "/no-access",
   },
 ];
-
-export {
-  menuItems,
-  hrMenuItems,
-  posMenuItems,
-  claimItems,
-  assetItems,
-  inventoryItems,
-  financeItems,
-  programmesItems,
-  reportItems,
-  workflowItems,
-  memberManagementItems,
-  serviceModuleItems,
-  communityItems,
-  financialItems,
-  complianceItems,
-  siteManagementItems,
-  demoPagesItems,
-};
