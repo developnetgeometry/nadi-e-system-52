@@ -16,6 +16,7 @@ import {
   financialItems,
   complianceItems,
   siteManagementItems,
+  demoPagesItems,
 } from "@/components/layout/sidebar/menu-items";
 
 export const menuGroups = [
@@ -93,5 +94,10 @@ export const menuGroups = [
     label: "Compliance",
     route: "/compliance",
     items: complianceItems,
+  },
+  {
+    label: "Demo Pages",
+    route: "/demo",
+    items: demoPagesItems,
   },
 ];
