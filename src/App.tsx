@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import Landing from "@/pages/Landing";
@@ -18,6 +17,9 @@ import OrganizationDetails from "@/pages/dashboard/OrganizationDetails";
 import HomeExample from "@/pages/examples/HomeExample";
 import DetailExample from "@/pages/examples/DetailExample";
 import SettingsExample from "@/pages/examples/SettingsExample";
+import NotFound from "@/pages/NotFound";
+import UnderDevelopment from "@/pages/UnderDevelopment";
+import NoAccess from "@/pages/NoAccess";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +94,15 @@ function App() {
                     }
                   />
                 ))}
+
+              {/* Example Under Development route usage, you can add more as needed */}
+              <Route path="/under-development" element={<UnderDevelopment />} />
+
+              {/* Example No Access route, use wherever you need to restrict access */}
+              <Route path="/no-access" element={<NoAccess />} />
+
+              {/* 404 fallback route */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </Router>

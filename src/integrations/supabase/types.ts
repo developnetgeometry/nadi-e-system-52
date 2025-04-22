@@ -667,6 +667,7 @@ export type Database = {
           name: string | null
           qty_unit: number | null
           remark: string | null
+          retail_type: number | null
           serial_number: string | null
           site_id: number | null
           subtype_id: number | null
@@ -691,6 +692,7 @@ export type Database = {
           name?: string | null
           qty_unit?: number | null
           remark?: string | null
+          retail_type?: number | null
           serial_number?: string | null
           site_id?: number | null
           subtype_id?: number | null
@@ -715,6 +717,7 @@ export type Database = {
           name?: string | null
           qty_unit?: number | null
           remark?: string | null
+          retail_type?: number | null
           serial_number?: string | null
           site_id?: number | null
           subtype_id?: number | null
@@ -1673,6 +1676,36 @@ export type Database = {
         Update: {
           bm?: string | null
           created_at?: string | null
+          created_by?: string | null
+          eng?: string | null
+          id?: number
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      nd_closure_session: {
+        Row: {
+          bm: string | null
+          created_at: string
+          created_by: string | null
+          eng: string | null
+          id: number
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          bm?: string | null
+          created_at?: string
+          created_by?: string | null
+          eng?: string | null
+          id?: number
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          bm?: string | null
+          created_at?: string
           created_by?: string | null
           eng?: string | null
           id?: number
@@ -2862,11 +2895,13 @@ export type Database = {
           barcode: number | null
           created_at: string | null
           created_by: string | null
+          deleted_at: string | null
           description: string | null
           id: number
           name: string | null
           price: number | null
           quantity: number | null
+          retail_type: number | null
           site_id: number | null
           type_id: number | null
           updated_at: string | null
@@ -2876,11 +2911,13 @@ export type Database = {
           barcode?: number | null
           created_at?: string | null
           created_by?: string | null
+          deleted_at?: string | null
           description?: string | null
           id: number
           name?: string | null
           price?: number | null
           quantity?: number | null
+          retail_type?: number | null
           site_id?: number | null
           type_id?: number | null
           updated_at?: string | null
@@ -2890,11 +2927,13 @@ export type Database = {
           barcode?: number | null
           created_at?: string | null
           created_by?: string | null
+          deleted_at?: string | null
           description?: string | null
           id?: number
           name?: string | null
           price?: number | null
           quantity?: number | null
+          retail_type?: number | null
           site_id?: number | null
           type_id?: number | null
           updated_at?: string | null
@@ -4232,7 +4271,6 @@ export type Database = {
           status_entrepreneur: boolean | null
           status_membership: number | null
           supervision: string | null
-          type_membership: number
           type_sector: number | null
           updated_at: string | null
           updated_by: string | null
@@ -4268,7 +4306,6 @@ export type Database = {
           status_entrepreneur?: boolean | null
           status_membership?: number | null
           supervision?: string | null
-          type_membership: number
           type_sector?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -4304,7 +4341,6 @@ export type Database = {
           status_entrepreneur?: boolean | null
           status_membership?: number | null
           supervision?: string | null
-          type_membership?: number
           type_sector?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -4364,6 +4400,13 @@ export type Database = {
             foreignKeyName: "nd_member_profile_ref_id_fkey"
             columns: ["ref_id"]
             isOneToOne: false
+            referencedRelation: "nd_site_combined"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "nd_member_profile_ref_id_fkey"
+            columns: ["ref_id"]
+            isOneToOne: false
             referencedRelation: "nd_site_profile"
             referencedColumns: ["id"]
           },
@@ -4372,6 +4415,13 @@ export type Database = {
             columns: ["socio_id"]
             isOneToOne: false
             referencedRelation: "nd_socioeconomics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_member_profile_status_membership_fkey"
+            columns: ["status_membership"]
+            isOneToOne: false
+            referencedRelation: "nd_status_membership"
             referencedColumns: ["id"]
           },
           {
@@ -5492,6 +5542,13 @@ export type Database = {
             foreignKeyName: "nd_site_nd_site_profile_fk"
             columns: ["site_profile_id"]
             isOneToOne: false
+            referencedRelation: "nd_site_combined"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "nd_site_nd_site_profile_fk"
+            columns: ["site_profile_id"]
+            isOneToOne: false
             referencedRelation: "nd_site_profile"
             referencedColumns: ["id"]
           },
@@ -5558,6 +5615,13 @@ export type Database = {
             foreignKeyName: "nd_site_address_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
+            referencedRelation: "nd_site_combined"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "nd_site_address_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
             referencedRelation: "nd_site_profile"
             referencedColumns: ["id"]
           },
@@ -5602,10 +5666,12 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           duration: number | null
+          end_time: string | null
           id: number
           remark: string | null
-          session: string | null
+          session: number | null
           site_id: number | null
+          start_time: string | null
           status: number | null
           subcategory_id: number | null
           updated_at: string | null
@@ -5619,10 +5685,12 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           duration?: number | null
+          end_time?: string | null
           id?: number
           remark?: string | null
-          session?: string | null
+          session?: number | null
           site_id?: number | null
+          start_time?: string | null
           status?: number | null
           subcategory_id?: number | null
           updated_at?: string | null
@@ -5636,10 +5704,12 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           duration?: number | null
+          end_time?: string | null
           id?: number
           remark?: string | null
-          session?: string | null
+          session?: number | null
           site_id?: number | null
+          start_time?: string | null
           status?: number | null
           subcategory_id?: number | null
           updated_at?: string | null
@@ -5659,6 +5729,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "nd_closure_categories"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_site_closure_session_fkey"
+            columns: ["session"]
+            isOneToOne: false
+            referencedRelation: "nd_closure_session"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_site_closure_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_combined"
+            referencedColumns: ["site_id"]
           },
           {
             foreignKeyName: "nd_site_closure_site_id_fkey"
@@ -6123,6 +6207,13 @@ export type Database = {
             foreignKeyName: "nd_site_socioeconomic_nd_site_profile_fk"
             columns: ["site_id"]
             isOneToOne: false
+            referencedRelation: "nd_site_combined"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "nd_site_socioeconomic_nd_site_profile_fk"
+            columns: ["site_id"]
+            isOneToOne: false
             referencedRelation: "nd_site_profile"
             referencedColumns: ["id"]
           },
@@ -6170,6 +6261,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_site_space_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_combined"
+            referencedColumns: ["site_id"]
           },
           {
             foreignKeyName: "nd_site_space_site_id_fkey"
@@ -6680,6 +6778,13 @@ export type Database = {
             foreignKeyName: "nd_staff_contract_site_profile_id_fkey"
             columns: ["site_profile_id"]
             isOneToOne: false
+            referencedRelation: "nd_site_combined"
+            referencedColumns: ["site_id"]
+          },
+          {
+            foreignKeyName: "nd_staff_contract_site_profile_id_fkey"
+            columns: ["site_profile_id"]
+            isOneToOne: false
             referencedRelation: "nd_site_profile"
             referencedColumns: ["id"]
           },
@@ -6740,6 +6845,13 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "nd_staff_job_nd_site_profile_fk"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_combined"
+            referencedColumns: ["site_id"]
+          },
           {
             foreignKeyName: "nd_staff_job_nd_site_profile_fk"
             columns: ["site_id"]
@@ -7278,6 +7390,74 @@ export type Database = {
             columns: ["region_id"]
             isOneToOne: false
             referencedRelation: "nd_region"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nd_status_membership: {
+        Row: {
+          created_at: string
+          id: number
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string | null
+        }
+        Relationships: []
+      }
+      nd_super_admin_profile: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          fullname: string | null
+          ic_no: string | null
+          id: number
+          is_active: boolean | null
+          mobile_no: string | null
+          updated_at: string | null
+          updated_by: string | null
+          user_id: string | null
+          work_email: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          fullname?: string | null
+          ic_no?: string | null
+          id?: number
+          is_active?: boolean | null
+          mobile_no?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          user_id?: string | null
+          work_email?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          fullname?: string | null
+          ic_no?: string | null
+          id?: number
+          is_active?: boolean | null
+          mobile_no?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          user_id?: string | null
+          work_email?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nd_super_admin_profile_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -9672,7 +9852,15 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      nd_site_combined: {
+        Row: {
+          fullname: string | null
+          site_id: number | null
+          sitename: string | null
+          standard_code: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_notification_from_template: {
