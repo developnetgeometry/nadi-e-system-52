@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { UserType } from "@/types/auth";
 
 interface AnnouncementFormData {
   title: string;
   message: string;
-  userTypes: string[];
+  userTypes: UserType[];
 }
 
 export const CreateAnnouncementDialog = () => {
@@ -25,7 +26,7 @@ export const CreateAnnouncementDialog = () => {
       .insert({
         title: data.title,
         message: data.message,
-        user_types: data.userTypes || []
+        user_types: data.userTypes as UserType[] || []
       });
 
     if (error) {
