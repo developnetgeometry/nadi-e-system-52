@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -7,12 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { UserType } from "@/types/auth";
 
 interface AnnouncementFormData {
   title: string;
   message: string;
-  userTypes: UserType[];
+  userTypes: string[];
 }
 
 export const CreateAnnouncementDialog = () => {
@@ -20,7 +18,7 @@ export const CreateAnnouncementDialog = () => {
   const { toast } = useToast();
   const { register, handleSubmit, reset } = useForm<AnnouncementFormData>({
     defaultValues: {
-      userTypes: [] as UserType[] // Explicitly typed as UserType[]
+      userTypes: []
     }
   });
 
@@ -30,7 +28,7 @@ export const CreateAnnouncementDialog = () => {
       .insert({
         title: data.title,
         message: data.message,
-        user_types: data.userTypes // Already correctly typed as UserType[]
+        user_types: data.userTypes
       });
 
     if (error) {
@@ -74,7 +72,6 @@ export const CreateAnnouncementDialog = () => {
               rows={4}
             />
           </div>
-          {/* We'll need to add a UserType selector here in the future */}
           <Button type="submit" className="w-full">
             Create Announcement
           </Button>
