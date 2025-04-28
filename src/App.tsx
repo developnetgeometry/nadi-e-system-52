@@ -20,6 +20,8 @@ import SettingsExample from "@/pages/examples/SettingsExample";
 import NotFound from "@/pages/NotFound";
 import UnderDevelopment from "@/pages/UnderDevelopment";
 import NoAccess from "@/pages/NoAccess";
+import Announcements from "@/pages/dashboard/Announcements";
+import AnnouncementSettings from "@/pages/dashboard/AnnouncementSettings";
 
 const queryClient = new QueryClient();
 
@@ -94,6 +96,10 @@ function App() {
                     }
                   />
                 ))}
+
+              {/* Demo Pages */}
+              <Route path="/demo/announcements" element={<Announcements />} />
+              <Route path="/demo/announcement-settings" element={<AnnouncementSettings />} />
 
               {/* Example Under Development route usage, you can add more as needed */}
               <Route path="/under-development" element={<UnderDevelopment />} />

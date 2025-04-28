@@ -21,7 +21,7 @@ export default function Announcements() {
               <>
                 <CreateAnnouncementDialog />
                 <Button variant="outline" asChild>
-                  <Link to="/admin/announcement-settings">
+                  <Link to="/demo/announcement-settings">
                     <Settings className="h-4 w-4 mr-2" />
                     Settings
                   </Link>
