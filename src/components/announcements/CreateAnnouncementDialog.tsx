@@ -18,7 +18,11 @@ interface AnnouncementFormData {
 export const CreateAnnouncementDialog = () => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const { register, handleSubmit, reset } = useForm<AnnouncementFormData>();
+  const { register, handleSubmit, reset } = useForm<AnnouncementFormData>({
+    defaultValues: {
+      userTypes: [] // Default to empty array
+    }
+  });
 
   const onSubmit = async (data: AnnouncementFormData) => {
     const { error } = await supabase
@@ -26,7 +30,7 @@ export const CreateAnnouncementDialog = () => {
       .insert({
         title: data.title,
         message: data.message,
-        user_types: data.userTypes as UserType[] || []
+        user_types: data.userTypes as UserType[] // Ensure it's cast to the correct type
       });
 
     if (error) {
@@ -70,6 +74,7 @@ export const CreateAnnouncementDialog = () => {
               rows={4}
             />
           </div>
+          {/* We'll need to add a UserType selector here in the future */}
           <Button type="submit" className="w-full">
             Create Announcement
           </Button>
