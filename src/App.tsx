@@ -12,8 +12,6 @@ import { memberRoutes } from "@/routes/member.routes";
 import { moduleRoutes } from "@/routes/module.routes";
 import UIComponents from "@/pages/UIComponents";
 import OrganizationDetails from "@/pages/dashboard/OrganizationDetails";
-
-// Import example pages
 import HomeExample from "@/pages/examples/HomeExample";
 import DetailExample from "@/pages/examples/DetailExample";
 import SettingsExample from "@/pages/examples/SettingsExample";
@@ -22,10 +20,10 @@ import UnderDevelopment from "@/pages/UnderDevelopment";
 import NoAccess from "@/pages/NoAccess";
 import Announcements from "@/pages/dashboard/Announcements";
 import AnnouncementSettings from "@/pages/dashboard/AnnouncementSettings";
+import CreateAnnouncement from "@/pages/demo/CreateAnnouncement";
 
 const queryClient = new QueryClient();
 
-// Loading component for Suspense fallback
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
@@ -45,18 +43,15 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/ui-components" element={<UIComponents />} />
 
-              {/* Example Pages */}
               <Route path="/examples/home" element={<HomeExample />} />
               <Route path="/examples/detail" element={<DetailExample />} />
               <Route path="/examples/settings" element={<SettingsExample />} />
 
-              {/* Add organization details route */}
               <Route
                 path="/admin/organizations/:id"
                 element={<OrganizationDetails />}
               />
 
-              {/* Dashboard routes */}
               {dashboardRoutes.map((route) => (
                 <Route
                   key={route.path}
@@ -69,7 +64,6 @@ function App() {
                 />
               ))}
 
-              {/* Member routes */}
               {Array.isArray(memberRoutes) &&
                 memberRoutes.map((route) => (
                   <Route
@@ -83,7 +77,6 @@ function App() {
                   />
                 ))}
 
-              {/* Module routes */}
               {Array.isArray(moduleRoutes) &&
                 moduleRoutes.map((route) => (
                   <Route
@@ -97,18 +90,15 @@ function App() {
                   />
                 ))}
 
-              {/* Demo Pages */}
               <Route path="/demo/announcements" element={<Announcements />} />
+              <Route path="/demo/announcements/create" element={<CreateAnnouncement />} />
               <Route path="/demo/announcement-settings" element={<AnnouncementSettings />} />
 
-              {/* Example Under Development route usage, you can add more as needed */}
               <Route path="/under-development" element={<UnderDevelopment />} />
               <Route path="/announcements" element={<UnderDevelopment />} />
 
-              {/* Example No Access route, use wherever you need to restrict access */}
               <Route path="/no-access" element={<NoAccess />} />
 
-              {/* 404 fallback route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

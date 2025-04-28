@@ -120,6 +120,10 @@ export const demoPagesItems: MenuItem[] = [
     path: "/demo/announcements",
   },
   {
+    title: "Create Announcement",
+    path: "/demo/announcements/create",
+  },
+  {
     title: "Announcement Settings",
     path: "/demo/announcement-settings",
   },
