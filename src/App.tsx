@@ -97,6 +97,7 @@ function App() {
 
               {/* Example Under Development route usage, you can add more as needed */}
               <Route path="/under-development" element={<UnderDevelopment />} />
+              <Route path="/announcements" element={<UnderDevelopment />} />
 
               {/* Example No Access route, use wherever you need to restrict access */}
               <Route path="/no-access" element={<NoAccess />} />
