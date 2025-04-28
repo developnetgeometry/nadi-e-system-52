@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -10,25 +11,19 @@ import { supabase } from "@/integrations/supabase/client";
 interface AnnouncementFormData {
   title: string;
   message: string;
-  userTypes: string[];
 }
 
 export const CreateAnnouncementDialog = () => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const { register, handleSubmit, reset } = useForm<AnnouncementFormData>({
-    defaultValues: {
-      userTypes: []
-    }
-  });
+  const { register, handleSubmit, reset } = useForm<AnnouncementFormData>();
 
   const onSubmit = async (data: AnnouncementFormData) => {
     const { error } = await supabase
       .from('announcements')
       .insert({
         title: data.title,
-        message: data.message,
-        user_types: data.userTypes
+        message: data.message
       });
 
     if (error) {
