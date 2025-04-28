@@ -9,19 +9,26 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { SelectMany } from "@/components/ui/SelectMany";
 import { useUserTypes } from "@/components/user-groups/hooks/useUserTypes";
+import { DateInput } from "@/components/ui/date-input";
+import { useEffect, useState } from "react";
+import { formatDate } from "@/utils/date-utils";
+import { useAppSettings } from "@/hooks/use-app-settings";
 import { 
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage 
+  FormMessage,
+  FormDescription 
 } from "@/components/ui/form";
 
 interface AnnouncementFormData {
   title: string;
   message: string;
   user_types: string[];
+  start_date: string;
+  end_date: string;
 }
 
 export default function CreateAnnouncement() {
@@ -29,6 +36,25 @@ export default function CreateAnnouncement() {
   const { toast } = useToast();
   const form = useForm<AnnouncementFormData>();
   const { userTypes } = useUserTypes();
+  const { getSetting } = useAppSettings();
+  const [defaultDuration, setDefaultDuration] = useState(7);
+  
+  // Get default duration from app settings
+  useEffect(() => {
+    const durationDays = parseInt(getSetting('default_announcement_duration', '7'));
+    setDefaultDuration(durationDays);
+    
+    // Set default end date based on current date + default duration
+    const today = new Date();
+    const startDateStr = formatDate(today);
+    
+    const endDate = new Date(today);
+    endDate.setDate(endDate.getDate() + durationDays);
+    const endDateStr = formatDate(endDate);
+    
+    form.setValue('start_date', startDateStr);
+    form.setValue('end_date', endDateStr);
+  }, [getSetting]);
 
   const userTypeOptions = userTypes.map(type => ({
     id: type,
@@ -37,31 +63,71 @@ export default function CreateAnnouncement() {
     ).join(' ')
   }));
 
-  const onSubmit = async (data: AnnouncementFormData) => {
-    const { error } = await supabase
-      .from('announcements')
-      .insert({
-        title: data.title,
-        message: data.message,
-        user_types: data.user_types,
-        status: 'active'
-      });
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const startDate = new Date(e.target.value);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + defaultDuration);
+    form.setValue('end_date', formatDate(endDate));
+  };
 
-    if (error) {
+  const onSubmit = async (data: AnnouncementFormData) => {
+    try {
+      const startDate = new Date(data.start_date);
+      const endDate = new Date(data.end_date);
+      
+      // Validate dates
+      if (endDate <= startDate) {
+        toast({
+          title: "Invalid Dates",
+          description: "End date must be after start date",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('announcements')
+        .insert({
+          title: data.title,
+          message: data.message,
+          user_types: data.user_types,
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
+          status: 'active'
+        });
+
+      if (error) {
+        console.error("Error creating announcement:", error);
+        if (error.message.includes('maximum number of active announcements')) {
+          toast({
+            title: "Error",
+            description: "Maximum number of active announcements reached",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to create announcement",
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Announcement created successfully",
+      });
+      
+      navigate("/demo/announcements");
+    } catch (error) {
+      console.error("Error:", error);
       toast({
         title: "Error",
-        description: "Failed to create announcement",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "Success",
-      description: "Announcement created successfully",
-    });
-    
-    navigate("/demo/announcements");
   };
 
   return (
@@ -105,6 +171,48 @@ export default function CreateAnnouncement() {
                   </FormItem>
                 )}
               />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="start_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Start Date</FormLabel>
+                      <FormControl>
+                        <DateInput
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            handleStartDateChange(e);
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        When the announcement becomes active
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="end_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>End Date</FormLabel>
+                      <FormControl>
+                        <DateInput {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        When the announcement expires (defaults to {defaultDuration} days after start)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}

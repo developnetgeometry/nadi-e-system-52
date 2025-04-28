@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { UserTypeChips } from "@/components/user-groups/UserTypeChips";
+import { formatDate } from "@/utils/date-utils";
 
 interface Announcement {
   id: string;
@@ -23,6 +24,8 @@ interface Announcement {
   status: 'active' | 'inactive';
   user_types: string[];
   created_at: string;
+  start_date: string;
+  end_date: string;
 }
 
 export function AnnouncementList() {
@@ -35,67 +38,98 @@ export function AnnouncementList() {
   }, []);
 
   const fetchAnnouncements = async () => {
-    const { data, error } = await supabase
-      .from('announcements')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch announcements",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setAnnouncements(data || []);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch announcements",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
-      return;
     }
-
-    setAnnouncements(data || []);
   };
 
   const toggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     
-    const { error } = await supabase
-      .from('announcements')
-      .update({ status: newStatus })
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('announcements')
+        .update({ status: newStatus })
+        .eq('id', id);
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to update announcement status",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      fetchAnnouncements();
+      toast({
+        title: "Success",
+        description: `Announcement ${newStatus === 'active' ? 'shown' : 'hidden'} successfully`,
+      });
+    } catch (error) {
+      console.error("Error toggling status:", error);
       toast({
         title: "Error",
-        description: "Failed to update announcement status",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
-      return;
     }
-
-    fetchAnnouncements();
-    toast({
-      title: "Success",
-      description: `Announcement ${newStatus === 'active' ? 'shown' : 'hidden'} successfully`,
-    });
   };
 
   const deleteAnnouncement = async (id: string) => {
-    const { error } = await supabase
-      .from('announcements')
-      .delete()
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('announcements')
+        .delete()
+        .eq('id', id);
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete announcement",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      fetchAnnouncements();
+      toast({
+        title: "Success",
+        description: "Announcement deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting announcement:", error);
       toast({
         title: "Error",
-        description: "Failed to delete announcement",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
-      return;
     }
-
-    fetchAnnouncements();
-    toast({
-      title: "Success",
-      description: "Announcement deleted successfully",
-    });
+  };
+  
+  const isAnnouncementExpired = (endDate: string) => {
+    return new Date(endDate) < new Date();
   };
 
   return (
@@ -115,6 +149,7 @@ export function AnnouncementList() {
               <TableHead>Title</TableHead>
               <TableHead>Message</TableHead>
               <TableHead>Target Users</TableHead>
+              <TableHead>Duration</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -122,7 +157,7 @@ export function AnnouncementList() {
           <TableBody>
             {announcements.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
                   No announcements available
                 </TableCell>
               </TableRow>
@@ -130,9 +165,17 @@ export function AnnouncementList() {
               announcements.map((announcement) => (
                 <TableRow key={announcement.id}>
                   <TableCell className="font-medium">{announcement.title}</TableCell>
-                  <TableCell>{announcement.message}</TableCell>
+                  <TableCell className="max-w-xs truncate">{announcement.message}</TableCell>
                   <TableCell>
                     <UserTypeChips userTypes={announcement.user_types} />
+                  </TableCell>
+                  <TableCell>
+                    {formatDate(announcement.start_date)} - {formatDate(announcement.end_date)}
+                    {isAnnouncementExpired(announcement.end_date) && (
+                      <Badge variant="outline" className="ml-2 bg-amber-100 text-amber-800 border-amber-200">
+                        Expired
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant={announcement.status === 'active' ? "success" : "secondary"}>
@@ -145,6 +188,7 @@ export function AnnouncementList() {
                         variant="ghost"
                         size="icon"
                         onClick={() => toggleStatus(announcement.id, announcement.status)}
+                        title={announcement.status === 'active' ? 'Hide announcement' : 'Show announcement'}
                       >
                         {announcement.status === 'active' ? (
                           <EyeOff className="h-4 w-4" />
@@ -156,6 +200,7 @@ export function AnnouncementList() {
                         variant="ghost"
                         size="icon"
                         onClick={() => navigate(`/demo/announcements/edit/${announcement.id}`)}
+                        title="Edit announcement"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -163,6 +208,7 @@ export function AnnouncementList() {
                         variant="ghost"
                         size="icon"
                         onClick={() => deleteAnnouncement(announcement.id)}
+                        title="Delete announcement"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

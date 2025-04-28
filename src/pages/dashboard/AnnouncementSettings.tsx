@@ -6,15 +6,51 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useAppSettings } from "@/hooks/use-app-settings";
+import { useState, useEffect } from "react";
 
 export default function AnnouncementSettings() {
   const { toast } = useToast();
+  const { settings, updateSetting, isLoading } = useAppSettings();
+  
+  const [defaultDuration, setDefaultDuration] = useState('7');
+  const [maxAnnouncements, setMaxAnnouncements] = useState('5');
+  const [announcementsEnabled, setAnnouncementsEnabled] = useState(true);
+  
+  useEffect(() => {
+    if (!isLoading && settings) {
+      const durationSetting = settings.find(s => s.key === 'default_announcement_duration');
+      if (durationSetting) setDefaultDuration(durationSetting.value);
+      
+      const maxSetting = settings.find(s => s.key === 'max_active_announcements');
+      if (maxSetting) setMaxAnnouncements(maxSetting.value);
+      
+      const enabledSetting = settings.find(s => s.key === 'announcements_enabled');
+      setAnnouncementsEnabled(enabledSetting?.value !== 'false');
+    }
+  }, [settings, isLoading]);
 
-  const handleSave = () => {
-    toast({
-      title: "Settings saved",
-      description: "Your announcement settings have been updated successfully.",
-    });
+  const handleSave = async () => {
+    try {
+      await updateSetting.mutateAsync({ key: 'default_announcement_duration', value: defaultDuration });
+      await updateSetting.mutateAsync({ key: 'max_active_announcements', value: maxAnnouncements });
+      await updateSetting.mutateAsync({ 
+        key: 'announcements_enabled', 
+        value: announcementsEnabled ? 'true' : 'false' 
+      });
+      
+      toast({
+        title: "Settings saved",
+        description: "Announcement settings have been updated successfully.",
+      });
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save announcement settings",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -38,20 +74,52 @@ export default function AnnouncementSettings() {
                     Turn on/off the announcement system
                   </div>
                 </div>
-                <Switch defaultChecked />
+                <Switch 
+                  checked={announcementsEnabled}
+                  onCheckedChange={setAnnouncementsEnabled}
+                />
               </div>
               
               <div className="space-y-2">
-                <Label>Default Announcement Duration (days)</Label>
-                <Input type="number" defaultValue={7} />
+                <Label htmlFor="defaultDuration">Default Announcement Duration (days)</Label>
+                <Input 
+                  id="defaultDuration"
+                  type="number" 
+                  value={defaultDuration}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (value > 0) setDefaultDuration(e.target.value);
+                  }}
+                  min="1"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Default number of days announcements will remain active
+                </p>
               </div>
 
               <div className="space-y-2">
-                <Label>Maximum Active Announcements</Label>
-                <Input type="number" defaultValue={5} />
+                <Label htmlFor="maxAnnouncements">Maximum Active Announcements</Label>
+                <Input 
+                  id="maxAnnouncements"
+                  type="number" 
+                  value={maxAnnouncements}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (value > 0) setMaxAnnouncements(e.target.value);
+                  }}
+                  min="1"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Maximum number of announcements that can be active at the same time
+                </p>
               </div>
 
-              <Button onClick={handleSave}>Save Settings</Button>
+              <Button 
+                onClick={handleSave} 
+                disabled={isLoading || updateSetting.isPending}
+              >
+                {updateSetting.isPending ? "Saving..." : "Save Settings"}
+              </Button>
             </CardContent>
           </Card>
         </div>
