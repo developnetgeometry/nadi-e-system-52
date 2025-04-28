@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { SelectMany } from "@/components/ui/SelectMany";
+import { useUserTypes } from "@/components/user-groups/hooks/useUserTypes";
 import { 
   Form,
   FormControl,
@@ -19,12 +21,21 @@ import {
 interface AnnouncementFormData {
   title: string;
   message: string;
+  user_types: string[];
 }
 
 export default function CreateAnnouncement() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const form = useForm<AnnouncementFormData>();
+  const { userTypes } = useUserTypes();
+
+  const userTypeOptions = userTypes.map(type => ({
+    id: type,
+    label: type.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ')
+  }));
 
   const onSubmit = async (data: AnnouncementFormData) => {
     const { error } = await supabase
@@ -32,6 +43,7 @@ export default function CreateAnnouncement() {
       .insert({
         title: data.title,
         message: data.message,
+        user_types: data.user_types,
         status: 'active'
       });
 
@@ -87,6 +99,25 @@ export default function CreateAnnouncement() {
                         placeholder="Enter your announcement message" 
                         className="min-h-[150px]"
                         {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="user_types"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Target User Types</FormLabel>
+                    <FormControl>
+                      <SelectMany
+                        options={userTypeOptions}
+                        value={field.value || []}
+                        onChange={field.onChange}
+                        placeholder="Select user types that can view this announcement"
                       />
                     </FormControl>
                     <FormMessage />

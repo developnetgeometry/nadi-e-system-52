@@ -5755,6 +5755,7 @@ export type Database = {
           end_time: string | null
           id: number
           remark: string | null
+          requester_id: string | null
           session: number | null
           site_id: number | null
           start_time: string | null
@@ -5774,6 +5775,7 @@ export type Database = {
           end_time?: string | null
           id?: number
           remark?: string | null
+          requester_id?: string | null
           session?: number | null
           site_id?: number | null
           start_time?: string | null
@@ -5793,6 +5795,7 @@ export type Database = {
           end_time?: string | null
           id?: number
           remark?: string | null
+          requester_id?: string | null
           session?: number | null
           site_id?: number | null
           start_time?: string | null
