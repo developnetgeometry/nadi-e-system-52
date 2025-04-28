@@ -1,6 +1,7 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { DashboardNavbar } from "./DashboardNavbar";
+import { AnnouncementBanner } from "@/components/announcements/AnnouncementBanner";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
@@ -14,7 +15,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { state, isMobile, openMobile } = useSidebar();
   const isCollapsed = state === "collapsed";
 
-  // Add body overflow class when mobile sidebar is open to prevent scrolling
   useEffect(() => {
     if (isMobile && openMobile) {
       document.body.classList.add("overflow-hidden");
@@ -29,7 +29,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <SidebarProvider>
       <div className="relative min-h-screen flex w-full bg-[#F7F9FC] dark:bg-gray-900 text-gray-800 dark:text-white">
-        {/* Overlay for mobile */}
         {isMobile && openMobile && (
           <div
             className="fixed inset-0 bg-black/50 z-40"
@@ -37,23 +36,18 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           />
         )}
 
-        {/* Sidebar */}
-        <div
-          className={cn("z-50 h-screen", isMobile ? "fixed" : "sticky top-0")}
-        >
+        <div className={cn("z-50 h-screen", isMobile ? "fixed" : "sticky top-0")}>
           <DashboardSidebar />
         </div>
 
-        {/* Main content */}
-        <div
-          className={cn(
-            "flex-1 flex flex-col transition-all duration-300 w-full",
-            !isMobile && isCollapsed ? "ml-[72px]" : "",
-            isMobile ? "ml-0" : ""
-          )}
-        >
+        <div className={cn(
+          "flex-1 flex flex-col transition-all duration-300 w-full",
+          !isMobile && isCollapsed ? "ml-[72px]" : "",
+          isMobile ? "ml-0" : ""
+        )}>
           <DashboardNavbar />
           <PageBreadcrumb/>
+          <AnnouncementBanner />
           <main className="flex-1 p-6 overflow-auto w-full">
             <div className="w-full mx-auto">{children}</div>
           </main>

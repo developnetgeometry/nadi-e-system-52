@@ -9,6 +9,74 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      announcement_views: {
+        Row: {
+          announcement_id: string | null
+          id: string
+          user_id: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          announcement_id?: string | null
+          id?: string
+          user_id?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          announcement_id?: string | null
+          id?: string
+          user_id?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_views_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          end_date: string | null
+          id: string
+          message: string
+          start_date: string | null
+          status: Database["public"]["Enums"]["announcement_status"] | null
+          title: string
+          updated_at: string | null
+          user_types: Database["public"]["Enums"]["user_type"][] | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          message: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["announcement_status"] | null
+          title: string
+          updated_at?: string | null
+          user_types?: Database["public"]["Enums"]["user_type"][] | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          message?: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["announcement_status"] | null
+          title?: string
+          updated_at?: string | null
+          user_types?: Database["public"]["Enums"]["user_type"][] | null
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           created_at: string
@@ -4109,7 +4177,22 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nd_member_address_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "nd_district"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_member_address_state_id_fkey"
+            columns: ["state_id"]
+            isOneToOne: false
+            referencedRelation: "nd_state"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nd_member_health: {
         Row: {
@@ -4182,7 +4265,7 @@ export type Database = {
       }
       nd_member_photo: {
         Row: {
-          created_at: string
+          created_at: string | null
           created_by: string | null
           ext: string | null
           id: number
@@ -4191,12 +4274,12 @@ export type Database = {
           photo: string | null
           photo_thumb: string | null
           size: string | null
-          updated_at: string
+          updated_at: string | null
           updated_by: string | null
           user_id: string | null
         }
         Insert: {
-          created_at: string
+          created_at?: string | null
           created_by?: string | null
           ext?: string | null
           id?: number
@@ -4205,12 +4288,12 @@ export type Database = {
           photo?: string | null
           photo_thumb?: string | null
           size?: string | null
-          updated_at: string
+          updated_at?: string | null
           updated_by?: string | null
           user_id?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           created_by?: string | null
           ext?: string | null
           id?: number
@@ -4219,7 +4302,7 @@ export type Database = {
           photo?: string | null
           photo_thumb?: string | null
           size?: string | null
-          updated_at?: string
+          updated_at?: string | null
           updated_by?: string | null
           user_id?: string | null
         }
@@ -4227,7 +4310,7 @@ export type Database = {
           {
             foreignKeyName: "nd_member_photo_member_id_fkey"
             columns: ["member_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "nd_member_profile"
             referencedColumns: ["id"]
           },
@@ -4244,7 +4327,7 @@ export type Database = {
         Row: {
           age: number | null
           agree_declare: boolean | null
-          community_status: boolean
+          community_status: boolean | null
           created_at: string | null
           created_by: string | null
           distance: number | null
@@ -4253,18 +4336,19 @@ export type Database = {
           email: string | null
           ethnic_id: number | null
           fullname: string | null
-          gender: number
+          gender: number | null
           ict_knowledge: number | null
           id: number
           identity_no: string | null
           income_range: number | null
           join_date: string | null
           mobile_no: string | null
+          nationality_id: number | null
           occupation_id: number | null
           oku_status: boolean | null
           pdpa_declare: boolean | null
           race_id: number | null
-          ref_id: number
+          ref_id: number | null
           register_method: string | null
           registration_status: boolean | null
           socio_id: number | null
@@ -4279,7 +4363,7 @@ export type Database = {
         Insert: {
           age?: number | null
           agree_declare?: boolean | null
-          community_status: boolean
+          community_status?: boolean | null
           created_at?: string | null
           created_by?: string | null
           distance?: number | null
@@ -4288,18 +4372,19 @@ export type Database = {
           email?: string | null
           ethnic_id?: number | null
           fullname?: string | null
-          gender: number
+          gender?: number | null
           ict_knowledge?: number | null
           id?: number
           identity_no?: string | null
           income_range?: number | null
           join_date?: string | null
           mobile_no?: string | null
+          nationality_id?: number | null
           occupation_id?: number | null
           oku_status?: boolean | null
           pdpa_declare?: boolean | null
           race_id?: number | null
-          ref_id: number
+          ref_id?: number | null
           register_method?: string | null
           registration_status?: boolean | null
           socio_id?: number | null
@@ -4314,7 +4399,7 @@ export type Database = {
         Update: {
           age?: number | null
           agree_declare?: boolean | null
-          community_status?: boolean
+          community_status?: boolean | null
           created_at?: string | null
           created_by?: string | null
           distance?: number | null
@@ -4323,18 +4408,19 @@ export type Database = {
           email?: string | null
           ethnic_id?: number | null
           fullname?: string | null
-          gender?: number
+          gender?: number | null
           ict_knowledge?: number | null
           id?: number
           identity_no?: string | null
           income_range?: number | null
           join_date?: string | null
           mobile_no?: string | null
+          nationality_id?: number | null
           occupation_id?: number | null
           oku_status?: boolean | null
           pdpa_declare?: boolean | null
           race_id?: number | null
-          ref_id?: number
+          ref_id?: number | null
           register_method?: string | null
           registration_status?: boolean | null
           socio_id?: number | null
@@ -4383,6 +4469,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "nd_member_profile_nationality_id_fkey"
+            columns: ["nationality_id"]
+            isOneToOne: false
+            referencedRelation: "nd_nationalities"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "nd_member_profile_occupation_id_fkey"
             columns: ["occupation_id"]
             isOneToOne: false
@@ -4394,20 +4487,6 @@ export type Database = {
             columns: ["race_id"]
             isOneToOne: false
             referencedRelation: "nd_races"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nd_member_profile_ref_id_fkey"
-            columns: ["ref_id"]
-            isOneToOne: false
-            referencedRelation: "nd_site_combined"
-            referencedColumns: ["site_id"]
-          },
-          {
-            foreignKeyName: "nd_member_profile_ref_id_fkey"
-            columns: ["ref_id"]
-            isOneToOne: false
-            referencedRelation: "nd_site_profile"
             referencedColumns: ["id"]
           },
           {
@@ -5625,6 +5704,13 @@ export type Database = {
             referencedRelation: "nd_site_profile"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "nd_site_address_state_id_fkey"
+            columns: ["state_id"]
+            isOneToOne: false
+            referencedRelation: "nd_state"
+            referencedColumns: ["id"]
+          },
         ]
       }
       nd_site_attachment: {
@@ -5816,7 +5902,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
-          file_path: string | null
+          file_path: string[] | null
           id: number
           site_closure_id: number | null
           updated_at: string | null
@@ -5825,7 +5911,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
-          file_path?: string | null
+          file_path?: string[] | null
           id?: number
           site_closure_id?: number | null
           updated_at?: string | null
@@ -5834,7 +5920,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
-          file_path?: string | null
+          file_path?: string[] | null
           id?: number
           site_closure_id?: number | null
           updated_at?: string | null
@@ -9893,6 +9979,12 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_announcement_valid: {
+        Args: {
+          announcement_row: Database["public"]["Tables"]["announcements"]["Row"]
+        }
+        Returns: boolean
+      }
       is_current_user_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -9917,6 +10009,7 @@ export type Database = {
       }
     }
     Enums: {
+      announcement_status: "active" | "inactive"
       asset_category:
         | "equipment"
         | "furniture"
@@ -10089,6 +10182,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      announcement_status: ["active", "inactive"],
       asset_category: [
         "equipment",
         "furniture",
