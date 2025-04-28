@@ -20,7 +20,7 @@ export const CreateAnnouncementDialog = () => {
   const { toast } = useToast();
   const { register, handleSubmit, reset } = useForm<AnnouncementFormData>({
     defaultValues: {
-      userTypes: [] // Default to empty array
+      userTypes: [] as UserType[] // Explicitly typed as UserType[]
     }
   });
 
@@ -30,7 +30,7 @@ export const CreateAnnouncementDialog = () => {
       .insert({
         title: data.title,
         message: data.message,
-        user_types: data.userTypes as UserType[] // Ensure it's cast to the correct type
+        user_types: data.userTypes // Already correctly typed as UserType[]
       });
 
     if (error) {
