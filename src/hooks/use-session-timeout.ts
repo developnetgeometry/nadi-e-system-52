@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 
 export const useSessionTimeout = (
   user: User | null,
-  logout: () => Promise<string>,
+  logout: () => Promise<void>,
   logInactivityEvent: () => Promise<void>,
   sessionInactivityTimeout: string,
   enableInactivityTracking: boolean,
@@ -27,10 +27,10 @@ export const useSessionTimeout = (
         // Log inactivity timeout event and then logout
         try {
           await logInactivityEvent();
-          await logout(); // We don't need the redirect path here
+          logout();
         } catch (error) {
           console.error("Error in inactivity timeout:", error);
-          await logout();
+          logout();
         }
       }, parseInt(sessionInactivityTimeout) * 1000);
     };
