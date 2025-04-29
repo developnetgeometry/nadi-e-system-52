@@ -1,7 +1,8 @@
+
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { supabase } from "@/lib/supabase";
-import { Loader2 } from "lucide-react";
+import { Loader2, Info } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { UserType } from "@/types/auth";
 
@@ -75,8 +76,8 @@ export function AnnouncementSimpleView() {
   
   if (loading) {
     return (
-      <div className="flex justify-center items-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex justify-center items-center p-4">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -86,16 +87,22 @@ export function AnnouncementSimpleView() {
   }
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 animate-fade-in">
       {announcements.map((announcement) => (
-        <Card key={announcement.id} className="overflow-hidden border border-primary/20">
-          <CardHeader className="bg-primary/5 pb-2">
-            <CardTitle className="text-lg">{announcement.title}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <p className="text-gray-700 dark:text-gray-300">{announcement.message}</p>
-          </CardContent>
-        </Card>
+        <Alert 
+          key={announcement.id} 
+          className="bg-primary/5 border-primary/20 hover:bg-primary/10 transition-colors"
+        >
+          <div className="flex items-start">
+            <Info className="h-5 w-5 text-primary mr-2 mt-0.5" />
+            <div className="flex-1">
+              <AlertTitle className="text-lg font-semibold">{announcement.title}</AlertTitle>
+              <AlertDescription className="mt-1 text-gray-700 dark:text-gray-300">
+                {announcement.message}
+              </AlertDescription>
+            </div>
+          </div>
+        </Alert>
       ))}
     </div>
   );
