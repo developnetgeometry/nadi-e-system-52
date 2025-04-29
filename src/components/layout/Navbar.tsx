@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,13 @@ import { useAuth } from "@/hooks/useAuth";
 
 export const Navbar = () => {
   const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  // Handle logout with navigation
+  const handleLogout = async () => {
+    const redirectPath = await logout();
+    navigate(redirectPath);
+  };
 
   return (
     <nav className="border-b">
@@ -64,7 +72,7 @@ export const Navbar = () => {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout}>
+              <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Log out
               </DropdownMenuItem>

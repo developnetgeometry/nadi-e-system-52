@@ -18,7 +18,8 @@ export const useAuth = () => {
   const sessionInactivityTimeout = settings.find(s => s.key === 'session_inactivity_timeout')?.value || '1800'; // Default 30 minutes
   const enableInactivityTracking = settings.find(s => s.key === 'enable_inactivity_tracking')?.value === 'true';
 
-  const logout = async (redirectPath?: string) => {
+  // Modified logout function that accepts an event parameter to handle click events
+  const logout = async () => {
     try {
       console.log("Logging out user...");
       
@@ -26,7 +27,7 @@ export const useAuth = () => {
       await endSessionTracking();
       
       // Get the user type before logging out
-      let finalRedirectPath = redirectPath || "/login"; // Default redirect path
+      let finalRedirectPath = "/login"; // Default redirect path
       
       if (user) {
         const { data: profileData } = await supabase
@@ -36,7 +37,7 @@ export const useAuth = () => {
           .single();
           
         // If user is a member, redirect to member login
-        if (profileData && profileData.user_type === 'member' && !redirectPath) {
+        if (profileData && profileData.user_type === 'member') {
           finalRedirectPath = "/member-login";
         }
       }
@@ -76,10 +77,13 @@ export const useAuth = () => {
     logSessionRefreshEvent
   } = useSessionTracking(user);
 
-  // Initialize session timeout hooks
+  // Initialize session timeout hooks with the updated logout function
   useSessionTimeout(
     user,
-    logout,
+    async () => {
+      const path = await logout();
+      return path;
+    },
     logInactivityEvent,
     sessionInactivityTimeout,
     enableInactivityTracking,

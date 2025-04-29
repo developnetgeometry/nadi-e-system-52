@@ -10,13 +10,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
 export const HeaderProfile = () => {
   const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  // Handle logout with navigation
+  const handleLogout = async () => {
+    const redirectPath = await logout();
+    navigate(redirectPath);
+  };
 
   // Fetch user profile including name and role
   const { data: profile } = useQuery({
@@ -103,7 +110,7 @@ export const HeaderProfile = () => {
           <Link to="/dashboard/settings">Settings</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout}>Log out</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
