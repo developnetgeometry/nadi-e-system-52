@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
@@ -9,7 +8,6 @@ import { useSessionTracking } from "@/hooks/use-session-tracking";
 import { useSessionTimeout } from "@/hooks/use-session-timeout";
 
 export const useAuth = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,7 +18,7 @@ export const useAuth = () => {
   const sessionInactivityTimeout = settings.find(s => s.key === 'session_inactivity_timeout')?.value || '1800'; // Default 30 minutes
   const enableInactivityTracking = settings.find(s => s.key === 'enable_inactivity_tracking')?.value === 'true';
 
-  const logout = async () => {
+  const logout = async (redirectPath?: string) => {
     try {
       console.log("Logging out user...");
       
@@ -28,7 +26,7 @@ export const useAuth = () => {
       await endSessionTracking();
       
       // Get the user type before logging out
-      let redirectPath = "/login"; // Default redirect path
+      let finalRedirectPath = redirectPath || "/login"; // Default redirect path
       
       if (user) {
         const { data: profileData } = await supabase
@@ -38,8 +36,8 @@ export const useAuth = () => {
           .single();
           
         // If user is a member, redirect to member login
-        if (profileData && profileData.user_type === 'member') {
-          redirectPath = "/member-login";
+        if (profileData && profileData.user_type === 'member' && !redirectPath) {
+          finalRedirectPath = "/member-login";
         }
       }
 
@@ -50,14 +48,14 @@ export const useAuth = () => {
       localStorage.clear();
       setUser(null);
       
-      console.log(`User logged out successfully, redirecting to ${redirectPath}`);
+      console.log(`User logged out successfully, ready to redirect to ${finalRedirectPath}`);
       toast({
         title: "Logged out successfully",
         description: "You have been logged out of your account",
       });
 
-      // Redirect based on user type
-      navigate(redirectPath);
+      // Return the path we determined for redirection
+      return finalRedirectPath;
     } catch (error) {
       console.error("Error logging out:", error);
       toast({
@@ -65,6 +63,7 @@ export const useAuth = () => {
         description: "Failed to log out. Please try again.",
         variant: "destructive",
       });
+      return "/login"; // Default fallback
     }
   };
 
