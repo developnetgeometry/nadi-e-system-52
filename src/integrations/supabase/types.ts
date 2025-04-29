@@ -3975,38 +3975,59 @@ export type Database = {
       nd_maintenance_request: {
         Row: {
           asset_id: number | null
+          attachment: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
           id: number
           requester_by: string | null
           status: boolean | null
+          type_id: number | null
           updated_at: string | null
           updated_by: string | null
         }
         Insert: {
           asset_id?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          id: number
-          requester_by?: string | null
-          status?: boolean | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Update: {
-          asset_id?: number | null
+          attachment?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
           id?: number
           requester_by?: string | null
           status?: boolean | null
+          type_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: []
+        Update: {
+          asset_id?: number | null
+          attachment?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: number
+          requester_by?: string | null
+          status?: boolean | null
+          type_id?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nd_maintenance_request_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "nd_asset"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_maintenance_request_type_id_fkey"
+            columns: ["type_id"]
+            isOneToOne: false
+            referencedRelation: "nd_type_maintenance"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nd_marital_status: {
         Row: {
@@ -5621,14 +5642,14 @@ export type Database = {
             foreignKeyName: "nd_site_nd_site_profile_fk"
             columns: ["site_profile_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_combined"
-            referencedColumns: ["site_id"]
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "nd_site_nd_site_profile_fk"
             columns: ["site_profile_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_profile"
+            referencedRelation: "nd_site_profile_name"
             referencedColumns: ["id"]
           },
         ]
@@ -5694,14 +5715,14 @@ export type Database = {
             foreignKeyName: "nd_site_address_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_combined"
-            referencedColumns: ["site_id"]
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "nd_site_address_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_profile"
+            referencedRelation: "nd_site_profile_name"
             referencedColumns: ["id"]
           },
           {
@@ -5755,6 +5776,7 @@ export type Database = {
           end_time: string | null
           id: number
           remark: string | null
+          request_datetime: string | null
           requester_id: string | null
           session: number | null
           site_id: number | null
@@ -5775,6 +5797,7 @@ export type Database = {
           end_time?: string | null
           id?: number
           remark?: string | null
+          request_datetime?: string | null
           requester_id?: string | null
           session?: number | null
           site_id?: number | null
@@ -5795,6 +5818,7 @@ export type Database = {
           end_time?: string | null
           id?: number
           remark?: string | null
+          request_datetime?: string | null
           requester_id?: string | null
           session?: number | null
           site_id?: number | null
@@ -5830,14 +5854,14 @@ export type Database = {
             foreignKeyName: "nd_site_closure_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_combined"
-            referencedColumns: ["site_id"]
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "nd_site_closure_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_profile"
+            referencedRelation: "nd_site_profile_name"
             referencedColumns: ["id"]
           },
           {
@@ -6296,14 +6320,14 @@ export type Database = {
             foreignKeyName: "nd_site_socioeconomic_nd_site_profile_fk"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_combined"
-            referencedColumns: ["site_id"]
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "nd_site_socioeconomic_nd_site_profile_fk"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_profile"
+            referencedRelation: "nd_site_profile_name"
             referencedColumns: ["id"]
           },
           {
@@ -6355,14 +6379,14 @@ export type Database = {
             foreignKeyName: "nd_site_space_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_combined"
-            referencedColumns: ["site_id"]
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "nd_site_space_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_profile"
+            referencedRelation: "nd_site_profile_name"
             referencedColumns: ["id"]
           },
           {
@@ -6867,14 +6891,14 @@ export type Database = {
             foreignKeyName: "nd_staff_contract_site_profile_id_fkey"
             columns: ["site_profile_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_combined"
-            referencedColumns: ["site_id"]
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "nd_staff_contract_site_profile_id_fkey"
             columns: ["site_profile_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_profile"
+            referencedRelation: "nd_site_profile_name"
             referencedColumns: ["id"]
           },
           {
@@ -6938,14 +6962,14 @@ export type Database = {
             foreignKeyName: "nd_staff_job_nd_site_profile_fk"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_combined"
-            referencedColumns: ["site_id"]
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "nd_staff_job_nd_site_profile_fk"
             columns: ["site_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_profile"
+            referencedRelation: "nd_site_profile_name"
             referencedColumns: ["id"]
           },
         ]
@@ -9941,10 +9965,10 @@ export type Database = {
       }
     }
     Views: {
-      nd_site_combined: {
+      nd_site_profile_name: {
         Row: {
           fullname: string | null
-          site_id: number | null
+          id: number | null
           sitename: string | null
           standard_code: string | null
         }
