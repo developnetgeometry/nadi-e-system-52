@@ -1,4 +1,3 @@
-
 import { MenuItem } from "@/types/menu";
 
 export const menuItems = [
@@ -14,7 +13,6 @@ export const menuItems = [
     path: "/admin/state-holidays",
     visibleTo: ["super_admin"],
   },
-  { title: "Takwim", path: "/admin/takwim" },
   { title: "Notifications", path: "/admin/notifications" },
   { title: "Organizations", path: "/admin/organizations" },
   { title: "Settings", path: "/admin/settings" },
