@@ -22,10 +22,34 @@ const App = () => {
     <ThemeProvider defaultTheme="light" storageKey="ui-theme">
       <Router>
         <Routes>
-          {dashboardRoutes}
-          {authRoutes}
-          {moduleRoutes}
-          {memberRoutes}
+          {dashboardRoutes.map((route, index) => (
+            <Route
+              key={index}
+              path={route.path}
+              element={route.element}
+            />
+          ))}
+          {authRoutes.map((route, index) => (
+            <Route
+              key={`auth-${index}`}
+              path={route.path}
+              element={route.element}
+            />
+          ))}
+          {moduleRoutes.map((route, index) => (
+            <Route
+              key={`module-${index}`}
+              path={route.path}
+              element={route.element}
+            />
+          ))}
+          {memberRoutes.map((route, index) => (
+            <Route
+              key={`member-${index}`}
+              path={route.path}
+              element={route.element}
+            />
+          ))}
           <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/not-found" replace />} />
         </Routes>
