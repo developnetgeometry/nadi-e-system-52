@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format, differenceInMinutes } from "date-fns";
 import { CalendarIcon, Clock, ListFilter, List, Users, User, MessageSquare, CircleUser, Globe } from "lucide-react";
@@ -57,7 +58,7 @@ interface TakwimEventDialogProps {
 }
 
 const formSchema = z.object({
-  title: z.string().min(1, { message: "Title is required" }),
+  title: z.string().min(1, { message: "Programme name is required" }),
   date: z.date({ required_error: "Date is required" }),
   startTime: z.string().min(1, { message: "Start time is required" }),
   endTime: z.string().min(1, { message: "End time is required" }),
@@ -216,6 +217,12 @@ export function TakwimEventDialog({
     form.reset();
   }
 
+  const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
+    <span>
+      {children} <span className="text-destructive">*</span>
+    </span>
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
@@ -225,6 +232,7 @@ export function TakwimEventDialog({
           </DialogTitle>
           <DialogDescription>
             Add event details to schedule in the Takwim calendar.
+            <span className="text-destructive text-sm block mt-1">Fields marked with * are required</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -235,7 +243,7 @@ export function TakwimEventDialog({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Programme Name</FormLabel>
+                  <FormLabel><RequiredLabel>Programme Name</RequiredLabel></FormLabel>
                   <FormControl>
                     <Input placeholder="Event title" {...field} />
                   </FormControl>
@@ -250,7 +258,7 @@ export function TakwimEventDialog({
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    <FormLabel><RequiredLabel>Category</RequiredLabel></FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -279,7 +287,7 @@ export function TakwimEventDialog({
                 name="pillar"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Pillar (Sub Category)</FormLabel>
+                    <FormLabel><RequiredLabel>Pillar (Sub Category)</RequiredLabel></FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -311,7 +319,7 @@ export function TakwimEventDialog({
                 name="programme"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Programme</FormLabel>
+                    <FormLabel><RequiredLabel>Programme</RequiredLabel></FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -341,7 +349,7 @@ export function TakwimEventDialog({
                 name="module"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Module</FormLabel>
+                    <FormLabel><RequiredLabel>Module</RequiredLabel></FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -373,7 +381,7 @@ export function TakwimEventDialog({
                 name="date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Date</FormLabel>
+                    <FormLabel><RequiredLabel>Date</RequiredLabel></FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -413,7 +421,7 @@ export function TakwimEventDialog({
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Event Type</FormLabel>
+                    <FormLabel><RequiredLabel>Event Type</RequiredLabel></FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -446,7 +454,7 @@ export function TakwimEventDialog({
                 name="startTime"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Start Time</FormLabel>
+                    <FormLabel><RequiredLabel>Start Time</RequiredLabel></FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
@@ -467,7 +475,7 @@ export function TakwimEventDialog({
                 name="endTime"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>End Time</FormLabel>
+                    <FormLabel><RequiredLabel>End Time</RequiredLabel></FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
@@ -484,7 +492,7 @@ export function TakwimEventDialog({
               />
 
               <div className="flex flex-col justify-end">
-                <FormLabel>Duration</FormLabel>
+                <FormLabel>Duration (Auto Calculated)</FormLabel>
                 <div className="h-10 flex items-center px-3 py-2 border rounded-md bg-muted/50">
                   {duration}
                 </div>
@@ -500,7 +508,7 @@ export function TakwimEventDialog({
                     <div className="space-y-1 leading-none">
                       <FormLabel className="flex items-center">
                         <CircleUser className="mr-2 h-4 w-4" />
-                        Group Event
+                        <RequiredLabel>Group Event</RequiredLabel>
                       </FormLabel>
                     </div>
                     <FormControl>
@@ -520,7 +528,7 @@ export function TakwimEventDialog({
                   <FormItem className="space-y-3">
                     <FormLabel>
                       <Globe className="inline-block mr-2 h-4 w-4" />
-                      Mode
+                      <RequiredLabel>Mode</RequiredLabel>
                     </FormLabel>
                     <FormControl>
                       <RadioGroup
@@ -559,7 +567,7 @@ export function TakwimEventDialog({
                 <FormItem>
                   <FormLabel>
                     <Users className="inline-block mr-2 h-4 w-4" />
-                    Target Participant
+                    <RequiredLabel>Target Participant</RequiredLabel>
                   </FormLabel>
                   <FormControl>
                     <Input placeholder="Enter target participant" {...field} />
@@ -576,7 +584,7 @@ export function TakwimEventDialog({
                 <FormItem>
                   <FormLabel>
                     <User className="inline-block mr-2 h-4 w-4" />
-                    Trainer / Organization Name
+                    <RequiredLabel>Trainer / Organization Name</RequiredLabel>
                   </FormLabel>
                   <FormControl>
                     <Input placeholder="Enter trainer or organization name" {...field} />
