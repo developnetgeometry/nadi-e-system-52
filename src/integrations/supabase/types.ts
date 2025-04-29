@@ -4511,6 +4511,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "nd_member_profile_ref_id_fkey"
+            columns: ["ref_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_member_profile_ref_id_fkey"
+            columns: ["ref_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile_name"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "nd_member_profile_socio_id_fkey"
             columns: ["socio_id"]
             isOneToOne: false

@@ -24,6 +24,8 @@ import { TakwimEvent, EventType } from "@/types/takwim";
 import { useHolidays } from "@/hooks/use-holidays";
 import { toast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from "uuid";
+import { getHolidaysForDate } from "@/utils/holidayUtils";
+import { Badge } from "@/components/ui/badge";
 
 export default function Takwim() {
   const [date, setDate] = useState<Date>(new Date());
@@ -54,6 +56,8 @@ export default function Takwim() {
 
   // Get holidays from the hook
   const { holidays } = useHolidays(new Date().getFullYear());
+  // Get holidays for the selected date
+  const selectedDateHolidays = getHolidaysForDate(date, holidays);
 
   const eventTypes: EventType[] = [
     { value: "meeting", label: "Meeting", color: "bg-blue-100 text-blue-800" },
@@ -180,6 +184,20 @@ export default function Takwim() {
                     }}
                   />
 
+                  {/* Display holidays for the selected date if any */}
+                  {selectedDateHolidays.length > 0 && (
+                    <div className="mt-1 mb-4">
+                      <h4 className="text-md font-semibold mb-2">Holidays on {format(date, "PPP")}:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedDateHolidays.map((holiday) => (
+                          <Badge key={holiday.id} variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                            {holiday.desc}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <h3 className="text-lg font-medium mb-2">
                       Events for {format(date, "PPP")}
@@ -211,7 +229,9 @@ export default function Takwim() {
                       </div>
                     ) : (
                       <div className="text-center py-8 text-gray-500">
-                        No events scheduled for this date
+                        {selectedDateHolidays.length > 0 
+                          ? "Holiday - No events scheduled" 
+                          : "No events scheduled for this date"}
                       </div>
                     )}
                   </div>
@@ -245,6 +265,14 @@ export default function Takwim() {
                               <p className="text-sm text-gray-600 mt-2">
                                 {event.description}
                               </p>
+                            )}
+                            {/* Show holiday badge if the event falls on a holiday */}
+                            {isHoliday(event.date) && (
+                              <div className="mt-2">
+                                <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                                  {getHolidaysForDate(event.date, holidays).map(h => h.desc).join(", ")}
+                                </Badge>
+                              </div>
                             )}
                           </div>
                           <span className={cn("px-2 py-1 rounded-full text-xs", getEventTypeColor(event.type))}>
