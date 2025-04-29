@@ -38,24 +38,15 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
+import { EventType, TakwimEvent } from "@/types/takwim";
 
 interface TakwimEventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  eventToEdit?: TakwimEvent;
-  eventTypes: { value: string; label: string; color: string }[];
-}
-
-interface TakwimEvent {
-  id?: string;
-  title: string;
-  date: Date;
-  startTime: string;
-  endTime: string;
-  type: string;
-  description?: string;
-  location?: string;
+  eventToEdit?: Omit<TakwimEvent, "id">;
+  eventTypes: EventType[];
+  onSubmit: (event: Omit<TakwimEvent, "id">) => void;
 }
 
 const formSchema = z.object({
@@ -85,6 +76,7 @@ export function TakwimEventDialog({
   onOpenChange,
   eventToEdit,
   eventTypes,
+  onSubmit,
 }: TakwimEventDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -101,26 +93,26 @@ export function TakwimEventDialog({
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function handleSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-
-    // In a real app, this would save to a database
-    console.log("Form values:", values);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      onOpenChange(false);
-      
-      toast.success(
-        eventToEdit ? "Event updated successfully" : "Event created successfully",
-        {
-          description: `${values.title} on ${format(values.date, "PPP")}`,
-        }
-      );
-
-      form.reset();
-    }, 500);
+    const newEvent: Omit<TakwimEvent, "id"> = {
+      title: values.title,
+      date: values.date,
+      startTime: values.startTime,
+      endTime: values.endTime,
+      type: values.type,
+      description: values.description,
+      location: values.location,
+    };
+    
+    // Submit the event
+    onSubmit(newEvent);
+    
+    // Reset and close the dialog
+    setIsSubmitting(false);
+    onOpenChange(false);
+    form.reset();
   }
 
   return (
@@ -136,7 +128,7 @@ export function TakwimEventDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"

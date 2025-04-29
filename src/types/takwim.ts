@@ -15,3 +15,4 @@ export interface EventType {
   label: string;
   color: string;
 }
+

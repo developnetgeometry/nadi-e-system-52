@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { format } from "date-fns";
+import { useState, useEffect } from "react";
+import { format, isSaturday, isSunday } from "date-fns";
 import { Calendar as CalendarIcon, Plus } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -20,14 +20,16 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { TakwimEventDialog } from "@/components/takwim/TakwimEventDialog";
+import { TakwimEvent, EventType } from "@/types/takwim";
+import { useHolidays } from "@/hooks/use-holidays";
+import { toast } from "@/components/ui/use-toast";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Takwim() {
   const [date, setDate] = useState<Date>(new Date());
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [view, setView] = useState<"calendar" | "list">("calendar");
-
-  // Sample events - in a real app, these would come from a database
-  const events = [
+  const [events, setEvents] = useState<TakwimEvent[]>([
     {
       id: "1",
       title: "Strategic Planning Meeting",
@@ -48,21 +50,51 @@ export default function Takwim() {
       description: "Kickoff for the new digital transformation project",
       location: "Meeting Room 3",
     },
-  ];
+  ]);
 
-  const eventsForSelectedDate = events.filter(
-    (event) => event.date.toDateString() === date.toDateString()
-  );
+  // Get holidays from the hook
+  const { holidays } = useHolidays(new Date().getFullYear());
 
-  const eventTypes = [
+  const eventTypes: EventType[] = [
     { value: "meeting", label: "Meeting", color: "bg-blue-100 text-blue-800" },
     { value: "project", label: "Project", color: "bg-green-100 text-green-800" },
     { value: "training", label: "Training", color: "bg-amber-100 text-amber-800" },
     { value: "event", label: "Event", color: "bg-purple-100 text-purple-800" },
   ];
 
+  const eventsForSelectedDate = events.filter(
+    (event) => event.date.toDateString() === date.toDateString()
+  );
+
   const getEventTypeColor = (type: string) => {
     return eventTypes.find((t) => t.value === type)?.color || "bg-gray-100 text-gray-800";
+  };
+
+  // Check if a date has an event
+  const hasEvent = (date: Date | undefined) => {
+    if (!date) return false;
+    return events.some(event => event.date.toDateString() === date.toDateString());
+  };
+
+  // Check if a date is a holiday
+  const isHoliday = (date: Date | undefined) => {
+    if (!date) return false;
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    return holidays.some(holiday => holiday.date === formattedDate);
+  };
+
+  // Handle adding a new event
+  const handleAddEvent = (event: Omit<TakwimEvent, "id">) => {
+    const newEvent: TakwimEvent = {
+      ...event,
+      id: uuidv4(),
+    };
+    
+    setEvents([...events, newEvent]);
+    toast({
+      title: "Event created",
+      description: `${event.title} has been scheduled for ${format(event.date, "PPP")}`,
+    });
   };
 
   return (
@@ -106,6 +138,16 @@ export default function Takwim() {
                   onSelect={(newDate) => newDate && setDate(newDate)}
                   initialFocus
                   className="pointer-events-auto"
+                  modifiers={{
+                    weekend: (date) => isSaturday(date) || isSunday(date),
+                    holiday: (date) => isHoliday(date),
+                    hasEvent: (date) => hasEvent(date),
+                  }}
+                  modifiersStyles={{
+                    weekend: { color: "#ea384c" },
+                    holiday: { color: "#ea384c", fontWeight: "bold" },
+                    hasEvent: { backgroundColor: "#d6bcfa", borderRadius: "100%" },
+                  }}
                 />
               </PopoverContent>
             </Popover>
@@ -125,7 +167,17 @@ export default function Takwim() {
                     mode="single"
                     selected={date}
                     onSelect={(newDate) => newDate && setDate(newDate)}
-                    className="rounded-md border w-full"
+                    className="rounded-md border w-full pointer-events-auto"
+                    modifiers={{
+                      weekend: (date) => isSaturday(date) || isSunday(date),
+                      holiday: (date) => isHoliday(date),
+                      hasEvent: (date) => hasEvent(date),
+                    }}
+                    modifiersStyles={{
+                      weekend: { color: "#ea384c" },
+                      holiday: { color: "#ea384c", fontWeight: "bold" },
+                      hasEvent: { backgroundColor: "#d6bcfa", borderRadius: "100%" },
+                    }}
                   />
 
                   <div>
@@ -217,6 +269,7 @@ export default function Takwim() {
         open={isEventDialogOpen}
         onOpenChange={setIsEventDialogOpen}
         eventTypes={eventTypes}
+        onSubmit={handleAddEvent}
       />
     </DashboardLayout>
   );
