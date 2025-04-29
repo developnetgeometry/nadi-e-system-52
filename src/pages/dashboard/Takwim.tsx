@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format, isSaturday, isSunday } from "date-fns";
 import { Calendar as CalendarIcon, Plus } from "lucide-react";
@@ -34,7 +35,8 @@ export default function Takwim() {
     {
       id: "1",
       title: "Strategic Planning Meeting",
-      date: new Date(2024, 3, 20),
+      startDate: new Date(2024, 3, 20),
+      endDate: new Date(2024, 3, 20),
       startTime: "10:00",
       endTime: "12:00",
       type: "meeting",
@@ -53,7 +55,8 @@ export default function Takwim() {
     {
       id: "2",
       title: "Digital Transformation Project Kickoff",
-      date: new Date(2024, 3, 21),
+      startDate: new Date(2024, 3, 21),
+      endDate: new Date(2024, 3, 21),
       startTime: "14:00",
       endTime: "15:30",
       type: "project",
@@ -118,8 +121,11 @@ export default function Takwim() {
     { value: "mod6", label: "Quarterly Reports", programmeId: "prog6" },
   ];
 
+  // Filter events for the selected date
   const eventsForSelectedDate = events.filter(
-    (event) => event.date.toDateString() === date.toDateString()
+    (event) => event.startDate.toDateString() === date.toDateString() ||
+               event.endDate.toDateString() === date.toDateString() ||
+               (event.startDate <= date && event.endDate >= date)
   );
 
   const getEventTypeColor = (type: string) => {
@@ -129,7 +135,11 @@ export default function Takwim() {
   // Check if a date has an event
   const hasEvent = (date: Date | undefined) => {
     if (!date) return false;
-    return events.some(event => event.date.toDateString() === date.toDateString());
+    return events.some(event => 
+      event.startDate.toDateString() === date.toDateString() ||
+      event.endDate.toDateString() === date.toDateString() ||
+      (event.startDate <= date && event.endDate >= date)
+    );
   };
 
   // Check if a date is a holiday
@@ -149,7 +159,7 @@ export default function Takwim() {
     setEvents([...events, newEvent]);
     toast({
       title: "Event created",
-      description: `${event.title} has been scheduled for ${format(event.date, "PPP")}`,
+      description: `${event.title} has been scheduled from ${format(event.startDate, "PPP")} to ${format(event.endDate, "PPP")}`,
     });
   };
 
@@ -163,6 +173,17 @@ export default function Takwim() {
     return pillars.find(pil => pil.value === value)?.label || value;
   };
 
+  // Generate date range display text
+  const getEventDateRangeText = (event: TakwimEvent) => {
+    const isSameDay = event.startDate.toDateString() === event.endDate.toDateString();
+    
+    if (isSameDay) {
+      return format(event.startDate, "PPP");
+    } else {
+      return `${format(event.startDate, "PPP")} - ${format(event.endDate, "PPP")}`;
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6">
@@ -173,7 +194,7 @@ export default function Takwim() {
               Manage and schedule events for your organization
             </p>
           </div>
-          <Button onClick={() => setIsEventDialogOpen(true)}>
+          <Button onClick={() => setIsEventDialogOpen(true)} className="bg-purple-600 hover:bg-purple-700">
             <Plus className="mr-2 h-4 w-4" /> Add Event
           </Button>
         </div>
@@ -269,15 +290,18 @@ export default function Takwim() {
                         {eventsForSelectedDate.map((event) => (
                           <div
                             key={event.id}
-                            className="p-3 border rounded-md hover:bg-gray-50 transition-colors"
+                            className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                           >
-                            <div className="flex justify-between">
-                              <h4 className="font-medium">{event.title}</h4>
+                            <div className="flex justify-between items-start">
+                              <h4 className="font-medium text-lg">{event.title}</h4>
                               <span className={cn("px-2 py-1 rounded-full text-xs", getEventTypeColor(event.type))}>
                                 {eventTypes.find((t) => t.value === event.type)?.label}
                               </span>
                             </div>
                             <div className="text-sm text-gray-500 mt-1">
+                              {getEventDateRangeText(event)}
+                            </div>
+                            <div className="text-sm text-gray-500">
                               {event.startTime} - {event.endTime} ({event.duration})
                             </div>
                             <div className="flex flex-wrap gap-2 mt-2">
@@ -288,8 +312,8 @@ export default function Takwim() {
                               </Badge>
                               {event.isGroupEvent && <Badge>Group Event</Badge>}
                             </div>
-                            <div className="text-sm mt-2">
-                              <div><strong>Location:</strong> {event.location}</div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mt-2">
+                              <div><strong>Location:</strong> {event.location || "N/A"}</div>
                               <div><strong>Target:</strong> {event.targetParticipant}</div>
                               <div><strong>Trainer:</strong> {event.trainerName}</div>
                             </div>
@@ -302,7 +326,7 @@ export default function Takwim() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8 text-gray-500">
+                      <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed">
                         {selectedDateHolidays.length > 0 
                           ? "Holiday - No events scheduled" 
                           : "No events scheduled for this date"}
@@ -326,13 +350,13 @@ export default function Takwim() {
                     {events.map((event) => (
                       <div
                         key={event.id}
-                        className="border rounded-md p-4 hover:bg-gray-50 transition-colors"
+                        className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
                       >
                         <div className="flex justify-between items-start">
                           <div>
-                            <h3 className="font-medium">{event.title}</h3>
+                            <h3 className="font-medium text-lg">{event.title}</h3>
                             <p className="text-sm text-gray-500">
-                              {format(event.date, "PPP")} | {event.startTime} - {event.endTime} ({event.duration})
+                              {getEventDateRangeText(event)} | {event.startTime} - {event.endTime} ({event.duration})
                             </p>
                             <div className="flex flex-wrap gap-2 mt-2">
                               <Badge variant="secondary">{getCategoryLabel(event.category)}</Badge>
@@ -342,8 +366,8 @@ export default function Takwim() {
                               </Badge>
                               {event.isGroupEvent && <Badge>Group Event</Badge>}
                             </div>
-                            <div className="text-sm mt-2">
-                              <div><strong>Location:</strong> {event.location}</div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mt-2">
+                              <div><strong>Location:</strong> {event.location || "N/A"}</div>
                               <div><strong>Target:</strong> {event.targetParticipant}</div>
                               <div><strong>Trainer:</strong> {event.trainerName}</div>
                             </div>
@@ -353,10 +377,10 @@ export default function Takwim() {
                               </p>
                             )}
                             {/* Show holiday badge if the event falls on a holiday */}
-                            {isHoliday(event.date) && (
+                            {(isHoliday(event.startDate) || isHoliday(event.endDate)) && (
                               <div className="mt-2">
                                 <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                                  {getHolidaysForDate(event.date, holidays).map(h => h.desc).join(", ")}
+                                  Event overlaps with holiday
                                 </Badge>
                               </div>
                             )}
@@ -369,7 +393,7 @@ export default function Takwim() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed">
                     No events scheduled
                   </div>
                 )}

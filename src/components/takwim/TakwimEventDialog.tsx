@@ -39,7 +39,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 import { EventType, TakwimEvent, EventCategory, Pillar, Programme, Module } from "@/types/takwim";
@@ -59,7 +58,8 @@ interface TakwimEventDialogProps {
 
 const formSchema = z.object({
   title: z.string().min(1, { message: "Programme name is required" }),
-  date: z.date({ required_error: "Date is required" }),
+  startDate: z.date({ required_error: "Start date is required" }),
+  endDate: z.date({ required_error: "End date is required" }),
   startTime: z.string().min(1, { message: "Start time is required" }),
   endTime: z.string().min(1, { message: "End time is required" }),
   type: z.string().min(1, { message: "Event type is required" }),
@@ -75,15 +75,27 @@ const formSchema = z.object({
   trainerName: z.string().min(1, { message: "Trainer/organization name is required" }),
 })
 .refine(data => {
-  const [startHour, startMinute] = data.startTime.split(':').map(Number);
-  const [endHour, endMinute] = data.endTime.split(':').map(Number);
-  
-  if (startHour > endHour) return false;
-  if (startHour === endHour && startMinute >= endMinute) return false;
+  // Check if end date is at least the same as start date
+  const startDate = new Date(data.startDate);
+  const endDate = new Date(data.endDate);
+  return endDate >= startDate;
+}, {
+  message: "End date must be on or after start date",
+  path: ["endDate"],
+})
+.refine(data => {
+  // If dates are the same, check times
+  if (data.startDate.toDateString() === data.endDate.toDateString()) {
+    const [startHour, startMinute] = data.startTime.split(':').map(Number);
+    const [endHour, endMinute] = data.endTime.split(':').map(Number);
+    
+    if (startHour > endHour) return false;
+    if (startHour === endHour && startMinute >= endMinute) return false;
+  }
   
   return true;
 }, {
-  message: "End time must be after start time",
+  message: "End time must be after start time on the same day",
   path: ["endTime"],
 });
 
@@ -108,7 +120,8 @@ export function TakwimEventDialog({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: eventToEdit?.title || "",
-      date: eventToEdit?.date || new Date(),
+      startDate: eventToEdit?.startDate || new Date(),
+      endDate: eventToEdit?.endDate || new Date(),
       startTime: eventToEdit?.startTime || "09:00",
       endTime: eventToEdit?.endTime || "10:00",
       type: eventToEdit?.type || "meeting",
@@ -158,40 +171,42 @@ export function TakwimEventDialog({
     }
   }, [form.watch("programme"), modules]);
 
-  // Calculate duration when start or end time changes
+  // Calculate duration when start or end time/date changes
   useEffect(() => {
     const startTime = form.watch("startTime");
     const endTime = form.watch("endTime");
-    const date = form.watch("date");
+    const startDate = form.watch("startDate");
+    const endDate = form.watch("endDate");
 
-    if (startTime && endTime && date) {
+    if (startTime && endTime && startDate && endDate) {
       const [startHour, startMinute] = startTime.split(":").map(Number);
       const [endHour, endMinute] = endTime.split(":").map(Number);
 
-      const startDate = new Date(date);
-      startDate.setHours(startHour, startMinute, 0);
+      const start = new Date(startDate);
+      start.setHours(startHour, startMinute, 0);
 
-      const endDate = new Date(date);
-      endDate.setHours(endHour, endMinute, 0);
+      const end = new Date(endDate);
+      end.setHours(endHour, endMinute, 0);
 
       // Handle case where end time is before start time (invalid)
-      if (endDate < startDate) {
+      if (end < start) {
         setDuration("Invalid time range");
         return;
       }
 
-      const diffInMinutes = differenceInMinutes(endDate, startDate);
+      const diffInMinutes = Math.abs(differenceInMinutes(end, start));
       const formattedDuration = formatDuration(diffInMinutes / 60);
       setDuration(formattedDuration);
     }
-  }, [form.watch("startTime"), form.watch("endTime"), form.watch("date")]);
+  }, [form.watch("startTime"), form.watch("endTime"), form.watch("startDate"), form.watch("endDate")]);
 
   function handleSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     
     const newEvent: Omit<TakwimEvent, "id"> = {
       title: values.title,
-      date: values.date,
+      startDate: values.startDate,
+      endDate: values.endDate,
       startTime: values.startTime,
       endTime: values.endTime,
       type: values.type,
@@ -225,7 +240,7 @@ export function TakwimEventDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {eventToEdit ? "Edit Event" : "Create New Event"}
@@ -237,322 +252,461 @@ export function TakwimEventDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel><RequiredLabel>Programme Name</RequiredLabel></FormLabel>
-                  <FormControl>
-                    <Input placeholder="Event title" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            {/* Programme Name */}
+            <div className="bg-gray-50 p-4 rounded-md border">
               <FormField
                 control={form.control}
-                name="category"
+                name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel><RequiredLabel>Category</RequiredLabel></FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <ListFilter className="mr-2 h-4 w-4" />
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map(category => (
-                          <SelectItem key={category.value} value={category.value}>
-                            {category.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="pillar"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel><RequiredLabel>Pillar (Sub Category)</RequiredLabel></FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={!form.watch("category")}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <ListFilter className="mr-2 h-4 w-4" />
-                          <SelectValue placeholder="Select pillar" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {filteredPillars.map(pillar => (
-                          <SelectItem key={pillar.value} value={pillar.value}>
-                            {pillar.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormLabel className="text-base font-medium"><RequiredLabel>Programme Name</RequiredLabel></FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter programme name" {...field} className="bg-white" />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="programme"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel><RequiredLabel>Programme</RequiredLabel></FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={!form.watch("pillar")}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <List className="mr-2 h-4 w-4" />
-                          <SelectValue placeholder="Select programme" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {filteredProgrammes.map(programme => (
-                          <SelectItem key={programme.value} value={programme.value}>
-                            {programme.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="module"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel><RequiredLabel>Module</RequiredLabel></FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={!form.watch("programme")}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <List className="mr-2 h-4 w-4" />
-                          <SelectValue placeholder="Select module" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {filteredModules.map(module => (
-                          <SelectItem key={module.value} value={module.value}>
-                            {module.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel><RequiredLabel>Date</RequiredLabel></FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
+            {/* Category Section */}
+            <div className="bg-gray-50 p-4 rounded-md border">
+              <h3 className="text-sm font-medium text-gray-500 mb-3">CATEGORIZATION</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel><RequiredLabel>Category</RequiredLabel></FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Select a date</span>
-                            )}
-                          </Button>
+                          <SelectTrigger className="bg-white">
+                            <ListFilter className="mr-2 h-4 w-4" />
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
                         </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                        <SelectContent>
+                          {categories.map(category => (
+                            <SelectItem key={category.value} value={category.value}>
+                              {category.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel><RequiredLabel>Event Type</RequiredLabel></FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select event type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {eventTypes.map(type => (
-                          <SelectItem key={type.value} value={type.value}>
-                            <div className="flex items-center">
-                              <span className={cn("w-2 h-2 rounded-full mr-2", type.color.split(" ")[0])}></span>
-                              {type.label}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="pillar"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel><RequiredLabel>Pillar (Sub Category)</RequiredLabel></FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={!form.watch("category")}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="bg-white">
+                            <ListFilter className="mr-2 h-4 w-4" />
+                            <SelectValue placeholder="Select pillar" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {filteredPillars.map(pillar => (
+                            <SelectItem key={pillar.value} value={pillar.value}>
+                              {pillar.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <FormField
+                  control={form.control}
+                  name="programme"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel><RequiredLabel>Programme</RequiredLabel></FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={!form.watch("pillar")}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="bg-white">
+                            <List className="mr-2 h-4 w-4" />
+                            <SelectValue placeholder="Select programme" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {filteredProgrammes.map(programme => (
+                            <SelectItem key={programme.value} value={programme.value}>
+                              {programme.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="module"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel><RequiredLabel>Module</RequiredLabel></FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={!form.watch("programme")}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="bg-white">
+                            <List className="mr-2 h-4 w-4" />
+                            <SelectValue placeholder="Select module" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {filteredModules.map(module => (
+                            <SelectItem key={module.value} value={module.value}>
+                              {module.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="startTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel><RequiredLabel>Start Time</RequiredLabel></FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type="time"
-                          {...field}
-                          className="pl-9"
-                        />
-                        <Clock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Date and Time Section */}
+            <div className="bg-gray-50 p-4 rounded-md border">
+              <h3 className="text-sm font-medium text-gray-500 mb-3">DATE & TIME</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <FormField
+                  control={form.control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel><RequiredLabel>Start Date</RequiredLabel></FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full text-left font-normal bg-white",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Select start date</span>
+                              )}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="endTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel><RequiredLabel>End Time</RequiredLabel></FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type="time"
-                          {...field}
-                          className="pl-9"
-                        />
-                        <Clock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="endDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel><RequiredLabel>End Date</RequiredLabel></FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full text-left font-normal bg-white",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Select end date</span>
+                              )}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                            className="pointer-events-auto"
+                            disabled={(date) => date < form.getValues("startDate")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-              <div className="flex flex-col justify-end">
-                <FormLabel>Duration (Auto Calculated)</FormLabel>
-                <div className="h-10 flex items-center px-3 py-2 border rounded-md bg-muted/50">
-                  {duration}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 items-end">
+                <FormField
+                  control={form.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel><RequiredLabel>Start Time</RequiredLabel></FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type="time"
+                            {...field}
+                            className="pl-9 bg-white"
+                          />
+                          <Clock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="endTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel><RequiredLabel>End Time</RequiredLabel></FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type="time"
+                            {...field}
+                            className="pl-9 bg-white"
+                          />
+                          <Clock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex flex-col">
+                  <FormLabel>Duration (Auto Calculated)</FormLabel>
+                  <div className="h-10 flex items-center px-3 py-2 border rounded-md bg-white">
+                    {duration}
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="isGroupEvent"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between space-x-3 space-y-0 rounded-md border p-4">
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="flex items-center">
-                        <CircleUser className="mr-2 h-4 w-4" />
-                        <RequiredLabel>Group Event</RequiredLabel>
-                      </FormLabel>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="mode"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel>
-                      <Globe className="inline-block mr-2 h-4 w-4" />
-                      <RequiredLabel>Mode</RequiredLabel>
-                    </FormLabel>
-                    <FormControl>
-                      <RadioGroup
+            {/* Event Type */}
+            <div className="bg-gray-50 p-4 rounded-md border">
+              <h3 className="text-sm font-medium text-gray-500 mb-3">EVENT DETAILS</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel><RequiredLabel>Event Type</RequiredLabel></FormLabel>
+                      <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
-                        className="flex flex-row space-x-4"
                       >
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="Online" />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            Online
-                          </FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="Physical" />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            Physical
-                          </FormLabel>
-                        </FormItem>
-                      </RadioGroup>
+                        <FormControl>
+                          <SelectTrigger className="bg-white">
+                            <SelectValue placeholder="Select event type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {eventTypes.map(type => (
+                            <SelectItem key={type.value} value={type.value}>
+                              <div className="flex items-center">
+                                <span className={cn("w-2 h-2 rounded-full mr-2", type.color.split(" ")[0])}></span>
+                                {type.label}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Location</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Event location (optional)" {...field} className="bg-white" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="isGroupEvent"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between space-x-3 space-y-0 rounded-md border p-4 bg-white">
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="flex items-center">
+                          <CircleUser className="mr-2 h-4 w-4" />
+                          <RequiredLabel>Group Event</RequiredLabel>
+                        </FormLabel>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="mode"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3 rounded-md border p-4 bg-white">
+                      <FormLabel>
+                        <Globe className="inline-block mr-2 h-4 w-4" />
+                        <RequiredLabel>Mode</RequiredLabel>
+                      </FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-row space-x-4"
+                        >
+                          <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Online" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Online
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Physical" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Physical
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Participants Section */}
+            <div className="bg-gray-50 p-4 rounded-md border">
+              <h3 className="text-sm font-medium text-gray-500 mb-3">PARTICIPANTS & INSTRUCTOR</h3>
+              
+              <div className="grid grid-cols-1 gap-4">
+                <FormField
+                  control={form.control}
+                  name="targetParticipant"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        <Users className="inline-block mr-2 h-4 w-4" />
+                        <RequiredLabel>Target Participant</RequiredLabel>
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter target participant" {...field} className="bg-white" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="trainerName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        <User className="inline-block mr-2 h-4 w-4" />
+                        <RequiredLabel>Trainer / Organization Name</RequiredLabel>
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter trainer or organization name" {...field} className="bg-white" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="bg-gray-50 p-4 rounded-md border">
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      <MessageSquare className="inline-block mr-2 h-4 w-4" />
+                      Description
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Event description (optional)"
+                        className="resize-none bg-white"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -560,76 +714,7 @@ export function TakwimEventDialog({
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="targetParticipant"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    <Users className="inline-block mr-2 h-4 w-4" />
-                    <RequiredLabel>Target Participant</RequiredLabel>
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter target participant" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="trainerName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    <User className="inline-block mr-2 h-4 w-4" />
-                    <RequiredLabel>Trainer / Organization Name</RequiredLabel>
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter trainer or organization name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Event location (optional)" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    <MessageSquare className="inline-block mr-2 h-4 w-4" />
-                    Description
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Event description (optional)"
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
+            <DialogFooter className="pt-2">
               <Button
                 type="button"
                 variant="outline"

@@ -2,7 +2,8 @@
 export interface TakwimEvent {
   id: string;
   title: string;
-  date: Date;
+  startDate: Date;
+  endDate: Date;
   startTime: string;
   endTime: string;
   type: string;
