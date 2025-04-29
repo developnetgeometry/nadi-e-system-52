@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { UserTypeChips } from "@/components/user-groups/UserTypeChips";
 import { formatDate } from "@/utils/date-utils";
+import { EditAnnouncementDialog } from "./EditAnnouncementDialog";
 
 interface Announcement {
   id: string;
@@ -196,14 +197,10 @@ export function AnnouncementList() {
                           <Eye className="h-4 w-4" />
                         )}
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate(`/demo/announcements/edit/${announcement.id}`)}
-                        title="Edit announcement"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                      <EditAnnouncementDialog 
+                        announcement={announcement} 
+                        onUpdate={fetchAnnouncements} 
+                      />
                       <Button
                         variant="ghost"
                         size="icon"
