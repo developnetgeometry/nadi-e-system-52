@@ -9,12 +9,23 @@ import {
 } from 'react-router-dom';
 import { ThemeProvider } from "./components/ui/theme-provider";
 import { useAuth } from './hooks/useAuth';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Import routes
 import { dashboardRoutes } from './routes/dashboard.routes';
 import { authRoutes } from './routes/auth.routes';
 import { moduleRoutes } from './routes/module.routes';
 import { memberRoutes } from './routes/member.routes';
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 // Create an AppContent component that will use hooks inside Router context
 const AppContent = () => {
@@ -65,11 +76,13 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="ui-theme">
-      <Router>
-        <AppContent />
-      </Router>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="light" storageKey="ui-theme">
+        <Router>
+          <AppContent />
+        </Router>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 };
 
