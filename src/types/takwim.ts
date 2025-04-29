@@ -25,7 +25,7 @@ export interface EventType {
   color: string;
 }
 
-export interface Category {
+export interface EventCategory {
   value: string;
   label: string;
 }
@@ -47,4 +47,3 @@ export interface Module {
   label: string;
   programmeId: string;
 }
-

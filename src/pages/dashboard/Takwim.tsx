@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format, isSaturday, isSunday } from "date-fns";
 import { Calendar as CalendarIcon, Plus } from "lucide-react";
@@ -20,7 +19,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { TakwimEventDialog } from "@/components/takwim/TakwimEventDialog";
-import { TakwimEvent, EventType, Category, Pillar, Programme, Module } from "@/types/takwim";
+import { TakwimEvent, EventType, EventCategory, Pillar, Programme, Module } from "@/types/takwim";
 import { useHolidays } from "@/hooks/use-holidays";
 import { toast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from "uuid";
@@ -86,7 +85,7 @@ export default function Takwim() {
   ];
 
   // Sample data for hierarchical selections
-  const categories: Category[] = [
+  const categories: EventCategory[] = [
     { value: "cat1", label: "Administration" },
     { value: "cat2", label: "Technology" },
     { value: "cat3", label: "Finance" },

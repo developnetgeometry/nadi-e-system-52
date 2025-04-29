@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { format, differenceInMinutes } from "date-fns";
-import { CalendarIcon, Clock, Category, List, Users, User, MessageSquare, CircleUser, Globe } from "lucide-react";
+import { CalendarIcon, Clock, ListFilter, List, Users, User, MessageSquare, CircleUser, Globe } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -42,7 +41,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
-import { EventType, TakwimEvent, Category, Pillar, Programme, Module } from "@/types/takwim";
+import { EventType, TakwimEvent, EventCategory, Pillar, Programme, Module } from "@/types/takwim";
 import { formatDuration } from "@/utils/date-utils";
 
 interface TakwimEventDialogProps {
@@ -51,7 +50,7 @@ interface TakwimEventDialogProps {
   eventToEdit?: Omit<TakwimEvent, "id">;
   eventTypes: EventType[];
   onSubmit: (event: Omit<TakwimEvent, "id">) => void;
-  categories: Category[];
+  categories: EventCategory[];
   pillars: Pillar[];
   programmes: Programme[];
   modules: Module[];
@@ -181,9 +180,6 @@ export function TakwimEventDialog({
       }
 
       const diffInMinutes = differenceInMinutes(endDate, startDate);
-      const hours = Math.floor(diffInMinutes / 60);
-      const minutes = diffInMinutes % 60;
-
       const formattedDuration = formatDuration(diffInMinutes / 60);
       setDuration(formattedDuration);
     }
@@ -261,7 +257,7 @@ export function TakwimEventDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <Category className="mr-2 h-4 w-4" />
+                          <ListFilter className="mr-2 h-4 w-4" />
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
@@ -291,7 +287,7 @@ export function TakwimEventDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <Category className="mr-2 h-4 w-4" />
+                          <ListFilter className="mr-2 h-4 w-4" />
                           <SelectValue placeholder="Select pillar" />
                         </SelectTrigger>
                       </FormControl>
