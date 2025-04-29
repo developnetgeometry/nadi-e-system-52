@@ -20,7 +20,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { TakwimEventDialog } from "@/components/takwim/TakwimEventDialog";
-import { TakwimEvent, EventType } from "@/types/takwim";
+import { TakwimEvent, EventType, Category, Pillar, Programme, Module } from "@/types/takwim";
 import { useHolidays } from "@/hooks/use-holidays";
 import { toast } from "@/components/ui/use-toast";
 import { v4 as uuidv4 } from "uuid";
@@ -41,16 +41,34 @@ export default function Takwim() {
       type: "meeting",
       description: "Annual strategic planning session",
       location: "Conference Room A",
+      category: "cat1",
+      pillar: "pil1",
+      programme: "prog1",
+      module: "mod1",
+      isGroupEvent: true,
+      mode: "Physical",
+      targetParticipant: "Department Heads",
+      trainerName: "John Facilitator",
+      duration: "2h"
     },
     {
       id: "2",
-      title: "Project Kickoff",
+      title: "Digital Transformation Project Kickoff",
       date: new Date(2024, 3, 21),
       startTime: "14:00",
       endTime: "15:30",
       type: "project",
       description: "Kickoff for the new digital transformation project",
       location: "Meeting Room 3",
+      category: "cat2",
+      pillar: "pil2",
+      programme: "prog2",
+      module: "mod2",
+      isGroupEvent: false,
+      mode: "Online",
+      targetParticipant: "IT Team",
+      trainerName: "Sarah Project Manager",
+      duration: "1h 30m"
     },
   ]);
 
@@ -59,11 +77,46 @@ export default function Takwim() {
   // Get holidays for the selected date
   const selectedDateHolidays = getHolidaysForDate(date, holidays);
 
+  // Sample data for categories and related items
   const eventTypes: EventType[] = [
     { value: "meeting", label: "Meeting", color: "bg-blue-100 text-blue-800" },
     { value: "project", label: "Project", color: "bg-green-100 text-green-800" },
     { value: "training", label: "Training", color: "bg-amber-100 text-amber-800" },
     { value: "event", label: "Event", color: "bg-purple-100 text-purple-800" },
+  ];
+
+  // Sample data for hierarchical selections
+  const categories: Category[] = [
+    { value: "cat1", label: "Administration" },
+    { value: "cat2", label: "Technology" },
+    { value: "cat3", label: "Finance" },
+  ];
+
+  const pillars: Pillar[] = [
+    { value: "pil1", label: "Policy Management", categoryId: "cat1" },
+    { value: "pil2", label: "Staff Development", categoryId: "cat1" },
+    { value: "pil3", label: "Software Development", categoryId: "cat2" },
+    { value: "pil4", label: "Infrastructure", categoryId: "cat2" },
+    { value: "pil5", label: "Budgeting", categoryId: "cat3" },
+    { value: "pil6", label: "Reporting", categoryId: "cat3" },
+  ];
+
+  const programmes: Programme[] = [
+    { value: "prog1", label: "Policy Review", pillarId: "pil1" },
+    { value: "prog2", label: "Leadership Training", pillarId: "pil2" },
+    { value: "prog3", label: "Agile Development", pillarId: "pil3" },
+    { value: "prog4", label: "Cloud Migration", pillarId: "pil4" },
+    { value: "prog5", label: "Annual Budget", pillarId: "pil5" },
+    { value: "prog6", label: "Financial Analysis", pillarId: "pil6" },
+  ];
+
+  const modules: Module[] = [
+    { value: "mod1", label: "Policy Documentation", programmeId: "prog1" },
+    { value: "mod2", label: "Team Building", programmeId: "prog2" },
+    { value: "mod3", label: "Scrum Methodology", programmeId: "prog3" },
+    { value: "mod4", label: "AWS Setup", programmeId: "prog4" },
+    { value: "mod5", label: "Budget Allocation", programmeId: "prog5" },
+    { value: "mod6", label: "Quarterly Reports", programmeId: "prog6" },
   ];
 
   const eventsForSelectedDate = events.filter(
@@ -99,6 +152,16 @@ export default function Takwim() {
       title: "Event created",
       description: `${event.title} has been scheduled for ${format(event.date, "PPP")}`,
     });
+  };
+
+  // Helper function to get category label by value
+  const getCategoryLabel = (value: string) => {
+    return categories.find(cat => cat.value === value)?.label || value;
+  };
+
+  // Helper function to get pillar label by value
+  const getPillarLabel = (value: string) => {
+    return pillars.find(pil => pil.value === value)?.label || value;
   };
 
   return (
@@ -216,11 +279,23 @@ export default function Takwim() {
                               </span>
                             </div>
                             <div className="text-sm text-gray-500 mt-1">
-                              {event.startTime} - {event.endTime}
+                              {event.startTime} - {event.endTime} ({event.duration})
                             </div>
-                            <div className="text-sm mt-1">{event.location}</div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <Badge variant="secondary">{getCategoryLabel(event.category)}</Badge>
+                              <Badge variant="secondary">{getPillarLabel(event.pillar)}</Badge>
+                              <Badge variant="outline" className={event.mode === "Online" ? "bg-blue-50" : "bg-green-50"}>
+                                {event.mode}
+                              </Badge>
+                              {event.isGroupEvent && <Badge>Group Event</Badge>}
+                            </div>
+                            <div className="text-sm mt-2">
+                              <div><strong>Location:</strong> {event.location}</div>
+                              <div><strong>Target:</strong> {event.targetParticipant}</div>
+                              <div><strong>Trainer:</strong> {event.trainerName}</div>
+                            </div>
                             {event.description && (
-                              <div className="text-sm text-gray-600 mt-2">
+                              <div className="text-sm text-gray-600 mt-2 border-t pt-2">
                                 {event.description}
                               </div>
                             )}
@@ -258,11 +333,23 @@ export default function Takwim() {
                           <div>
                             <h3 className="font-medium">{event.title}</h3>
                             <p className="text-sm text-gray-500">
-                              {format(event.date, "PPP")} | {event.startTime} - {event.endTime}
+                              {format(event.date, "PPP")} | {event.startTime} - {event.endTime} ({event.duration})
                             </p>
-                            <p className="text-sm mt-1">{event.location}</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <Badge variant="secondary">{getCategoryLabel(event.category)}</Badge>
+                              <Badge variant="secondary">{getPillarLabel(event.pillar)}</Badge>
+                              <Badge variant="outline" className={event.mode === "Online" ? "bg-blue-50" : "bg-green-50"}>
+                                {event.mode}
+                              </Badge>
+                              {event.isGroupEvent && <Badge>Group Event</Badge>}
+                            </div>
+                            <div className="text-sm mt-2">
+                              <div><strong>Location:</strong> {event.location}</div>
+                              <div><strong>Target:</strong> {event.targetParticipant}</div>
+                              <div><strong>Trainer:</strong> {event.trainerName}</div>
+                            </div>
                             {event.description && (
-                              <p className="text-sm text-gray-600 mt-2">
+                              <p className="text-sm text-gray-600 mt-2 border-t pt-2">
                                 {event.description}
                               </p>
                             )}
@@ -298,6 +385,10 @@ export default function Takwim() {
         onOpenChange={setIsEventDialogOpen}
         eventTypes={eventTypes}
         onSubmit={handleAddEvent}
+        categories={categories}
+        pillars={pillars}
+        programmes={programmes}
+        modules={modules}
       />
     </DashboardLayout>
   );
