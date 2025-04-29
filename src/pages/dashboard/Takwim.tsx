@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { format, isSaturday, isSunday, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval, addDays } from "date-fns";
+import { format, isSaturday, isSunday } from "date-fns";
 import { Calendar as CalendarIcon, Plus } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,6 @@ export default function Takwim() {
   const [date, setDate] = useState<Date>(new Date());
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [view, setView] = useState<"calendar" | "list">("calendar");
-  const [calendarView, setCalendarView] = useState<"month" | "day" | "week" | "year">("month");
   const [events, setEvents] = useState<TakwimEvent[]>([
     {
       id: "1",
@@ -121,47 +121,12 @@ export default function Takwim() {
     { value: "mod6", label: "Quarterly Reports", programmeId: "prog6" },
   ];
 
-  // Get events based on the calendar view
-  const getEventsForView = () => {
-    let startDate: Date;
-    let endDate: Date;
-
-    switch (calendarView) {
-      case 'day':
-        startDate = new Date(date);
-        endDate = new Date(date);
-        break;
-      case 'week':
-        startDate = startOfWeek(date);
-        endDate = endOfWeek(date);
-        break;
-      case 'month':
-        startDate = startOfMonth(date);
-        endDate = endOfMonth(date);
-        break;
-      case 'year':
-        startDate = startOfYear(date);
-        endDate = endOfYear(date);
-        break;
-      default:
-        startDate = startOfMonth(date);
-        endDate = endOfMonth(date);
-    }
-
-    return events.filter(
-      (event) => (event.startDate <= endDate && event.endDate >= startDate)
-    );
-  };
-
-  // Filter events for the selected date (for day view)
+  // Filter events for the selected date
   const eventsForSelectedDate = events.filter(
     (event) => event.startDate.toDateString() === date.toDateString() ||
                event.endDate.toDateString() === date.toDateString() ||
                (event.startDate <= date && event.endDate >= date)
   );
-
-  // Get events for the current view
-  const eventsForCurrentView = getEventsForView();
 
   const getEventTypeColor = (type: string) => {
     return eventTypes.find((t) => t.value === type)?.color || "bg-gray-100 text-gray-800";
@@ -219,281 +184,6 @@ export default function Takwim() {
     }
   };
 
-  // Render week view 
-  const renderWeekView = () => {
-    const start = startOfWeek(date);
-    const end = endOfWeek(date);
-    const days = eachDayOfInterval({ start, end });
-
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-7 gap-2">
-          {days.map((day) => (
-            <div key={day.toString()} className="text-center font-medium">
-              {format(day, 'EEE')}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-2">
-          {days.map((day) => (
-            <div 
-              key={day.toString()} 
-              className={cn(
-                "border rounded-md p-2 min-h-[120px] cursor-pointer",
-                day.toDateString() === date.toDateString() ? "bg-purple-50 border-purple-200" : "",
-                isHoliday(day) ? "bg-red-50" : "",
-                isSaturday(day) || isSunday(day) ? "text-red-500" : ""
-              )}
-              onClick={() => setDate(day)}
-            >
-              <div className="font-medium">{format(day, 'd')}</div>
-              {events
-                .filter(event => 
-                  event.startDate.toDateString() === day.toDateString() ||
-                  event.endDate.toDateString() === day.toDateString() ||
-                  (event.startDate <= day && event.endDate >= day)
-                )
-                .slice(0, 2)
-                .map(event => (
-                  <div 
-                    key={event.id} 
-                    className={cn("mt-1 text-xs p-1 rounded truncate", getEventTypeColor(event.type))}
-                  >
-                    {event.title}
-                  </div>
-                ))
-              }
-              {events.filter(event => 
-                event.startDate.toDateString() === day.toDateString() ||
-                event.endDate.toDateString() === day.toDateString() ||
-                (event.startDate <= day && event.endDate >= day)
-              ).length > 2 && (
-                <div className="text-xs text-gray-500 mt-1">
-                  +{events.filter(event => 
-                    event.startDate.toDateString() === day.toDateString() ||
-                    event.endDate.toDateString() === day.toDateString() ||
-                    (event.startDate <= day && event.endDate >= day)
-                  ).length - 2} more
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  // Render day view
-  const renderDayView = () => {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium">{format(date, 'PPPP')}</h3>
-          {isHoliday(date) && (
-            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-              Holiday
-            </Badge>
-          )}
-        </div>
-
-        {selectedDateHolidays.length > 0 && (
-          <div className="mt-1 mb-4">
-            <h4 className="text-md font-semibold mb-2">Holidays:</h4>
-            <div className="flex flex-wrap gap-2">
-              {selectedDateHolidays.map((holiday) => (
-                <Badge key={holiday.id} variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                  {holiday.desc}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {eventsForSelectedDate.length > 0 ? (
-          <div className="space-y-2">
-            {eventsForSelectedDate.map((event) => (
-              <div
-                key={event.id}
-                className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex justify-between items-start">
-                  <h4 className="font-medium text-lg">{event.title}</h4>
-                  <span className={cn("px-2 py-1 rounded-full text-xs", getEventTypeColor(event.type))}>
-                    {eventTypes.find((t) => t.value === event.type)?.label}
-                  </span>
-                </div>
-                <div className="text-sm text-gray-500 mt-1">
-                  {getEventDateRangeText(event)}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {event.startTime} - {event.endTime} ({event.duration})
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <Badge variant="secondary">{getCategoryLabel(event.category)}</Badge>
-                  <Badge variant="secondary">{getPillarLabel(event.pillar)}</Badge>
-                  <Badge variant="outline" className={event.mode === "Online" ? "bg-blue-50" : "bg-green-50"}>
-                    {event.mode}
-                  </Badge>
-                  {event.isGroupEvent && <Badge>Group Event</Badge>}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mt-2">
-                  <div><strong>Location:</strong> {event.location || "N/A"}</div>
-                  <div><strong>Target:</strong> {event.targetParticipant}</div>
-                  <div><strong>Trainer:</strong> {event.trainerName}</div>
-                </div>
-                {event.description && (
-                  <div className="text-sm text-gray-600 mt-2 border-t pt-2">
-                    {event.description}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed">
-            {selectedDateHolidays.length > 0 
-              ? "Holiday - No events scheduled" 
-              : "No events scheduled for this date"}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Render year view
-  const renderYearView = () => {
-    const months = Array.from({ length: 12 }, (_, i) => new Date(date.getFullYear(), i, 1));
-    
-    return (
-      <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
-        {months.map((month) => {
-          const monthEvents = events.filter(
-            event => event.startDate.getMonth() === month.getMonth() && 
-                     event.startDate.getFullYear() === month.getFullYear()
-          );
-          
-          return (
-            <div 
-              key={month.toString()} 
-              className={cn(
-                "border rounded-md p-2 cursor-pointer hover:bg-gray-50",
-                month.getMonth() === date.getMonth() ? "bg-purple-50 border-purple-200" : ""
-              )}
-              onClick={() => {
-                setDate(month);
-                setCalendarView("month");
-              }}
-            >
-              <div className="font-medium text-center mb-2">{format(month, 'MMMM')}</div>
-              <div className="text-xs text-center text-gray-500">
-                {monthEvents.length} {monthEvents.length === 1 ? 'event' : 'events'}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // Render calendar content based on the current view
-  const renderCalendarContent = () => {
-    switch (calendarView) {
-      case 'day':
-        return renderDayView();
-      case 'week':
-        return renderWeekView();
-      case 'year':
-        return renderYearView();
-      default:
-        return (
-          <div className="grid gap-4">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(newDate) => newDate && setDate(newDate)}
-              className="rounded-md border w-full pointer-events-auto"
-              modifiers={{
-                weekend: (date) => isSaturday(date) || isSunday(date),
-                holiday: (date) => isHoliday(date),
-                hasEvent: (date) => hasEvent(date),
-              }}
-              modifiersStyles={{
-                weekend: { color: "#ea384c" },
-                holiday: { color: "#ea384c", fontWeight: "bold" },
-                hasEvent: { backgroundColor: "#d6bcfa", borderRadius: "100%" },
-              }}
-            />
-
-            {selectedDateHolidays.length > 0 && (
-              <div className="mt-1 mb-4">
-                <h4 className="text-md font-semibold mb-2">Holidays on {format(date, "PPP")}:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedDateHolidays.map((holiday) => (
-                    <Badge key={holiday.id} variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                      {holiday.desc}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div>
-              <h3 className="text-lg font-medium mb-2">
-                Events for {format(date, "PPP")}
-              </h3>
-              {eventsForSelectedDate.length > 0 ? (
-                <div className="space-y-2">
-                  {eventsForSelectedDate.map((event) => (
-                    <div
-                      key={event.id}
-                      className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-medium text-lg">{event.title}</h4>
-                        <span className={cn("px-2 py-1 rounded-full text-xs", getEventTypeColor(event.type))}>
-                          {eventTypes.find((t) => t.value === event.type)?.label}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        {getEventDateRangeText(event)}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {event.startTime} - {event.endTime} ({event.duration})
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <Badge variant="secondary">{getCategoryLabel(event.category)}</Badge>
-                        <Badge variant="secondary">{getPillarLabel(event.pillar)}</Badge>
-                        <Badge variant="outline" className={event.mode === "Online" ? "bg-blue-50" : "bg-green-50"}>
-                          {event.mode}
-                        </Badge>
-                        {event.isGroupEvent && <Badge>Group Event</Badge>}
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mt-2">
-                        <div><strong>Location:</strong> {event.location || "N/A"}</div>
-                        <div><strong>Target:</strong> {event.targetParticipant}</div>
-                        <div><strong>Trainer:</strong> {event.trainerName}</div>
-                      </div>
-                      {event.description && (
-                        <div className="text-sm text-gray-600 mt-2 border-t pt-2">
-                          {event.description}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed">
-                  {selectedDateHolidays.length > 0 
-                    ? "Holiday - No events scheduled" 
-                    : "No events scheduled for this date"}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-    }
-  };
-
   return (
     <DashboardLayout>
       <div className="container mx-auto py-6">
@@ -515,63 +205,56 @@ export default function Takwim() {
           onValueChange={(v) => setView(v as "calendar" | "list")}
           className="space-y-4"
         >
-          <div className="flex justify-between items-center flex-wrap gap-2">
+          <div className="flex justify-between items-center">
             <TabsList>
               <TabsTrigger value="calendar">Calendar</TabsTrigger>
               <TabsTrigger value="list">List</TabsTrigger>
             </TabsList>
 
-            <div className="flex gap-2">
-              {view === "calendar" && (
-                <TabsList>
-                  <TabsTrigger 
-                    value="day" 
-                    onClick={() => setCalendarView("day")}
-                    data-state={calendarView === "day" ? "active" : "inactive"}
-                  >
-                    Day
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="week" 
-                    onClick={() => setCalendarView("week")}
-                    data-state={calendarView === "week" ? "active" : "inactive"}
-                  >
-                    Week
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="month" 
-                    onClick={() => setCalendarView("month")}
-                    data-state={calendarView === "month" ? "active" : "inactive"}
-                  >
-                    Month
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="year" 
-                    onClick={() => setCalendarView("year")}
-                    data-state={calendarView === "year" ? "active" : "inactive"}
-                  >
-                    Year
-                  </TabsTrigger>
-                </TabsList>
-              )}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="ml-auto">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {format(date, "PPP")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(newDate) => newDate && setDate(newDate)}
+                  initialFocus
+                  className="pointer-events-auto"
+                  modifiers={{
+                    weekend: (date) => isSaturday(date) || isSunday(date),
+                    holiday: (date) => isHoliday(date),
+                    hasEvent: (date) => hasEvent(date),
+                  }}
+                  modifiersStyles={{
+                    weekend: { color: "#ea384c" },
+                    holiday: { color: "#ea384c", fontWeight: "bold" },
+                    hasEvent: { backgroundColor: "#d6bcfa", borderRadius: "100%" },
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
 
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {calendarView === "day" && format(date, "PPP")}
-                    {calendarView === "week" && `${format(startOfWeek(date), "MMM d")} - ${format(endOfWeek(date), "MMM d, yyyy")}`}
-                    {calendarView === "month" && format(date, "MMMM yyyy")}
-                    {calendarView === "year" && format(date, "yyyy")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
+          <TabsContent value="calendar" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>{format(date, "MMMM yyyy")}</CardTitle>
+                <CardDescription>
+                  View and manage events for the selected date
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
                   <Calendar
                     mode="single"
                     selected={date}
                     onSelect={(newDate) => newDate && setDate(newDate)}
-                    initialFocus
-                    className="pointer-events-auto"
+                    className="rounded-md border w-full pointer-events-auto"
                     modifiers={{
                       weekend: (date) => isSaturday(date) || isSunday(date),
                       holiday: (date) => isHoliday(date),
@@ -583,29 +266,74 @@ export default function Takwim() {
                       hasEvent: { backgroundColor: "#d6bcfa", borderRadius: "100%" },
                     }}
                   />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
 
-          <TabsContent value="calendar" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {calendarView === "day" && format(date, "PPPP")}
-                  {calendarView === "week" && `Week of ${format(startOfWeek(date), "MMMM d, yyyy")}`}
-                  {calendarView === "month" && format(date, "MMMM yyyy")}
-                  {calendarView === "year" && format(date, "yyyy")}
-                </CardTitle>
-                <CardDescription>
-                  {calendarView === "day" && "Events for the selected day"}
-                  {calendarView === "week" && "Events for the selected week"}
-                  {calendarView === "month" && "Events for the selected month"}
-                  {calendarView === "year" && "Events for the selected year"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {renderCalendarContent()}
+                  {/* Display holidays for the selected date if any */}
+                  {selectedDateHolidays.length > 0 && (
+                    <div className="mt-1 mb-4">
+                      <h4 className="text-md font-semibold mb-2">Holidays on {format(date, "PPP")}:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedDateHolidays.map((holiday) => (
+                          <Badge key={holiday.id} variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                            {holiday.desc}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <h3 className="text-lg font-medium mb-2">
+                      Events for {format(date, "PPP")}
+                    </h3>
+                    {eventsForSelectedDate.length > 0 ? (
+                      <div className="space-y-2">
+                        {eventsForSelectedDate.map((event) => (
+                          <div
+                            key={event.id}
+                            className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            <div className="flex justify-between items-start">
+                              <h4 className="font-medium text-lg">{event.title}</h4>
+                              <span className={cn("px-2 py-1 rounded-full text-xs", getEventTypeColor(event.type))}>
+                                {eventTypes.find((t) => t.value === event.type)?.label}
+                              </span>
+                            </div>
+                            <div className="text-sm text-gray-500 mt-1">
+                              {getEventDateRangeText(event)}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {event.startTime} - {event.endTime} ({event.duration})
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <Badge variant="secondary">{getCategoryLabel(event.category)}</Badge>
+                              <Badge variant="secondary">{getPillarLabel(event.pillar)}</Badge>
+                              <Badge variant="outline" className={event.mode === "Online" ? "bg-blue-50" : "bg-green-50"}>
+                                {event.mode}
+                              </Badge>
+                              {event.isGroupEvent && <Badge>Group Event</Badge>}
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mt-2">
+                              <div><strong>Location:</strong> {event.location || "N/A"}</div>
+                              <div><strong>Target:</strong> {event.targetParticipant}</div>
+                              <div><strong>Trainer:</strong> {event.trainerName}</div>
+                            </div>
+                            {event.description && (
+                              <div className="text-sm text-gray-600 mt-2 border-t pt-2">
+                                {event.description}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed">
+                        {selectedDateHolidays.length > 0 
+                          ? "Holiday - No events scheduled" 
+                          : "No events scheduled for this date"}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
