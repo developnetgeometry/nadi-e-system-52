@@ -1,14 +1,16 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { UserType } from "@/types/auth";
 
 interface Announcement {
   id: string;
   title: string;
   message: string;
   status: 'active' | 'inactive';
+  user_types: UserType[];
   created_at: string;
   start_date: string;
   end_date: string;
@@ -17,16 +19,28 @@ interface Announcement {
 export function AnnouncementSimpleView() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   
   useEffect(() => {
     const fetchAnnouncements = async () => {
+      if (!user) return;
+      
       try {
         setLoading(true);
+        
+        // Get the user's profile to determine user type
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('id', user.id)
+          .single();
+          
+        const userType = profileData?.user_type;
         
         // Fetch active announcements that are valid for current date
         const { data, error } = await supabase
           .from('announcements')
-          .select('id, title, message, status, created_at, start_date, end_date')
+          .select('id, title, message, status, user_types, created_at, start_date, end_date')
           .eq('status', 'active')
           .lte('start_date', new Date().toISOString())
           .or(`end_date.gt.${new Date().toISOString()},end_date.is.null`)
@@ -38,7 +52,17 @@ export function AnnouncementSimpleView() {
           return;
         }
         
-        setAnnouncements(data || []);
+        // Filter announcements based on user type
+        const filteredAnnouncements = data?.filter(announcement => {
+          // If user_types array is empty, show to all users
+          if (!announcement.user_types || announcement.user_types.length === 0) {
+            return true;
+          }
+          // Otherwise, check if user's type is in the announcement's user_types
+          return announcement.user_types.includes(userType);
+        }) || [];
+        
+        setAnnouncements(filteredAnnouncements);
       } catch (error) {
         console.error("Error in announcements fetch:", error);
       } finally {
@@ -47,7 +71,7 @@ export function AnnouncementSimpleView() {
     };
     
     fetchAnnouncements();
-  }, []);
+  }, [user]);
   
   if (loading) {
     return (
