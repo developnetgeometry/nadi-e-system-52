@@ -72,7 +72,28 @@ export function useTakwimEvents() {
         .order("start_datetime", { ascending: false });
 
       if (error) throw error;
-      setEvents(data || []);
+      
+      // Transform the data to ensure it matches the TakwimEvent interface
+      const transformedData: TakwimEvent[] = (data || []).map((item: any) => ({
+        id: item.id,
+        program_name: item.program_name,
+        description: item.description,
+        start_datetime: item.start_datetime,
+        end_datetime: item.end_datetime,
+        location_event: item.location_event,
+        category_id: item.category_id,
+        subcategory_id: item.subcategory_id,
+        module_id: item.module_id,
+        total_participant: item.total_participant,
+        // Ensure these are objects with a name property, not arrays
+        category: item.category ? { name: item.category.name } : undefined,
+        subcategory: item.subcategory ? { name: item.subcategory.name } : undefined,
+        module: item.module ? { name: item.module.name } : undefined,
+        created_at: item.created_at,
+        created_by: item.created_by
+      }));
+      
+      setEvents(transformedData);
     } catch (error) {
       console.error("Error fetching events:", error);
       toast({
