@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import Landing from "@/pages/Landing";
@@ -21,6 +22,7 @@ import NoAccess from "@/pages/NoAccess";
 import Announcements from "@/pages/dashboard/Announcements";
 import AnnouncementSettings from "@/pages/dashboard/AnnouncementSettings";
 import CreateAnnouncement from "@/pages/demo/CreateAnnouncement";
+import Takwim from "@/pages/dashboard/Takwim";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +53,8 @@ function App() {
                 path="/admin/organizations/:id"
                 element={<OrganizationDetails />}
               />
+
+              <Route path="/admin/takwim" element={<Takwim />} />
 
               {dashboardRoutes.map((route) => (
                 <Route
