@@ -1,50 +1,50 @@
 
-import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Bell, Settings, TestTube } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SendNotificationForm } from "@/components/notifications/admin/SendNotificationForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { NotificationTemplates } from "@/components/notifications/admin/NotificationTemplates";
-import { NotificationTesting } from "@/components/notifications/admin/NotificationTesting";
-import { NotificationConfig } from "@/components/notifications/admin/NotificationConfig";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Bell } from "lucide-react";
 
 const NotificationManagement = () => {
-  const [activeTab, setActiveTab] = useState("templates");
-
   return (
     <DashboardLayout>
-      <div className="container mx-auto max-w-6xl py-6">
+      <div className="container mx-auto max-w-4xl">
         <div className="flex items-center gap-3 mb-6">
           <Bell className="h-6 w-6 text-primary" />
           <h1 className="text-3xl font-bold">Notification Management</h1>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <Tabs defaultValue="send" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="templates" className="flex items-center gap-2">
-              <Bell className="h-4 w-4" />
-              <span>Templates</span>
-            </TabsTrigger>
-            <TabsTrigger value="testing" className="flex items-center gap-2">
-              <TestTube className="h-4 w-4" />
-              <span>Testing</span>
-            </TabsTrigger>
-            <TabsTrigger value="config" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              <span>Configuration</span>
-            </TabsTrigger>
+            <TabsTrigger value="send">Send Notifications</TabsTrigger>
+            <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
           
+          <TabsContent value="send" className="space-y-4">
+            <SendNotificationForm />
+          </TabsContent>
+          
           <TabsContent value="templates" className="space-y-4">
-            <NotificationTemplates />
+            <Card>
+              <CardHeader>
+                <CardTitle>Notification Templates</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Notification template management will be implemented in a future update.</p>
+              </CardContent>
+            </Card>
           </TabsContent>
           
-          <TabsContent value="testing" className="space-y-4">
-            <NotificationTesting />
-          </TabsContent>
-          
-          <TabsContent value="config" className="space-y-4">
-            <NotificationConfig />
+          <TabsContent value="history" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Notification History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Notification history will be implemented in a future update.</p>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

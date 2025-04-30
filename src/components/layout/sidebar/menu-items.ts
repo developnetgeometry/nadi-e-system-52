@@ -16,7 +16,6 @@ export const menuItems = [
   },
   { title: "Takwim", path: "/admin/takwim" },
   { title: "Notifications", path: "/admin/notifications" },
-  { title: "Notification Management", path: "/admin/notification-management" },
   { title: "Organizations", path: "/admin/organizations" },
   { title: "Settings", path: "/admin/settings" },
 ];
