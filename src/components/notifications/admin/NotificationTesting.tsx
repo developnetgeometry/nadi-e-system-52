@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { TestTube, Mail, Bell, Send } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +18,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "../hooks/useNotifications";
 import { EmailNotificationTesting } from "./EmailNotificationTesting";
 import { PushNotificationTesting } from "./PushNotificationTesting";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const NotificationTesting = () => {
   const { toast } = useToast();
