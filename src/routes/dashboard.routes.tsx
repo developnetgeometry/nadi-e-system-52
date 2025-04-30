@@ -1,174 +1,70 @@
-import { Suspense } from "react";
-import { Route, Routes } from "react-router-dom";
-import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
-import DashboardPage from "@/pages/dashboard/Dashboard";
-import UsersPage from "@/pages/dashboard/Users";
-import RolesPage from "@/pages/dashboard/Roles";
-import PermissionsPage from "@/pages/dashboard/Permissions";
-import MenuVisibilityPage from "@/pages/dashboard/MenuVisibility";
-import ActivityLogPage from "@/pages/dashboard/Activity";
-import StateHolidaysPage from "@/pages/dashboard/StateHolidays";
-import NotificationsPage from "@/pages/dashboard/Notifications";
-import OrganizationsPage from "@/pages/dashboard/Organizations";
-import SettingsPage from "@/pages/dashboard/Settings";
-import UserGroupsPage from "@/pages/dashboard/UserGroups";
-import LookupSettingsPage from "@/pages/dashboard/LookupSettings";
-import { lazy } from "react";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import UserProfile from "@/pages/dashboard/profile/UserProfile";
 
-// Lazy load dashboard components
-const Dashboard = lazy(() => import("@/pages/dashboard/Dashboard"));
-const Users = lazy(() => import("@/pages/dashboard/Users"));
-const Roles = lazy(() => import("@/pages/dashboard/Roles"));
-const RoleConfig = lazy(() => import("@/pages/dashboard/RoleConfig"));
-const Settings = lazy(() => import("@/pages/dashboard/Settings"));
-const AccessControl = lazy(() => import("@/pages/dashboard/AccessControl"));
-const MenuVisibility = lazy(() => import("@/pages/dashboard/MenuVisibility"));
-const Activity = lazy(() => import("@/pages/dashboard/Activity"));
-const Reports = lazy(() => import("@/pages/dashboard/Reports"));
-const Calendar = lazy(() => import("@/pages/dashboard/Calendar"));
-const Notifications = lazy(() => import("@/pages/dashboard/Notifications"));
-const SiteManagement = lazy(
-  () => import("@/pages/dashboard/site/SiteManagement")
-);
-const Profile = lazy(() => import("@/pages/dashboard/Profile"));
-const UsageSessions = lazy(() => import("@/pages/dashboard/UsageSessions"));
-const Organizations = lazy(() => import("@/pages/dashboard/Organizations"));
-const OrganizationDetails = lazy(
-  () => import("@/pages/dashboard/OrganizationDetails")
-);
-const ParameterSettings = lazy(
-  () => import("@/pages/dashboard/OrganizationDetails")
-);
-const StateHolidays = lazy(() => import("@/pages/dashboard/StateHolidays"));
+import { ReactNode } from "react";
+import AdminDashboard from "@/pages/dashboard/AdminDashboard";
+import UserManagement from "@/pages/dashboard/UserManagement";
+import RolesPermissions from "@/pages/dashboard/RolesPermissions";
+import UserGroups from "@/pages/dashboard/UserGroups";
+import ActivityLog from "@/pages/dashboard/ActivityLog";
+import Organizations from "@/pages/dashboard/Organizations";
+import MenuVisibility from "@/pages/dashboard/MenuVisibility";
+import StateHolidays from "@/pages/dashboard/StateHolidays";
+import Settings from "@/pages/dashboard/Settings";
+import Announcements from "@/pages/dashboard/Announcements";
+import NotificationManagement from "@/pages/dashboard/NotificationManagement";
+import Notifications from "@/pages/dashboard/Notifications";
 
-export const dashboardRoutes = [
+export interface DashboardRoutes {
+  path: string;
+  element: ReactNode;
+}
+
+export const dashboardRoutes: DashboardRoutes[] = [
   {
     path: "/admin/dashboard",
-    element: <DashboardPage />,
+    element: <AdminDashboard />,
   },
   {
     path: "/admin/users",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <UsersPage />
-      </Suspense>
-    ),
+    element: <UserManagement />,
   },
   {
     path: "/admin/user-groups",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <UserGroupsPage />
-      </Suspense>
-    ),
+    element: <UserGroups />,
   },
   {
     path: "/admin/roles",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <RolesPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/admin/permissions",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <PermissionsPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/admin/menu-visibility",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <MenuVisibilityPage />
-      </Suspense>
-    ),
+    element: <RolesPermissions />,
   },
   {
     path: "/admin/activity",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <ActivityLogPage />
-      </Suspense>
-    ),
-  },
-  // {
-  //   path: "/admin/reports",
-  //   element: (
-  //     <Suspense fallback={<LoadingSpinner />}>
-  //       <ReportsPage />
-  //     </Suspense>
-  //   ),
-  // },
-  // {
-  //   path: "/admin/calendar",
-  //   element: (
-  //     <ProtectedRoute>
-  //       <Calendar />
-  //     </ProtectedRoute>
-  //   ),
-  // },
-  {
-    path: "/admin/state-holidays",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <StateHolidaysPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/admin/notifications",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <NotificationsPage />
-      </Suspense>
-    ),
+    element: <ActivityLog />,
   },
   {
     path: "/admin/organizations",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <OrganizationsPage />
-      </Suspense>
-    ),
+    element: <Organizations />,
+  },
+  {
+    path: "/admin/menu-visibility",
+    element: <MenuVisibility />,
+  },
+  {
+    path: "/admin/state-holidays",
+    element: <StateHolidays />,
   },
   {
     path: "/admin/settings",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <SettingsPage />
-      </Suspense>
-    ),
+    element: <Settings />,
   },
   {
-    path: "/admin/lookup-settings",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <LookupSettingsPage />
-      </Suspense>
-    ),
+    path: "/admin/announcements",
+    element: <Announcements />,
   },
   {
-    path: "/dashboard/profile",
-    element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <UserProfile />
-      </Suspense>
-
-    ),
+    path: "/admin/notifications",
+    element: <Notifications />,
+  },
+  {
+    path: "/admin/notification-management",
+    element: <NotificationManagement />,
   },
 ];
-
-export const DashboardRoutes = () => {
-  return (
-    <Routes>
-      {dashboardRoutes.map((route, index) => (
-        <Route key={index} path={route.path} element={route.element} />
-      ))}
-    </Routes>
-  );
-};
