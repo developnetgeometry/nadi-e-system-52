@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Notification } from "@/types/auth";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface UseNotificationsProps {
   filter?: "all" | "unread" | "read";
@@ -79,14 +80,81 @@ export const useNotifications = ({ filter = "all", typeFilter = "all" }: UseNoti
     },
   });
 
+  const markAllAsReadMutation = useMutation({
+    mutationFn: async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+      
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+      
+      const { error } = await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("user_id", userId)
+        .eq("read", false);
+        
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      toast({
+        description: "All notifications marked as read",
+      });
+    },
+    onError: (error) => {
+      console.error("Error marking all notifications as read:", error);
+      toast({
+        title: "Error",
+        description: "Failed to mark all notifications as read",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Setup real-time updates
+  useEffect(() => {
+    const { data: userData } = supabase.auth.getUser();
+    const userId = userData?.user?.id;
+    
+    if (!userId) return;
+    
+    const channel = supabase
+      .channel('notification_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   const handleMarkAsRead = (id: string) => {
     markAsReadMutation.mutate(id);
+  };
+
+  const handleMarkAllAsRead = () => {
+    markAllAsReadMutation.mutate();
   };
 
   return {
     notifications,
     isLoading,
     error,
-    handleMarkAsRead
+    handleMarkAsRead,
+    handleMarkAllAsRead
   };
 };

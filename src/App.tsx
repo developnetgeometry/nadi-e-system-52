@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import Landing from "@/pages/Landing";
@@ -23,6 +22,8 @@ import Announcements from "@/pages/dashboard/Announcements";
 import AnnouncementSettings from "@/pages/dashboard/AnnouncementSettings";
 import CreateAnnouncement from "@/pages/demo/CreateAnnouncement";
 import Takwim from "@/pages/dashboard/Takwim";
+import NotificationManagement from "@/pages/dashboard/NotificationManagement";
+import Notifications from "@/pages/dashboard/Notifications";
 
 const queryClient = new QueryClient();
 
@@ -55,44 +56,8 @@ function App() {
               />
 
               <Route path="/admin/takwim" element={<Takwim />} />
-
-              {dashboardRoutes.map((route) => (
-                <Route
-                  key={route.path}
-                  path={route.path}
-                  element={
-                    <Suspense fallback={<LoadingSpinner />}>
-                      {route.element}
-                    </Suspense>
-                  }
-                />
-              ))}
-
-              {Array.isArray(memberRoutes) &&
-                memberRoutes.map((route) => (
-                  <Route
-                    key={route.path}
-                    path={route.path}
-                    element={
-                      <Suspense fallback={<LoadingSpinner />}>
-                        {route.element}
-                      </Suspense>
-                    }
-                  />
-                ))}
-
-              {Array.isArray(moduleRoutes) &&
-                moduleRoutes.map((route) => (
-                  <Route
-                    key={route.path}
-                    path={route.path}
-                    element={
-                      <Suspense fallback={<LoadingSpinner />}>
-                        {route.element}
-                      </Suspense>
-                    }
-                  />
-                ))}
+              <Route path="/dashboard/notifications" element={<Notifications />} />
+              <Route path="/dashboard/notification-management" element={<NotificationManagement />} />
 
               <Route path="/demo/announcements" element={<Announcements />} />
               <Route path="/demo/announcements/create" element={<CreateAnnouncement />} />

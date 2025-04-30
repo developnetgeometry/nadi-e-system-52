@@ -6053,7 +6053,22 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nd_site_operation_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_site_operation_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile_name"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nd_site_profile: {
         Row: {
@@ -9454,7 +9469,7 @@ export type Database = {
           district_id: number | null
           dun: string | null
           dun_id: number | null
-          dusp: number | null
+          dusp_id: number | null
           latitude: number | null
           longtitude: number | null
           "NADI SITENAME": string | null
@@ -9467,11 +9482,10 @@ export type Database = {
           "REFID TP": string | null
           remark: string | null
           "START OPERATION DATE": string | null
-          state: number | null
           state_id: number | null
           status: string | null
           status_id: number | null
-          ZONE: string | null
+          zone: string | null
           zone_id: number | null
         }
         Insert: {
@@ -9481,7 +9495,7 @@ export type Database = {
           district_id?: number | null
           dun?: string | null
           dun_id?: number | null
-          dusp?: number | null
+          dusp_id?: number | null
           latitude?: number | null
           longtitude?: number | null
           "NADI SITENAME"?: string | null
@@ -9494,11 +9508,10 @@ export type Database = {
           "REFID TP"?: string | null
           remark?: string | null
           "START OPERATION DATE"?: string | null
-          state?: number | null
           state_id?: number | null
           status?: string | null
           status_id?: number | null
-          ZONE?: string | null
+          zone?: string | null
           zone_id?: number | null
         }
         Update: {
@@ -9508,7 +9521,7 @@ export type Database = {
           district_id?: number | null
           dun?: string | null
           dun_id?: number | null
-          dusp?: number | null
+          dusp_id?: number | null
           latitude?: number | null
           longtitude?: number | null
           "NADI SITENAME"?: string | null
@@ -9521,11 +9534,10 @@ export type Database = {
           "REFID TP"?: string | null
           remark?: string | null
           "START OPERATION DATE"?: string | null
-          state?: number | null
           state_id?: number | null
           status?: string | null
           status_id?: number | null
-          ZONE?: string | null
+          zone?: string | null
           zone_id?: number | null
         }
         Relationships: []

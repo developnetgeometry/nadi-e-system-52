@@ -2,9 +2,8 @@
 import { Bell, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/lib/supabase";
-import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useNotifications } from "./hooks/useNotifications";
 
 interface NotificationHeaderProps {
   filter: "all" | "unread" | "read";
@@ -12,39 +11,13 @@ interface NotificationHeaderProps {
 }
 
 export const NotificationHeader = ({ filter, setFilter }: NotificationHeaderProps) => {
-  const { toast } = useToast();
   const [isMarkingRead, setIsMarkingRead] = useState(false);
+  const { handleMarkAllAsRead } = useNotifications({ filter });
 
-  const handleMarkAllRead = async () => {
+  const onMarkAllRead = async () => {
+    setIsMarkingRead(true);
     try {
-      setIsMarkingRead(true);
-      const { data: userData } = await supabase.auth.getUser();
-      const userId = userData?.user?.id;
-      
-      if (!userId) {
-        throw new Error("User not authenticated");
-      }
-      
-      const { error } = await supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("user_id", userId)
-        .eq("read", false);
-        
-      if (error) throw error;
-      
-      toast({
-        title: "Success",
-        description: "All notifications marked as read",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error("Error marking notifications as read:", error);
-      toast({
-        title: "Error",
-        description: "Failed to mark notifications as read",
-        variant: "destructive",
-      });
+      await handleMarkAllAsRead();
     } finally {
       setIsMarkingRead(false);
     }
@@ -70,7 +43,7 @@ export const NotificationHeader = ({ filter, setFilter }: NotificationHeaderProp
         variant="outline" 
         size="sm" 
         className="mt-2 sm:mt-0 w-full sm:w-auto" 
-        onClick={handleMarkAllRead}
+        onClick={onMarkAllRead}
         disabled={isMarkingRead}
       >
         <Check className="mr-1 h-4 w-4" />
