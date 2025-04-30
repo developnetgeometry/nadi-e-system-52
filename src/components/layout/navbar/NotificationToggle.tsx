@@ -41,36 +41,50 @@ export const NotificationToggle = () => {
     fetchUnreadCount();
 
     // Subscribe to real-time notifications
-    const channel = supabase
-      .channel('notification_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${supabase.auth.getSession().then(({ data }) => data?.session?.user?.id)}`
-        },
-        () => {
-          setUnreadCount(prevCount => prevCount + 1);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${supabase.auth.getSession().then(({ data }) => data?.session?.user?.id)} AND read=eq.true`
-        },
-        () => {
-          setUnreadCount(prevCount => Math.max(0, prevCount - 1));
-        }
-      )
-      .subscribe();
+    const setupRealtimeSubscription = async () => {
+      const { data: session } = await supabase.auth.getSession();
+      const userId = session?.session?.user?.id;
+      
+      if (!userId) return;
 
+      const channel = supabase
+        .channel('notification_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`
+          },
+          () => {
+            setUnreadCount(prevCount => prevCount + 1);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId} AND read=eq.true`
+          },
+          () => {
+            setUnreadCount(prevCount => Math.max(0, prevCount - 1));
+          }
+        )
+        .subscribe();
+
+      return channel;
+    };
+
+    const channel = setupRealtimeSubscription();
+    
+    // Cleanup subscription on unmount
     return () => {
-      supabase.removeChannel(channel);
+      channel.then(channel => {
+        if (channel) supabase.removeChannel(channel);
+      });
     };
   }, []);
 
