@@ -22,19 +22,56 @@ serve(async (req) => {
     );
 
     const body = await req.text();
-    const { userId, title, body: messageBody } = JSON.parse(body);
+    const { userId, title, body: messageBody, template_id, params } = JSON.parse(body);
 
-    if (!userId || !title || !messageBody) {
+    if (!userId) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
+        JSON.stringify({ error: "User ID is required" }),
         { status: 400, headers: corsHeaders }
       );
     }
 
+    let notificationTitle = title || "Test Notification";
+    let notificationBody = messageBody || "This is a test push notification";
+
+    // If template_id is provided, fetch and use the template
+    if (template_id) {
+      console.log(`Using template ${template_id} for push notification`);
+      
+      // Get the template
+      const { data: template, error: templateError } = await supabase
+        .from("notification_templates")
+        .select("*")
+        .eq("id", template_id)
+        .single();
+
+      if (templateError) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Failed to retrieve template", 
+            details: templateError.message 
+          }),
+          { status: 404, headers: corsHeaders }
+        );
+      }
+
+      // Process template with params
+      notificationTitle = template.title_template;
+      notificationBody = template.message_template;
+
+      // Replace placeholders with provided params
+      if (params) {
+        Object.keys(params).forEach((key) => {
+          const placeholder = `{${key}}`;
+          notificationTitle = notificationTitle.replace(new RegExp(placeholder, 'g'), params[key]);
+          notificationBody = notificationBody.replace(new RegExp(placeholder, 'g'), params[key]);
+        });
+      }
+    }
+
     // In a real implementation, you would send an actual push notification here
-    // For now, we'll log the attempt and store a notification record
     console.log(`Test push notification would be sent to user ${userId}`);
-    console.log(`Title: ${title}, Body: ${messageBody}`);
+    console.log(`Title: ${notificationTitle}, Body: ${notificationBody}`);
 
     // Verify user exists
     const { data: userData, error: userError } = await supabase
@@ -58,8 +95,8 @@ serve(async (req) => {
       .from("notifications")
       .insert({
         user_id: userId,
-        title: `Push Test: ${title}`,
-        message: messageBody,
+        title: `Push Test: ${notificationTitle}`,
+        message: notificationBody,
         type: "info",
         read: false
       });

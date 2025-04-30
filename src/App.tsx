@@ -25,6 +25,7 @@ import CreateAnnouncement from "@/pages/demo/CreateAnnouncement";
 import Takwim from "@/pages/dashboard/Takwim";
 import NotificationManagement from "@/pages/dashboard/NotificationManagement";
 import Notifications from "@/pages/dashboard/Notifications";
+import NotificationUsage from "@/pages/dashboard/NotificationUsage";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ function App() {
               <Route path="/admin/takwim" element={<Takwim />} />
               <Route path="/dashboard/notifications" element={<Notifications />} />
               <Route path="/dashboard/notification-management" element={<NotificationManagement />} />
+              <Route path="/dashboard/notification-usage" element={<NotificationUsage />} />
 
               <Route path="/demo/announcements" element={<Announcements />} />
               <Route path="/demo/announcements/create" element={<CreateAnnouncement />} />

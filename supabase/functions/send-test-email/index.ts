@@ -22,19 +22,52 @@ serve(async (req) => {
     );
 
     const body = await req.text();
-    const { email, subject, message } = JSON.parse(body);
+    const { email, subject, message, template_id, params } = JSON.parse(body);
 
-    if (!email || !subject || !message) {
+    if (!email) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
+        JSON.stringify({ error: "Email is required" }),
         { status: 400, headers: corsHeaders }
       );
     }
 
-    // In a real implementation, you would send an actual email here
-    // For now, we'll log the attempt and store a notification record
-    console.log(`Test email would be sent to ${email} with subject "${subject}"`);
-    console.log(`Message: ${message}`);
+    let title = subject;
+    let content = message;
+
+    // If template_id is provided, fetch and use the template
+    if (template_id) {
+      console.log(`Using template ${template_id} for email notification`);
+      
+      // Get the template
+      const { data: template, error: templateError } = await supabase
+        .from("notification_templates")
+        .select("*")
+        .eq("id", template_id)
+        .single();
+
+      if (templateError) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Failed to retrieve template", 
+            details: templateError.message 
+          }),
+          { status: 404, headers: corsHeaders }
+        );
+      }
+
+      // Process template with params
+      title = template.title_template;
+      content = template.message_template;
+
+      // Replace placeholders with provided params
+      if (params) {
+        Object.keys(params).forEach((key) => {
+          const placeholder = `{${key}}`;
+          title = title.replace(new RegExp(placeholder, 'g'), params[key]);
+          content = content.replace(new RegExp(placeholder, 'g'), params[key]);
+        });
+      }
+    }
 
     // Get user ID by email
     const { data: userData, error: userError } = await supabase
@@ -53,13 +86,17 @@ serve(async (req) => {
       );
     }
 
+    // In a real implementation, you would send an actual email here
+    console.log(`Test email would be sent to ${email} with subject "${title}"`);
+    console.log(`Message: ${content}`);
+
     // Store a notification record for tracking
     const { error: notificationError } = await supabase
       .from("notifications")
       .insert({
         user_id: userData.id,
-        title: `Email Test: ${subject}`,
-        message: `Email test sent to ${email}\n\n${message}`,
+        title: `Email Test: ${title}`,
+        message: `Email test sent to ${email}\n\n${content}`,
         type: "info",
         read: false
       });
