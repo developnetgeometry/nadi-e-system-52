@@ -1,4 +1,3 @@
-
 // Follow Deno and Supabase Edge Function conventions
 interface Request {
   method: string;

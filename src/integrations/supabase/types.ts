@@ -6053,22 +6053,7 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "nd_site_operation_site_id_fkey"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "nd_site_profile"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nd_site_operation_site_id_fkey"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "nd_site_profile_name"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       nd_site_profile: {
         Row: {
