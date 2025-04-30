@@ -89,7 +89,7 @@ export const NotificationTemplates = () => {
     loadTemplates();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -276,7 +276,7 @@ export const NotificationTemplates = () => {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Use {"{variable}"} syntax for dynamic content
+                    Use {variable} syntax for dynamic content
                   </p>
                 </div>
 
@@ -292,7 +292,7 @@ export const NotificationTemplates = () => {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Use {"{variable}"} syntax for dynamic content
+                    Use {variable} syntax for dynamic content
                   </p>
                 </div>
 

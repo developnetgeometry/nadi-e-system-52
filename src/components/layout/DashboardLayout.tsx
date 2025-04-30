@@ -4,6 +4,7 @@ import { DashboardNavbar } from "./DashboardNavbar";
 import { AnnouncementBanner } from "@/components/announcements/AnnouncementBanner";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 import PageBreadcrumb from "./PageBreadcrumb";
 
 interface DashboardLayoutProps {
@@ -11,7 +12,19 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const { state } = useSidebar();
+  const { state, isMobile, openMobile } = useSidebar();
+  const isCollapsed = state === "collapsed";
+
+  useEffect(() => {
+    if (isMobile && openMobile) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [isMobile, openMobile]);
 
   return (
     <SidebarProvider>

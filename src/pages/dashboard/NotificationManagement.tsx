@@ -1,10 +1,9 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Bell, Settings, TestTube, BookOpen } from "lucide-react";
+import { Bell, Settings, TestTube } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NotificationTemplates } from "@/components/notifications/admin/NotificationTemplates";
 import { NotificationTesting } from "@/components/notifications/admin/NotificationTesting";
 import { NotificationConfig } from "@/components/notifications/admin/NotificationConfig";
@@ -15,18 +14,9 @@ const NotificationManagement = () => {
   return (
     <DashboardLayout>
       <div className="container mx-auto max-w-6xl py-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <Bell className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-bold">Notification Management</h1>
-          </div>
-          
-          <Button variant="outline" className="flex items-center gap-2" asChild>
-            <Link to="/dashboard/notification-usage">
-              <BookOpen className="h-4 w-4" />
-              <span>Usage Guide</span>
-            </Link>
-          </Button>
+        <div className="flex items-center gap-3 mb-6">
+          <Bell className="h-6 w-6 text-primary" />
+          <h1 className="text-3xl font-bold">Notification Management</h1>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
