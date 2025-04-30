@@ -116,30 +116,34 @@ export const useNotifications = ({ filter = "all", typeFilter = "all" }: UseNoti
 
   // Setup real-time updates
   useEffect(() => {
-    const { data: userData } = supabase.auth.getUser();
-    const userId = userData?.user?.id;
-    
-    if (!userId) return;
-    
-    const channel = supabase
-      .channel('notification_updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["notifications"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      const userId = data?.user?.id;
+      
+      if (!userId) return;
+      
+      const channel = supabase
+        .channel('notification_updates')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`
+          },
+          () => {
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
+          }
+        )
+        .subscribe();
+  
+      return () => {
+        supabase.removeChannel(channel);
+      };
     };
+    
+    fetchUser();
   }, [queryClient]);
 
   const handleMarkAsRead = (id: string) => {

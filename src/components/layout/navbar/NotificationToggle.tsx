@@ -49,7 +49,7 @@ export const NotificationToggle = () => {
           event: 'INSERT',
           schema: 'public',
           table: 'notifications',
-          filter: `user_id=eq.${supabase.auth.user()?.id}`
+          filter: `user_id=eq.${supabase.auth.getSession().then(({ data }) => data?.session?.user?.id)}`
         },
         () => {
           setUnreadCount(prevCount => prevCount + 1);
@@ -61,7 +61,7 @@ export const NotificationToggle = () => {
           event: 'UPDATE',
           schema: 'public',
           table: 'notifications',
-          filter: `user_id=eq.${supabase.auth.user()?.id} AND read=eq.true`
+          filter: `user_id=eq.${supabase.auth.getSession().then(({ data }) => data?.session?.user?.id)} AND read=eq.true`
         },
         () => {
           setUnreadCount(prevCount => Math.max(0, prevCount - 1));
