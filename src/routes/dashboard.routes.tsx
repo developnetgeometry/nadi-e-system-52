@@ -1,10 +1,10 @@
 
 import { ReactNode } from "react";
-import AdminDashboard from "@/pages/dashboard/AdminDashboard";
-import UserManagement from "@/pages/dashboard/UserManagement";
-import RolesPermissions from "@/pages/dashboard/RolesPermissions";
+import { DynamicDashboard } from "@/components/dashboard/DynamicDashboard";
+import UserManagement from "@/pages/dashboard/Users";
+import RolesPermissions from "@/pages/dashboard/Roles";
 import UserGroups from "@/pages/dashboard/UserGroups";
-import ActivityLog from "@/pages/dashboard/ActivityLog";
+import ActivityLog from "@/pages/dashboard/Activity";
 import Organizations from "@/pages/dashboard/Organizations";
 import MenuVisibility from "@/pages/dashboard/MenuVisibility";
 import StateHolidays from "@/pages/dashboard/StateHolidays";
@@ -21,7 +21,7 @@ export interface DashboardRoutes {
 export const dashboardRoutes: DashboardRoutes[] = [
   {
     path: "/admin/dashboard",
-    element: <AdminDashboard />,
+    element: <DynamicDashboard />,
   },
   {
     path: "/admin/users",
