@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { NotificationType } from "@/types/auth";
 
 export const NotificationTesting = () => {
   const { toast } = useToast();
@@ -35,7 +36,7 @@ export const NotificationTesting = () => {
     userId: "",
     title: "Test Notification",
     message: "This is a test notification from the admin panel.",
-    type: "info",
+    type: "info" as NotificationType, // Explicitly type as NotificationType
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -43,7 +44,7 @@ export const NotificationTesting = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleTypeChange = (value: string) => {
+  const handleTypeChange = (value: NotificationType) => {
     setFormData((prev) => ({ ...prev, type: value }));
   };
 
@@ -133,7 +134,7 @@ export const NotificationTesting = () => {
                   <Label htmlFor="type">Notification Type</Label>
                   <Select
                     value={formData.type}
-                    onValueChange={handleTypeChange}
+                    onValueChange={(value) => handleTypeChange(value as NotificationType)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
