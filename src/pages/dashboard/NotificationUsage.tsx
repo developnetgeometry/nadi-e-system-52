@@ -1,6 +1,6 @@
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Bell, BookOpen, Lightbulb } from "lucide-react";
+import { Bell, BookOpen, Lightbulb, Users } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NotificationUsageGuide } from "@/components/notifications/admin/NotificationUsageGuide";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -64,6 +64,49 @@ const NotificationUsage = () => {
                   You can create and manage templates in the <strong>Templates</strong> tab of the Notification Management page.
                   Templates support placeholders in the format <code>{"{placeholder_name}"}</code> which will be replaced with
                   actual values when the notification is sent.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                <span>Bulk Notifications</span>
+              </CardTitle>
+              <CardDescription>
+                Sending notifications to multiple users efficiently
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="prose dark:prose-invert">
+                <p>
+                  Our notification system supports sending messages to multiple recipients efficiently using batch processing.
+                  This is particularly useful for:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Announcements:</strong> Sending important updates to all users or a specific group.
+                  </li>
+                  <li>
+                    <strong>Group Notifications:</strong> Notifying members of a team, department, or other defined group.
+                  </li>
+                  <li>
+                    <strong>Campaign Messages:</strong> Sending marketing or engagement communications to targeted user segments.
+                  </li>
+                </ul>
+                <p>
+                  The bulk notification functions are optimized to:
+                </p>
+                <ul>
+                  <li>Process notifications in batches to prevent database overloading</li>
+                  <li>Track success and failure rates for monitoring purposes</li>
+                  <li>Support template usage for consistent messaging</li>
+                  <li>Work across all notification channels (in-app, email, and push)</li>
+                </ul>
+                <p>
+                  Explore the examples below to see how to implement bulk notifications in your application.
                 </p>
               </div>
             </CardContent>
