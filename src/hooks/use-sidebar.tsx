@@ -74,13 +74,37 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
   );
 };
 
+// Create a hook that uses isMobile from window size
+export const useIsMobileHook = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Initial check
+    checkIsMobile();
+
+    // Add resize event listener
+    window.addEventListener('resize', checkIsMobile);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', checkIsMobile);
+    };
+  }, []);
+
+  return isMobile;
+};
+
 // Backward compatibility
 export const useSidebar = () => {
   try {
     return useSidebarContext();
   } catch (error) {
     // Fallback to standalone hook behavior if no provider
-    const isMobile = useIsMobile();
+    const isMobile = useIsMobileHook();
     const [openMobile, setOpenMobile] = useState(false);
     const [state, setState] = useState<'expanded' | 'collapsed'>('expanded');
 

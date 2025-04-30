@@ -1,3 +1,4 @@
+
 import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
 import { SidebarContent as CustomSidebarContent } from "./sidebar/SidebarContent";
 import { useAppSettings } from "@/hooks/use-app-settings";
@@ -18,12 +19,15 @@ export const DashboardSidebar = () => {
     <Sidebar
       className={cn(
         "border-r border-gray-200 dark:border-gray-800 h-screen flex flex-col",
+        "transition-all duration-300",
+        isCollapsed && !isMobile ? "w-[72px]" : "w-[240px]",
+        isMobile ? (openMobile ? "translate-x-0" : "-translate-x-full") : "",
         sidebarStyles.sidebarBackground
       )}
     >
       <div
         className={cn(
-          "p-4 flex items-center",
+          "p-4 flex items-center border-b border-gray-200 dark:border-gray-800",
           isCollapsed && !isMobile ? "justify-center" : "justify-between"
         )}
       >
