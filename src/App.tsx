@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import Landing from "@/pages/Landing";
@@ -7,7 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import MemberLogin from "@/pages/auth/MemberLogin";
-import { dashboardRoutes, DashboardRoutes } from "@/routes/dashboard.routes";
+import { dashboardRoutes } from "@/routes/dashboard.routes";
 import { memberRoutes } from "@/routes/member.routes";
 import { moduleRoutes } from "@/routes/module.routes";
 import UIComponents from "@/pages/UIComponents";
@@ -49,6 +50,21 @@ function App() {
               <Route path="/examples/home" element={<HomeExample />} />
               <Route path="/examples/detail" element={<DetailExample />} />
               <Route path="/examples/settings" element={<SettingsExample />} />
+
+              {/* Dashboard Routes */}
+              {dashboardRoutes.map((route, index) => (
+                <Route key={`dashboard-${index}`} path={route.path} element={route.element} />
+              ))}
+
+              {/* Member Routes */}
+              {memberRoutes.map((route, index) => (
+                <Route key={`member-${index}`} path={route.path} element={route.element} />
+              ))}
+
+              {/* Module Routes */}
+              {moduleRoutes.map((route, index) => (
+                <Route key={`module-${index}`} path={route.path} element={route.element} />
+              ))}
 
               <Route
                 path="/admin/organizations/:id"
