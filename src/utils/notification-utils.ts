@@ -144,7 +144,7 @@ export async function sendTemplateNotificationToUsers(
     return await sendNotificationToUsers(userIds, title, message, type as NotificationType);
   } catch (error) {
     console.error("Error sending template notification:", error);
-    return { success: false, error };
+    return { success: false, error, totalSent: 0, totalFailed: userIds.length };
   }
 }
 

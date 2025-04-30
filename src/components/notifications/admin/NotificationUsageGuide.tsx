@@ -96,9 +96,13 @@ export function NotificationUsageGuide() {
         }
       );
 
+      // Handle the response safely - check for properties before accessing them
+      const sentCount = 'totalSent' in result ? result.totalSent : 0;
+      const failedCount = 'totalFailed' in result ? result.totalFailed : 0;
+
       toast({
         title: result.success ? "Success" : "Partial Success",
-        description: `Sent ${result.totalSent} template notifications. Failed: ${result.totalFailed}`,
+        description: `Sent ${sentCount} template notifications. Failed: ${failedCount}`,
         variant: result.success ? "default" : "destructive",
       });
     } catch (error) {
