@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import Landing from "@/pages/Landing";
@@ -13,17 +12,19 @@ import { memberRoutes } from "@/routes/member.routes";
 import { moduleRoutes } from "@/routes/module.routes";
 import UIComponents from "@/pages/UIComponents";
 import OrganizationDetails from "@/pages/dashboard/OrganizationDetails";
-import HomeExample from "@/pages/examples/HomeExample";
-import DetailExample from "@/pages/examples/DetailExample";
-import SettingsExample from "@/pages/examples/SettingsExample";
 import NotFound from "@/pages/NotFound";
 import UnderDevelopment from "@/pages/UnderDevelopment";
 import NoAccess from "@/pages/NoAccess";
+
+// Import example pages
+import HomeExample from "@/pages/examples/HomeExample";
+import DetailExample from "@/pages/examples/DetailExample";
+import SettingsExample from "@/pages/examples/SettingsExample";
 import Announcements from "@/pages/dashboard/Announcements";
 import AnnouncementSettings from "@/pages/dashboard/AnnouncementSettings";
 import CreateAnnouncement from "@/pages/demo/CreateAnnouncement";
 import Takwim from "@/pages/dashboard/Takwim";
-import NotificationManagement from "@/pages/dashboard/NotificationManagement";
+// import NotificationManagement from "@/pages/dashboard/NotificationManagement";
 import Notifications from "@/pages/dashboard/Notifications";
 
 const queryClient = new QueryClient();
@@ -53,17 +54,29 @@ function App() {
 
               {/* Dashboard Routes */}
               {dashboardRoutes.map((route, index) => (
-                <Route key={`dashboard-${index}`} path={route.path} element={route.element} />
+                <Route
+                  key={`dashboard-${index}`}
+                  path={route.path}
+                  element={route.element}
+                />
               ))}
 
               {/* Member Routes */}
               {memberRoutes.map((route, index) => (
-                <Route key={`member-${index}`} path={route.path} element={route.element} />
+                <Route
+                  key={`member-${index}`}
+                  path={route.path}
+                  element={route.element}
+                />
               ))}
 
               {/* Module Routes */}
               {moduleRoutes.map((route, index) => (
-                <Route key={`module-${index}`} path={route.path} element={route.element} />
+                <Route
+                  key={`module-${index}`}
+                  path={route.path}
+                  element={route.element}
+                />
               ))}
 
               <Route
@@ -71,19 +84,46 @@ function App() {
                 element={<OrganizationDetails />}
               />
 
-              <Route path="/admin/takwim" element={<Takwim />} />
-              <Route path="/dashboard/notifications" element={<Notifications />} />
-              <Route path="/dashboard/notification-management" element={<NotificationManagement />} />
-
-              <Route path="/demo/announcements" element={<Announcements />} />
-              <Route path="/demo/announcements/create" element={<CreateAnnouncement />} />
-              <Route path="/demo/announcement-settings" element={<AnnouncementSettings />} />
-
               <Route path="/under-development" element={<UnderDevelopment />} />
-              <Route path="/announcements" element={<UnderDevelopment />} />
 
               <Route path="/no-access" element={<NoAccess />} />
 
+              {/* Dashboard routes */}
+              {dashboardRoutes.map((route) => (
+                <Route
+                  key={route.path}
+                  path={route.path}
+                  element={
+                    <Suspense fallback={<LoadingSpinner />}>
+                      {route.element}
+                    </Suspense>
+                  }
+                />
+              ))}
+
+              <Route path="/demo/announcements" element={<Announcements />} />
+              <Route
+                path="/demo/announcements/create"
+                element={<CreateAnnouncement />}
+              />
+              <Route
+                path="/demo/announcement-settings"
+                element={<AnnouncementSettings />}
+              />
+
+              {/* Module routes */}
+              {Array.isArray(moduleRoutes) &&
+                moduleRoutes.map((route) => (
+                  <Route
+                    key={route.path}
+                    path={route.path}
+                    element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        {route.element}
+                      </Suspense>
+                    }
+                  />
+                ))}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

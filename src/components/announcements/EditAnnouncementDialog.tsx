@@ -1,9 +1,14 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { SelectMany } from "@/components/ui/SelectMany";
@@ -11,14 +16,14 @@ import { useUserTypes } from "@/components/user-groups/hooks/useUserTypes";
 import { DateInput } from "@/components/ui/date-input";
 import { Pencil } from "lucide-react";
 import { formatDate } from "@/utils/date-utils";
-import { 
+import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription 
+  FormDescription,
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
@@ -31,12 +36,15 @@ interface EditAnnouncementDialogProps {
     user_types: string[];
     start_date: string;
     end_date: string;
-    status: 'active' | 'inactive';
+    status: "active" | "inactive";
   };
   onUpdate: () => void;
 }
 
-export function EditAnnouncementDialog({ announcement, onUpdate }: EditAnnouncementDialogProps) {
+export function EditAnnouncementDialog({
+  announcement,
+  onUpdate,
+}: EditAnnouncementDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const { userTypes } = useUserTypes();
@@ -47,7 +55,7 @@ export function EditAnnouncementDialog({ announcement, onUpdate }: EditAnnouncem
       user_types: announcement.user_types || [],
       start_date: formatDate(new Date(announcement.start_date)),
       end_date: formatDate(new Date(announcement.end_date)),
-    }
+    },
   });
 
   useEffect(() => {
@@ -63,18 +71,18 @@ export function EditAnnouncementDialog({ announcement, onUpdate }: EditAnnouncem
     }
   }, [open, announcement, form]);
 
-  const userTypeOptions = userTypes.map(type => ({
+  const userTypeOptions = userTypes.map((type) => ({
     id: type,
-    label: type.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ')
+    label: type
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" "),
   }));
 
   const onSubmit = async (data: any) => {
     try {
       const startDate = new Date(data.start_date);
       const endDate = new Date(data.end_date);
-      
       // Validate dates
       if (endDate <= startDate) {
         toast({
@@ -86,7 +94,7 @@ export function EditAnnouncementDialog({ announcement, onUpdate }: EditAnnouncem
       }
 
       const { error } = await supabase
-        .from('announcements')
+        .from("announcements")
         .update({
           title: data.title,
           message: data.message,
@@ -94,7 +102,7 @@ export function EditAnnouncementDialog({ announcement, onUpdate }: EditAnnouncem
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
         })
-        .eq('id', announcement.id);
+        .eq("id", announcement.id);
 
       if (error) {
         console.error("Error updating announcement:", error);
@@ -110,7 +118,6 @@ export function EditAnnouncementDialog({ announcement, onUpdate }: EditAnnouncem
         title: "Success",
         description: "Announcement updated successfully",
       });
-      
       setOpen(false);
       onUpdate();
     } catch (error) {
@@ -126,11 +133,7 @@ export function EditAnnouncementDialog({ announcement, onUpdate }: EditAnnouncem
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          title="Edit announcement"
-        >
+        <Button variant="ghost" size="icon" title="Edit announcement">
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
@@ -161,10 +164,10 @@ export function EditAnnouncementDialog({ announcement, onUpdate }: EditAnnouncem
                 <FormItem>
                   <FormLabel>Message</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Enter your announcement message" 
+                    <Textarea
+                      placeholder="Enter your announcement message"
                       className="min-h-[150px]"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -231,7 +234,11 @@ export function EditAnnouncementDialog({ announcement, onUpdate }: EditAnnouncem
             />
 
             <div className="flex gap-4 justify-end">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit">Save Changes</Button>

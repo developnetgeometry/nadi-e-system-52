@@ -1,7 +1,12 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,12 +24,10 @@ export const CreateAnnouncementDialog = () => {
   const { register, handleSubmit, reset } = useForm<AnnouncementFormData>();
 
   const onSubmit = async (data: AnnouncementFormData) => {
-    const { error } = await supabase
-      .from('announcements')
-      .insert({
-        title: data.title,
-        message: data.message
-      });
+    const { error } = await supabase.from("announcements").insert({
+      title: data.title,
+      message: data.message,
+    });
 
     if (error) {
       toast({
@@ -39,7 +42,6 @@ export const CreateAnnouncementDialog = () => {
       title: "Success",
       description: "Announcement created successfully",
     });
-    
     reset();
     setOpen(false);
   };

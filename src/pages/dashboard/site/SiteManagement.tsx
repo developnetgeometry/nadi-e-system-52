@@ -8,7 +8,7 @@ import { SiteList } from "@/components/site/SiteList";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { SiteFormDialog } from "@/components/site/SiteFormDialog";
-import { fetchSites } from "@/components/site/component/site-utils";
+import { fetchSites } from "@/components/site/hook/site-utils";
 import { useUserMetadata } from "@/hooks/use-user-metadata";
 import { useNavigate } from 'react-router-dom';
 import { fetchActionableRequestCount } from "@/components/site/queries/site-closure"; // Import the new query
@@ -75,7 +75,7 @@ const SiteDashboard = () => {
   }
 
   const handleViewDetailsClick = () => {
-    navigate(`/site/approval`);
+    navigate(`/site-management/approval`);
   };
 
   return (
@@ -83,7 +83,7 @@ const SiteDashboard = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Site Management</h1>
+            <h1 className="text-xl font-bold">Site Management</h1>
             <p className="text-muted-foreground mt-2">Track and manage site</p>
           </div>
           <div className="flex justify-between items-center gap-4">

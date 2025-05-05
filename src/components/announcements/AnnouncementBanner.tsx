@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,24 +20,24 @@ export const AnnouncementBanner = () => {
       if (!userData.user) return;
 
       const { data: announcements, error } = await supabase
-        .from('announcements')
-        .select('id, title, message')
-        .eq('status', 'active')
-        .is('end_date', null)
-        .order('created_at', { ascending: false })
+        .from("announcements")
+        .select("id, title, message")
+        .eq("status", "active")
+        .is("end_date", null)
+        .order("created_at", { ascending: false })
         .limit(1);
 
       if (error) {
-        console.error('Error fetching announcements:', error);
+        console.error("Error fetching announcements:", error);
         return;
       }
 
       if (announcements && announcements.length > 0) {
         const { data: views } = await supabase
-          .from('announcement_views')
-          .select('*')
-          .eq('announcement_id', announcements[0].id)
-          .eq('user_id', userData.user.id)
+          .from("announcement_views")
+          .select("*")
+          .eq("announcement_id", announcements[0].id)
+          .eq("user_id", userData.user.id)
           .single();
 
         if (!views) {
@@ -56,12 +55,10 @@ export const AnnouncementBanner = () => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) return;
 
-    await supabase
-      .from('announcement_views')
-      .insert({
-        announcement_id: announcement.id,
-        user_id: userData.user.id
-      });
+    await supabase.from("announcement_views").insert({
+      announcement_id: announcement.id,
+      user_id: userData.user.id,
+    });
 
     setIsVisible(false);
   };
@@ -71,8 +68,12 @@ export const AnnouncementBanner = () => {
   return (
     <div className="w-full px-6 py-2 bg-background">
       <Alert>
-        <AlertTitle className="text-lg font-semibold">{announcement.title}</AlertTitle>
-        <AlertDescription className="mt-1">{announcement.message}</AlertDescription>
+        <AlertTitle className="text-lg font-semibold">
+          {announcement.title}
+        </AlertTitle>
+        <AlertDescription className="mt-1">
+          {announcement.message}
+        </AlertDescription>
         <Button
           variant="ghost"
           size="sm"

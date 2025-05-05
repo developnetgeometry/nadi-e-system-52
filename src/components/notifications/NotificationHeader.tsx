@@ -1,8 +1,6 @@
-
-import { Bell, Check } from "lucide-react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
+import { Check } from "lucide-react";
 import { useNotifications } from "./hooks/useNotifications";
 
 interface NotificationHeaderProps {
@@ -10,43 +8,40 @@ interface NotificationHeaderProps {
   setFilter: (filter: "all" | "unread" | "read") => void;
 }
 
-export const NotificationHeader = ({ filter, setFilter }: NotificationHeaderProps) => {
-  const [isMarkingRead, setIsMarkingRead] = useState(false);
+export const NotificationHeader = ({
+  filter,
+  setFilter,
+}: NotificationHeaderProps) => {
   const { handleMarkAllAsRead } = useNotifications({ filter });
 
-  const onMarkAllRead = async () => {
-    setIsMarkingRead(true);
-    try {
-      await handleMarkAllAsRead();
-    } finally {
-      setIsMarkingRead(false);
-    }
-  };
+  const filters = [
+    { value: "all", label: "All" },
+    { value: "unread", label: "Unread" },
+    { value: "read", label: "Read" },
+  ];
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-center border-b p-4 bg-muted/30">
-      <Tabs defaultValue={filter} onValueChange={(value) => setFilter(value as "all" | "unread" | "read")}>
-        <TabsList className="grid w-full sm:w-auto grid-cols-3 h-9">
-          <TabsTrigger value="all" className="text-xs sm:text-sm">
-            All
-          </TabsTrigger>
-          <TabsTrigger value="unread" className="text-xs sm:text-sm">
-            Unread
-          </TabsTrigger>
-          <TabsTrigger value="read" className="text-xs sm:text-sm">
-            Read
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-      
-      <Button 
-        variant="outline" 
-        size="sm" 
-        className="mt-2 sm:mt-0 w-full sm:w-auto" 
-        onClick={onMarkAllRead}
-        disabled={isMarkingRead}
+    <div className="px-4 py-3 border-b flex items-center justify-between">
+      <div className="flex space-x-1">
+        {filters.map((item) => (
+          <Button
+            key={item.value}
+            variant={filter === item.value ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setFilter(item.value as "all" | "unread" | "read")}
+          >
+            {item.label}
+          </Button>
+        ))}
+      </div>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleMarkAllAsRead}
+        className="text-xs flex items-center gap-1"
       >
-        <Check className="mr-1 h-4 w-4" />
+        <Check className="h-3 w-3" />
         Mark all as read
       </Button>
     </div>

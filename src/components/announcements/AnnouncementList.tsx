@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +21,7 @@ interface Announcement {
   id: string;
   title: string;
   message: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   user_types: string[];
   created_at: string;
   start_date: string;
@@ -41,9 +40,9 @@ export function AnnouncementList() {
   const fetchAnnouncements = async () => {
     try {
       const { data, error } = await supabase
-        .from('announcements')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("announcements")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       if (error) {
         toast({
@@ -66,13 +65,13 @@ export function AnnouncementList() {
   };
 
   const toggleStatus = async (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+
     try {
       const { error } = await supabase
-        .from('announcements')
+        .from("announcements")
         .update({ status: newStatus })
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) {
         toast({
@@ -86,7 +85,9 @@ export function AnnouncementList() {
       fetchAnnouncements();
       toast({
         title: "Success",
-        description: `Announcement ${newStatus === 'active' ? 'shown' : 'hidden'} successfully`,
+        description: `Announcement ${
+          newStatus === "active" ? "shown" : "hidden"
+        } successfully`,
       });
     } catch (error) {
       console.error("Error toggling status:", error);
@@ -101,9 +102,9 @@ export function AnnouncementList() {
   const deleteAnnouncement = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('announcements')
+        .from("announcements")
         .delete()
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) {
         toast({
@@ -128,7 +129,6 @@ export function AnnouncementList() {
       });
     }
   };
-  
   const isAnnouncementExpired = (endDate: string) => {
     return new Date(endDate) < new Date();
   };
@@ -136,13 +136,12 @@ export function AnnouncementList() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Announcements</h2>
-        <Button onClick={() => navigate("/demo/announcements/create")}>
+        <h2 className="text-2xl font-semibold">&nbsp;</h2>
+        <Button onClick={() => navigate("/announcements/create-announcement")}>
           <Plus className="mr-2 h-4 w-4" />
           Create Announcement
         </Button>
       </div>
-      
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -158,28 +157,45 @@ export function AnnouncementList() {
           <TableBody>
             {announcements.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                <TableCell
+                  colSpan={6}
+                  className="text-center h-24 text-muted-foreground"
+                >
                   No announcements available
                 </TableCell>
               </TableRow>
             ) : (
               announcements.map((announcement) => (
                 <TableRow key={announcement.id}>
-                  <TableCell className="font-medium">{announcement.title}</TableCell>
-                  <TableCell className="max-w-xs truncate">{announcement.message}</TableCell>
+                  <TableCell className="font-medium">
+                    {announcement.title}
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {announcement.message}
+                  </TableCell>
                   <TableCell>
                     <UserTypeChips userTypes={announcement.user_types} />
                   </TableCell>
                   <TableCell>
-                    {formatDate(announcement.start_date)} - {formatDate(announcement.end_date)}
+                    {formatDate(announcement.start_date)} -{" "}
+                    {formatDate(announcement.end_date)}
                     {isAnnouncementExpired(announcement.end_date) && (
-                      <Badge variant="outline" className="ml-2 bg-amber-100 text-amber-800 border-amber-200">
+                      <Badge
+                        variant="outline"
+                        className="ml-2 bg-amber-100 text-amber-800 border-amber-200"
+                      >
                         Expired
                       </Badge>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={announcement.status === 'active' ? "success" : "secondary"}>
+                    <Badge
+                      variant={
+                        announcement.status === "active"
+                          ? "success"
+                          : "secondary"
+                      }
+                    >
                       {announcement.status}
                     </Badge>
                   </TableCell>
@@ -188,18 +204,24 @@ export function AnnouncementList() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => toggleStatus(announcement.id, announcement.status)}
-                        title={announcement.status === 'active' ? 'Hide announcement' : 'Show announcement'}
+                        onClick={() =>
+                          toggleStatus(announcement.id, announcement.status)
+                        }
+                        title={
+                          announcement.status === "active"
+                            ? "Hide announcement"
+                            : "Show announcement"
+                        }
                       >
-                        {announcement.status === 'active' ? (
+                        {announcement.status === "active" ? (
                           <EyeOff className="h-4 w-4" />
                         ) : (
                           <Eye className="h-4 w-4" />
                         )}
                       </Button>
-                      <EditAnnouncementDialog 
-                        announcement={announcement} 
-                        onUpdate={fetchAnnouncements} 
+                      <EditAnnouncementDialog
+                        announcement={announcement}
+                        onUpdate={fetchAnnouncements}
                       />
                       <Button
                         variant="ghost"

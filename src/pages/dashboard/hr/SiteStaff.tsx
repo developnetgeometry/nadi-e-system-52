@@ -42,7 +42,7 @@ const SiteStaff = () => {
   const userMetadataString = useUserMetadata();
   const { user } = useAuth();
   const { userType } = useUserAccess();
-  
+
   const [organizationInfo, setOrganizationInfo] = useState<{
     organization_id: string | null;
     organization_name: string | null;
@@ -65,26 +65,32 @@ const SiteStaff = () => {
     }
   }, [userMetadataString]);
 
-  const { 
-    staffList, 
-    isLoading, 
-    locationOptions, 
+  const {
+    staffList,
+    isLoading,
+    locationOptions,
     statusOptions,
-    addStaffMember
+    addStaffMember,
   } = useSiteStaffData(user, organizationInfo);
 
   const filteredStaff = useMemo(() => {
     return staffList.filter((staff) => {
       const matchesSearch =
         staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (staff.userType && staff.userType.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (staff.siteLocation && staff.siteLocation.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (staff.email && staff.email.toLowerCase().includes(searchQuery.toLowerCase()));
+        (staff.userType &&
+          staff.userType.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (staff.siteLocation &&
+          staff.siteLocation
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())) ||
+        (staff.email &&
+          staff.email.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchesLocation =
         locationFilter === "all" || staff.siteLocation === locationFilter;
 
-      const matchesStatus = statusFilter === "all" || staff.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "all" || staff.status === statusFilter;
 
       return matchesSearch && matchesLocation && matchesStatus;
     });
@@ -94,56 +100,69 @@ const SiteStaff = () => {
     if (!organizationInfo.organization_id) {
       toast({
         title: "Organization Not Found",
-        description: "You need to be associated with an organization to add staff.",
+        description:
+          "You need to be associated with an organization to add staff.",
         variant: "destructive",
       });
       return;
     }
-    
-    const allowedUserTypes = ['tp_admin', 'tp_hr', 'super_admin'];
+
+    const allowedUserTypes = ["tp_admin", "tp_hr", "super_admin"];
     if (!userType || !allowedUserTypes.includes(userType)) {
       toast({
         title: "Permission Denied",
-        description: "Only TP Admin, HR, and Super Admin users can add staff members.",
+        description:
+          "Only TP Admin, HR, and Super Admin users can add staff members.",
         variant: "destructive",
       });
       return;
     }
-    
+
     setIsAddStaffOpen(true);
   };
 
   const handleStaffAdded = async (newStaff: any) => {
     try {
       console.log("Adding new site staff member with data:", newStaff);
-      
+
       if (newStaff.id) {
         // If the staff already has an ID, it was created on the server
         addStaffMember(newStaff);
-        
+
         toast({
           title: "Staff Added",
-          description: `${newStaff.name || newStaff.fullname} has been added successfully as ${(newStaff.userType || "").replace(/_/g, ' ')} at ${newStaff.siteLocationName || "Unknown site"}.`,
+          description: `${
+            newStaff.name || newStaff.fullname
+          } has been added successfully as ${(newStaff.userType || "").replace(
+            /_/g,
+            " "
+          )} at ${newStaff.siteLocationName || "Unknown site"}.`,
         });
       } else {
         // Create staff member on the server
         const result = await createStaffMember(newStaff);
-        
+
         addStaffMember({
           ...newStaff,
-          id: result.data.id
+          id: result.data.id,
         });
-        
+
         toast({
           title: "Staff Added",
-          description: `${newStaff.name} has been added successfully as ${newStaff.userType.replace(/_/g, ' ')} at ${newStaff.siteLocationName || "Unknown site"}.`,
+          description: `${
+            newStaff.name
+          } has been added successfully as ${newStaff.userType.replace(
+            /_/g,
+            " "
+          )} at ${newStaff.siteLocationName || "Unknown site"}.`,
         });
       }
     } catch (error: any) {
-      console.error('Error adding staff:', error);
+      console.error("Error adding staff:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to add staff member. Please try again.",
+        description:
+          error.message || "Failed to add staff member. Please try again.",
         variant: "destructive",
       });
     }
@@ -163,7 +182,7 @@ const SiteStaff = () => {
     <DashboardLayout>
       <div className="container mx-auto max-w-6xl">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Site Staff Management</h1>
+          <h1 className="text-xl font-bold">Site Staff Management</h1>
           <Button onClick={handleAddStaff}>
             <UserPlus className="h-4 w-4 mr-2" />
             Add Site Staff
@@ -174,7 +193,10 @@ const SiteStaff = () => {
           <div className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-200">
             <p className="text-blue-800 flex items-center">
               <Building className="h-4 w-4 mr-2" />
-              Managing site staff for organization: <strong className="ml-1">{organizationInfo.organization_name}</strong>
+              Managing site staff for organization:{" "}
+              <strong className="ml-1">
+                {organizationInfo.organization_name}
+              </strong>
             </p>
           </div>
         )}
@@ -189,12 +211,9 @@ const SiteStaff = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          
+
           <div className="flex gap-2">
-            <Select
-              value={locationFilter}
-              onValueChange={setLocationFilter}
-            >
+            <Select value={locationFilter} onValueChange={setLocationFilter}>
               <SelectTrigger className="w-[180px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Location" />
@@ -208,11 +227,8 @@ const SiteStaff = () => {
                 ))}
               </SelectContent>
             </Select>
-            
-            <Select
-              value={statusFilter}
-              onValueChange={setStatusFilter}
-            >
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[150px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Status" />
@@ -247,7 +263,9 @@ const SiteStaff = () => {
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                     </div>
-                    <p className="mt-2 text-muted-foreground">Loading staff data...</p>
+                    <p className="mt-2 text-muted-foreground">
+                      Loading staff data...
+                    </p>
                   </TableCell>
                 </TableRow>
               ) : filteredStaff.length > 0 ? (
@@ -255,11 +273,16 @@ const SiteStaff = () => {
                   <TableRow key={staff.id}>
                     <TableCell className="font-medium">{staff.name}</TableCell>
                     <TableCell>
-                      {staff.userType?.replace(/_/g, ' ') || "Unknown"}
+                      {staff.userType?.replace(/_/g, " ") || "Unknown"}
                     </TableCell>
-                    <TableCell>{staff.employDate ? formatDate(staff.employDate) : "-"}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={statusColors[staff.status]}>
+                      {staff.employDate ? formatDate(staff.employDate) : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={statusColors[staff.status]}
+                      >
                         {staff.status}
                       </Badge>
                     </TableCell>
@@ -268,7 +291,10 @@ const SiteStaff = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-4 text-muted-foreground"
+                  >
                     No staff members found matching your criteria
                   </TableCell>
                 </TableRow>
@@ -283,7 +309,9 @@ const SiteStaff = () => {
           open={isAddStaffOpen}
           onOpenChange={setIsAddStaffOpen}
           organizationId={organizationInfo.organization_id}
-          organizationName={organizationInfo.organization_name || "Your Organization"}
+          organizationName={
+            organizationInfo.organization_name || "Your Organization"
+          }
           onStaffAdded={handleStaffAdded}
           siteLocations={locationOptions}
         />

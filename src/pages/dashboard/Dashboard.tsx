@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { DynamicDashboard } from "@/components/dashboard/DynamicDashboard";
 import { AnnouncementSimpleView } from "@/components/announcements/AnnouncementSimpleView";
@@ -13,7 +12,6 @@ const Dashboard = () => {
         <div className="mb-6">
           <AnnouncementSimpleView />
         </div>
-        
         <DynamicDashboard />
       </ErrorBoundary>
     </DashboardLayout>

@@ -1,10 +1,8 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { SettingsLoading } from "@/components/settings/SettingsLoading";
-import { ProfileHeader } from "@/components/profile/ProfileHeader";
-import StaffProfileSettings from "@/components/profile/staff/StaffProfileSettings";
-import { StaffJobSettings } from "@/components/profile/staff/StaffJobSettings";
-import MemberProfileSettings from "@/components/profile/member/MemberProfileSettings";
-import SuperAdminProfileSettings from "@/components/profile/super_admin/SuperAdminProfileSettings";
+import { ProfileHeader } from "@/components/profile/components/ProfileHeader";
+import StaffProfileSettings from "@/components/profile/StaffProfileSettings";
+import MemberProfileSettings from "@/components/profile/MemberProfileSettings";
+import SuperAdminProfileSettings from "@/components/profile/SuperAdminProfileSettings";
 import McmcProfileSettings from "@/components/profile/McmcProfileSettings";
 import DuspProfileSettings from "@/components/profile/DuspProfileSettings";
 import SsoProfileSettings from "@/components/profile/SsoProfileSettings";
@@ -15,11 +13,8 @@ import { useUserMetadata } from "@/hooks/use-user-metadata";
 const UserProfile = () => {
   const userMetadata = useUserMetadata();
   const parsedMetadata = userMetadata ? JSON.parse(userMetadata) : null;
+  const userGroup = parsedMetadata?.user_group;
   const userType = parsedMetadata?.user_type;
-
-  if (!userType) {
-    return <SettingsLoading />;
-  }
 
   if (userType === "super_admin") {
     return (
@@ -32,7 +27,14 @@ const UserProfile = () => {
     );
   }
 
-  if (userType === "member") {
+  if (!userGroup) {
+    return (
+    <div className="flex items-center justify-center p-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>);
+  }
+
+  if (userGroup === 7) {
     return (
       <DashboardLayout>
         <ProfileHeader />
@@ -43,19 +45,18 @@ const UserProfile = () => {
     );
   }
 
-  if (userType?.startsWith("staff")) {
+  if (userGroup === 6) {
     return (
       <DashboardLayout>
         <ProfileHeader />
         <div className="space-y-8">
           <StaffProfileSettings />
-          <StaffJobSettings />
         </div>
       </DashboardLayout>
     );
   }
 
-  if (userType?.startsWith("mcmc")) {
+  if (userGroup === 2) {
     return (
       <DashboardLayout>
         <ProfileHeader />
@@ -66,7 +67,7 @@ const UserProfile = () => {
     );
   }
 
-  if (userType?.startsWith("dusp")) {
+  if (userGroup === 1) {
     return (
       <DashboardLayout>
         <ProfileHeader />
@@ -77,7 +78,7 @@ const UserProfile = () => {
     );
   }
 
-  if (userType?.startsWith("sso")) {
+  if (userGroup === 4) {
     return (
       <DashboardLayout>
         <ProfileHeader />
@@ -88,7 +89,7 @@ const UserProfile = () => {
     );
   }
 
-  if (userType?.startsWith("tp")) {
+  if (userGroup === 3) {
     return (
       <DashboardLayout>
         <ProfileHeader />
@@ -99,7 +100,7 @@ const UserProfile = () => {
     );
   }
 
-  if (userType?.startsWith("vendor")) {
+  if (userGroup === 5) {
     return (
       <DashboardLayout>
         <ProfileHeader />

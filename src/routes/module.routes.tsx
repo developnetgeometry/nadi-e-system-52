@@ -3,35 +3,44 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import HRDashboard from "@/pages/dashboard/hr/HRDashboard";
 import Employees from "@/pages/dashboard/hr/Employees";
 import SiteStaff from "@/pages/dashboard/hr/SiteStaff";
+import AssetDashboard from "@/pages/dashboard/asset/AssetDashboard";
+import AssetDetails from "@/pages/dashboard/asset/AssetDetails";
+import AssetSettings from "@/pages/dashboard/asset/AssetSettings";
+import ClaimDashboard from "@/pages/dashboard/claim/ClaimDashboard";
+import ClaimSettings from "@/pages/dashboard/claim/ClaimSettings";
+import CommunityDashboard from "@/pages/dashboard/community/CommunityDashboard";
+import CommunityModeration from "@/pages/dashboard/community/CommunityModeration";
+import AuditLogs from "@/pages/dashboard/compliance/AuditLogs";
+import ComplianceReports from "@/pages/dashboard/compliance/ComplianceReports";
+import FinanceDashboard from "@/pages/dashboard/finance/FinanceDashboard";
+import FinanceSettings from "@/pages/dashboard/finance/FinanceSettings";
+import FinancialTransactions from "@/pages/dashboard/financial/Transactions";
+import Wallet from "@/pages/dashboard/financial/Wallet";
 import Attendance from "@/pages/dashboard/hr/Attendance";
 import Leave from "@/pages/dashboard/hr/Leave";
+import InventoryDashboard from "@/pages/dashboard/inventory/InventoryDashboard";
+import InventorySettings from "@/pages/dashboard/inventory/InventorySettings";
 import POSDashboard from "@/pages/dashboard/pos/POSDashboard";
 import Products from "@/pages/dashboard/pos/Products";
 import POSTransactions from "@/pages/dashboard/pos/Transactions";
-import ClaimDashboard from "@/pages/dashboard/claim/ClaimDashboard";
-import ClaimSettings from "@/pages/dashboard/claim/ClaimSettings";
-import AssetDashboard from "@/pages/dashboard/asset/AssetDashboard";
-import AssetSettings from "@/pages/dashboard/asset/AssetSettings";
-import FinanceDashboard from "@/pages/dashboard/finance/FinanceDashboard";
-import FinanceSettings from "@/pages/dashboard/finance/FinanceSettings";
 import ProgrammesDashboard from "@/pages/dashboard/programmes/ProgrammesDashboard";
 import ProgrammeSettings from "@/pages/dashboard/programmes/ProgrammeSettings";
 import ServiceInfo from "@/pages/dashboard/services/ServiceInfo";
 import ServiceTransactions from "@/pages/dashboard/services/Transactions";
-import CommunityDashboard from "@/pages/dashboard/community/CommunityDashboard";
-import CommunityModeration from "@/pages/dashboard/community/CommunityModeration";
-import Wallet from "@/pages/dashboard/financial/Wallet";
-import FinancialTransactions from "@/pages/dashboard/financial/Transactions";
-import AuditLogs from "@/pages/dashboard/compliance/AuditLogs";
-import ComplianceReports from "@/pages/dashboard/compliance/ComplianceReports";
-import WorkflowDashboard from "@/pages/dashboard/workflow/WorkflowDashboard";
-import WorkflowConfiguration from "@/pages/dashboard/workflow/WorkflowConfiguration";
-import SiteManagement from "@/pages/dashboard/site/SiteManagement";
-import SiteDetails from "@/pages/dashboard/site/SiteDetail";
-import SiteClosureApproval from "@/pages/dashboard/site/SiteClosureApproval";
-import InventoryDashboard from "@/pages/dashboard/inventory/InventoryDashboard";
-import InventorySettings from "@/pages/dashboard/inventory/InventorySettings";
 import Site from "@/pages/dashboard/site/Site";
+import SiteClosureApproval from "@/pages/dashboard/site/SiteClosureApproval";
+import SiteDetails from "@/pages/dashboard/site/SiteDetail";
+import SiteManagement from "@/pages/dashboard/site/SiteManagement";
+import WorkflowConfiguration from "@/pages/dashboard/workflow/WorkflowConfiguration";
+import WorkflowDashboard from "@/pages/workflow/Dashboard";
+import DocketStatus from "@/pages/dashboard/dashboard/DocketStatus";
+import Technician from "@/pages/dashboard/dashboard/Technician";
+import Graph from "@/pages/dashboard/dashboard/Graph";
+import Announcements from "@/pages/dashboard/announcements/Announcements";
+import AnnouncementSettings from "@/pages/dashboard/announcements/AnnouncementSettings";
+import CreateAnnouncement from "@/pages/dashboard/announcements/CreateAnnouncement";
+import Takwim from "@/pages/dashboard/takwim/Takwim";
+import DashboardPage from "@/pages/dashboard/Dashboard";
 
 export const moduleRoutes: RouteObject[] = [
   // HR Routes
@@ -123,6 +132,14 @@ export const moduleRoutes: RouteObject[] = [
     element: (
       // <ProtectedRoute requiredPermission="view_assets">
       <AssetDashboard />
+      // </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/asset/detail/:id",
+    element: (
+      // <ProtectedRoute requiredPermission="view_assets">
+      <AssetDetails />
       // </ProtectedRoute>
     ),
   },
@@ -281,7 +298,7 @@ export const moduleRoutes: RouteObject[] = [
 
   // Site Management Routes
   {
-    path: "/site-management/main",
+    path: "/site-management", //For superadmin
     element: (
       // <ProtectedRoute requiredPermission="site_management">
       <SiteManagement />
@@ -289,7 +306,7 @@ export const moduleRoutes: RouteObject[] = [
     ),
   },
   {
-    path: "/site/:id",
+    path: "/site-management/:id", //For superadmin
     element: (
       // <ProtectedRoute requiredPermission="view_site_details">
       <SiteDetails />
@@ -297,18 +314,85 @@ export const moduleRoutes: RouteObject[] = [
     ),
   },
   {
-    path: "/site",
+    path: "/site", //For staff
     element: (
       // <ProtectedRoute requiredPermission="view_site_details">
-        <Site />
+      <Site />
       // </ProtectedRoute>
     ),
   },
   {
-    path: "/site/approval",
+    path: "/site-management/approval", //For superadmin
     element: (
       // <ProtectedRoute requiredPermission="view_site_details">
       <SiteClosureApproval />
+      // </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/docket-status", //For superadmin
+    element: (
+      // <ProtectedRoute requiredPermission="view_site_details">
+      <DocketStatus />
+      // </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/technician", //For superadmin
+    element: (
+      // <ProtectedRoute requiredPermission="view_site_details">
+      <Technician />
+      // </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/graph", //For superadmin
+    element: (
+      // <ProtectedRoute requiredPermission="view_site_details">
+      <Graph />
+      // </ProtectedRoute>
+    ),
+  },
+  // Announcements Routes
+  {
+    path: "/announcements",
+    element: (
+      // <ProtectedRoute requiredPermission="view_site_details">
+      <Announcements />
+      // </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/announcements/create-announcement",
+    element: (
+      // <ProtectedRoute requiredPermission="view_site_details">
+      <CreateAnnouncement />
+      // </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/announcements/announcements-settings",
+    element: (
+      // <ProtectedRoute requiredPermission="view_site_details">
+      <AnnouncementSettings />
+      // </ProtectedRoute>
+    ),
+  },
+  // Takwim Routes
+  {
+    path: "/takwim",
+    element: (
+      // <ProtectedRoute requiredPermission="view_site_details">
+      <Takwim />
+      // </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/dashboard/home",
+    element: (
+      // <ProtectedRoute requiredPermission="view_site_details">
+      <DashboardPage />
       // </ProtectedRoute>
     ),
   },

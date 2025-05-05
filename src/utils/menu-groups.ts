@@ -16,7 +16,12 @@ import {
   financialItems,
   complianceItems,
   siteManagementItems,
-  demoPagesItems,
+  inventoryItems,
+  dashboardItems,
+  nadiDashboardItems,
+  iotDashboardItems,
+  announcementsItems,
+  takwimItems,
 } from "@/components/layout/sidebar/menu-items";
 
 export const menuGroups = [
@@ -26,29 +31,30 @@ export const menuGroups = [
     items: menuItems,
   },
   {
+    label: "Dashboard",
+    route: "/dashboard",
+    items: dashboardItems,
+  },
+  {
+    label: "Nadi Dashboard",
+    route: "/nadi-dashboard",
+    items: nadiDashboardItems,
+  },
+  {
+    label: "IoT Dashboard",
+    route: "/iot-dashboard",
+    items: iotDashboardItems,
+  },
+  {
+    label: "Site Management",
+    route: "/site-management",
+    items: siteManagementItems,
+  },
+
+  {
     label: "Member Management",
     route: "/member",
     items: memberManagementItems,
-  },
-  {
-    label: "Service Module",
-    route: "/services",
-    items: serviceModuleItems,
-  },
-  {
-    label: "Community",
-    route: "/community",
-    items: communityItems,
-  },
-  {
-    label: "Financial",
-    route: "/fincancial",
-    items: financialItems,
-  },
-  {
-    label: "HR Management",
-    route: "/hr",
-    items: hrMenuItems,
   },
   {
     label: "POS Management",
@@ -56,19 +62,24 @@ export const menuGroups = [
     items: posMenuItems,
   },
   {
-    label: "Claim Management",
-    route: "/claim",
-    items: claimItems,
-  },
-  {
-    label: "Site Management",
-    route: "/site-management",
-    items: siteManagementItems,
-  },
-  {
     label: "Asset Management",
     route: "/asset",
     items: assetItems,
+  },
+  {
+    label: "Inventory Management",
+    route: "/invetory",
+    items: inventoryItems,
+  },
+  {
+    label: "Maintainance Management",
+    route: "/maintainance",
+    items: serviceModuleItems,
+  },
+  {
+    label: "Human Resource Management",
+    route: "/hr",
+    items: hrMenuItems,
   },
   {
     label: "Finance Management",
@@ -76,19 +87,29 @@ export const menuGroups = [
     items: financeItems,
   },
   {
+    label: "Financial Management",
+    route: "/financial",
+    items: financialItems,
+  },
+  {
     label: "Programmes Management",
     route: "/programmes",
     items: programmesItems,
   },
   {
-    label: "Report Management",
+    label: "Claim Management",
+    route: "/claim",
+    items: claimItems,
+  },
+  {
+    label: "Reports",
     route: "/report",
     items: reportItems,
   },
   {
-    label: "Workflow Management",
-    route: "/workflow",
-    items: workflowItems,
+    label: "Community",
+    route: "/community",
+    items: communityItems,
   },
   {
     label: "Compliance",
@@ -96,8 +117,58 @@ export const menuGroups = [
     items: complianceItems,
   },
   {
-    label: "Demo Pages",
-    route: "/demo",
-    items: demoPagesItems,
+    label: "Workflow Management",
+    route: "/workflow",
+    items: workflowItems,
   },
+  {
+    label: "Service Module",
+    route: "/services",
+    items: serviceModuleItems,
+  },
+  {
+    label: "Announcements",
+    route: "/announcements",
+    items: announcementsItems,
+  },
+  {
+    label: "Takwim",
+    route: "/takwim",
+    items: takwimItems,
+  },
+
+  // {
+  //   label: "Booking Management",
+  //   route: "/booking",
+  //   items: programmesItems,
+  // },
+  // {
+  //   label: "PC Booking Management",
+  //   route: "/programmes",
+  //   items: programmesItems,
+  // },
+  // {
+  //   label: "Health",
+  //   route: "/health",
+  //   // items: healthItems,
+  //   items: programmesItems,
+  // },
+  // {
+  //   label: "Docket Status",
+  //   route: "/docket-status",
+  //   // items: docketStatusItems,
+  //   items: programmesItems,
+  // },
+  // {
+  //   label: "Technician",
+  //   route: "/technician",
+  //   // items: technicianItems,
+  //   items: programmesItems,
+  // },
+  // {
+  //   label: "Attendance Module",
+  //   route: "/attendance",
+  //   // items: iotItems,
+  //   items: programmesItems,
+  // },
 ];

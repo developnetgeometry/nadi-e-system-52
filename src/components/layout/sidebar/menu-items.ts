@@ -1,4 +1,3 @@
-
 import { MenuItem } from "@/types/menu";
 
 export const menuItems = [
@@ -14,34 +13,43 @@ export const menuItems = [
     path: "/admin/state-holidays",
     visibleTo: ["super_admin"],
   },
-  { title: "Takwim", path: "/admin/takwim" },
-  { title: "Notifications", path: "/admin/notifications" },
+  { title: "Notification Management", path: "/admin/notification-management" },
   { title: "Organizations", path: "/admin/organizations" },
   { title: "Settings", path: "/admin/settings" },
 ];
 
 export const hrMenuItems = [
   { title: "HR Dashboard", path: "/hr" },
+  { title: "HR Settings", path: "/under-development" },
   { title: "Staff Management", path: "/hr/employees" },
   { title: "Site Staff Management", path: "/hr/site-staff" },
-  { title: "Attendance", path: "/hr/attendance" },
   { title: "Leave Management", path: "/hr/leave" },
+  { title: "Attendance", path: "/hr/attendance" },
+  { title: "Staff Training", path: "/hr/staff-training" },
+  { title: "Payroll", path: "/hr/payroll" },
 ];
 
 export const posMenuItems = [
   { title: "POS Dashboard", path: "/pos" },
   { title: "Products", path: "/pos/products" },
   { title: "Transactions", path: "/pos/transactions" },
+  { title: "PUDO", path: "/pos/pudo" },
 ];
 
 export const claimItems = [
   { title: "Claims Dashboard", path: "/claim" },
   { title: "Claims Settings", path: "/claim/settings" },
+  { title: "Registration", path: "/claim/registration" },
+  { title: "List Record", path: "/claim/list-record" },
+  { title: "Reports", path: "/claim/report" },
 ];
 
 export const assetItems = [
   { title: "Asset Dashboard", path: "/asset" },
   { title: "Asset Settings", path: "/asset/settings" },
+  { title: "Asset Registration", path: "/asset/registration" },
+  { title: "Asset Performance", path: "/asset/performance" },
+  { title: "Asset Maintenance", path: "/asset/maintenance" },
 ];
 
 export const inventoryItems = [
@@ -52,29 +60,34 @@ export const inventoryItems = [
 export const financeItems = [
   { title: "Finance Dashboard", path: "/finance" },
   { title: "Finance Settings", path: "/finance/settings" },
+  { title: "Revenue & Expenses", path: "/finance/revenue-expenses" },
+  { title: "E-Invoices", path: "/finance/e-invoice" },
 ];
 
 export const programmesItems = [
   { title: "Programmes Dashboard", path: "/programmes" },
   { title: "Programmes Settings", path: "/programmes/settings" },
+  { title: "Registration", path: "/programmes/registration" },
+  { title: "Smart Services NADI4U", path: "/programmes/nadi4u" },
+  { title: "Smart Services NADI2U", path: "/programmes/nadi2u" },
+  { title: "Others", path: "/programmes/others" },
 ];
 
 export const reportItems = [
   { title: "Reports Dashboard", path: "/report/dashboard" },
   { title: "Usage Sessions", path: "/report/usage-sessions" },
   { title: "Internet Access", path: "/report/internet-access" },
+  { title: "Preset Reports", path: "/report/preset-reports" },
+  { title: "Custom Reports", path: "/report/custom-reports" },
 ];
 
-export const workflowItems: MenuItem[] = [
-  {
-    title: "Workflow Configurations",
-    path: "/workflow",
-  },
+export const workflowItems = [
+  { title: "Workflow Configurations", path: "/workflow" },
 ];
 
 export const memberManagementItems = [
   { title: "Member Management", path: "/dashboard/members" },
-  { title: "Personal Details", path: "/dashboard/members/details" },
+  { title: "Member Profile", path: "/dashboard/members/details" },
   { title: "Registration", path: "/dashboard/members/registration" },
   { title: "Activity Logs", path: "/dashboard/members/activity" },
 ];
@@ -96,12 +109,88 @@ export const financialItems = [
 
 export const complianceItems = [
   { title: "Audit Logs", path: "/compliance/audit" },
+
   { title: "System Reports", path: "/compliance/reports" },
 ];
 
 export const siteManagementItems = [
-  { title: "Site Management", path: "/site-management/main" },
-  { title: "Site Detail", path: "/site" },
+  { title: "Site Management", path: "/site-management" },
+  { title: "Site Profile", path: "/site" },
+  { title: "Usage", path: "/site/usage" },
+  { title: "Booking Management", path: "/site/booking-management" },
+  { title: "NADI Closure", path: "/site/closure" },
+  { title: "Insurance", path: "/site/insurance" },
+  { title: "Inventory Management", path: "/site/inventory-management" },
+  { title: "Utilities Billing", path: "/site/utilities-billing" },
+  { title: "Vendor Management", path: "/site/vendor-management" },
+  { title: "KPI Performance", path: "/site/kpi" },
+  { title: "NMS", path: "/site/nms" },
+];
+
+export const dashboardItems = [
+  { title: "Home", path: "/dahsboard/home" },
+  { title: "Membership", path: "/dahsboard/member" },
+  { title: "Smart Services", path: "/dahsboard/smart-services" },
+  { title: "Operation", path: "/dahsboard/operation" },
+  { title: "Takwim", path: "/dahsboard/takwim" },
+  { title: "Claim", path: "/dahsboard/claim" },
+  { title: "Staff Summary", path: "/dahsboard/staff-summary" },
+  { title: "Leave Summary", path: "/dahsboard/leave-summary" },
+  { title: "Attendance", path: "/dahsboard/attendance" },
+  { title: "Site Management", path: "/dahsboard/site-management" },
+  { title: "Staff Training", path: "/dahsboard/staff-training" },
+  { title: "Payroll", path: "/dahsboard/payroll" },
+  { title: "Calendar", path: "/dahsboard/calendar" },
+  {
+    title: "Leave Application Summary",
+    path: "/dahsboard-leave-application-summary",
+  },
+  {
+    title: "Replacement Leave Summary",
+    path: "/dahsboard-replacement-leave-summary",
+  },
+  { title: "Events", path: "/dahsboard-events" },
+  { title: "Health", path: "/dahsboard-health" },
+  { title: "PC Booking", path: "/dahsboard-pc-booking" },
+  { title: "Upcoming Event", path: "/dahsboard-upcoming-event" },
+  { title: "Participations", path: "/dahsboard-participation" },
+  { title: "Event Breakdown", path: "/dahsboard-event-breakdown" },
+  { title: "Docket Status", path: "/dahsboard-docket-status" },
+  { title: "Technician", path: "/dahsboard-technician" },
+  { title: "Graph", path: "/dahsboard-graph" },
+];
+
+export const nadiDashboardItems = [
+  { title: "NADI Information", path: "/nadi-dashboard-nadi-information" },
+  { title: "Membership", path: "/nadi-dashboard-membership" },
+  { title: "Events", path: "/nadi-dashboard-events" },
+  { title: "Maps", path: "/nadi-dashboard-aps" },
+  { title: "NADI Location", path: "/nadi-dashboard-nadi-location" },
+  { title: "Operation Hour", path: "/nadi-dashboard-operation-hour" },
+  { title: "Service Provider", path: "/nadi-dashboard-service-provider" },
+  { title: "Contact Information", path: "/nadi-dashboard-contact-information" },
+  { title: "Others", path: "/nadi-dashboard-others" },
+];
+
+export const iotDashboardItems = [
+  { title: "Rain Gauge", path: "/iot-dashboard-rain-gauge" },
+  { title: "Temperature", path: "/iot-dashboard-temperature" },
+  { title: "Humidity", path: "/iot-dashboard-humidity" },
+  { title: "Pressure", path: "/iot-dashboard-pressure" },
+];
+
+export const announcementsItems = [
+  { title: "Announcements", path: "/announcements" },
+  { title: "Create Announcements", path: "/announcements/create-announcement" },
+  {
+    title: "Announcements Settings",
+    path: "/announcements/announcements-settings",
+  },
+];
+
+export const takwimItems = [
+  { title: "Takwim Management", path: "/takwim" },
+  { title: "Takwim Settings", path: "/takwim/settings" },
 ];
 
 export const demoPagesItems: MenuItem[] = [
