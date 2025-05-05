@@ -212,9 +212,7 @@ export const useNotifications = ({
     }
   };
 
-  const handleMarkAllAsRead = () => {
-    markAllAsReadMutation.mutate();
-  };
+  // Removed redundant handleMarkAllAsRead function
 
   return {
     notifications,
