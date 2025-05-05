@@ -44,11 +44,18 @@ export function SiteSelector({ onSiteChange, selectedSiteId }: SiteSelectorProps
           .order("sitename");
 
         if (error) throw error;
-        setSites(data as Site[]);
+        
+        // Transform the data to ensure consistent typing
+        const sitesData = data.map(site => ({
+          id: String(site.id),
+          sitename: site.sitename
+        }));
+        
+        setSites(sitesData);
 
         // If a site ID is already selected, set the selected site
         if (selectedSiteId) {
-          const site = data.find((site: Site) => site.id === selectedSiteId);
+          const site = sitesData.find((site: Site) => site.id === selectedSiteId);
           if (site) setSelectedSite(site);
         }
       } catch (error) {
@@ -94,7 +101,7 @@ export function SiteSelector({ onSiteChange, selectedSiteId }: SiteSelectorProps
               <CommandItem
                 key={site.id}
                 value={site.id}
-                onSelect={handleSiteSelect}
+                onSelect={() => handleSiteSelect(site.id)}
               >
                 <Check
                   className={cn(

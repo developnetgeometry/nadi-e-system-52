@@ -1,304 +1,323 @@
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AlertCircle, Plus, Save, Trash } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/components/ui/use-toast";
+
+interface ContractType {
+  id: string;
+  name: string;
+}
+
+interface Entitlement {
+  id: string;
+  site_id: string;
+  contract_type_id: string;
+  annual_leave_day: number;
+  pro_rate_formula: string;
+  contract_type: ContractType;
+}
 
 interface EntitlementSettingsProps {
   siteId: string;
 }
 
-const formSchema = z.object({
-  contractType: z.string().min(1, "Contract type is required"),
-  annualLeaveDays: z.coerce.number().min(0, "Days cannot be negative"),
-  proRateFormula: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
-interface Entitlement {
-  id: string;
-  contract_type_id: string;
-  annual_leave_day: number;
-  pro_rate_formula: string | null;
-  contract_type: {
-    id: string;
-    name: string;
-  };
-}
-
 export function EntitlementSettings({ siteId }: EntitlementSettingsProps) {
-  const [loading, setLoading] = useState(true);
   const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
-  const [contractTypes, setContractTypes] = useState<{ id: string; name: string }[]>([]);
-  const [editId, setEditId] = useState<string | null>(null);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      contractType: "",
-      annualLeaveDays: 0,
-      proRateFormula: "",
-    },
+  const [contractTypes, setContractTypes] = useState<ContractType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newEntitlement, setNewEntitlement] = useState<Partial<Entitlement>>({
+    site_id: siteId,
+    annual_leave_day: 0,
+    pro_rate_formula: ""
   });
+  const { toast } = useToast();
 
+  // Fetch entitlements for the selected site
   useEffect(() => {
-    async function fetchData() {
+    async function fetchEntitlements() {
+      setLoading(true);
       try {
-        setLoading(true);
-
-        // Fetch contract types
+        // Fetch contract types first
         const { data: contractTypesData, error: contractTypesError } = await supabase
           .from("nd_contract_type")
           .select("id, name");
-
+        
         if (contractTypesError) throw contractTypesError;
-        setContractTypes(contractTypesData || []);
-
-        // Fetch entitlements
+        setContractTypes(contractTypesData as ContractType[]);
+        
+        // Then fetch entitlements for the selected site
         const { data: entitlementsData, error: entitlementsError } = await supabase
           .from("nd_leave_entitlement")
           .select(`
             id, 
+            site_id, 
             contract_type_id, 
             annual_leave_day, 
             pro_rate_formula,
-            contract_type:contract_type_id (id, name)
-          `);
-
+            contract_type:nd_contract_type(id, name)
+          `)
+          .eq("site_id", siteId);
+        
         if (entitlementsError) throw entitlementsError;
-        setEntitlements(entitlementsData || []);
-
+        
+        // Transform the data to ensure proper typing
+        const formattedEntitlements = entitlementsData.map((item: any) => ({
+          id: item.id,
+          site_id: item.site_id,
+          contract_type_id: item.contract_type_id,
+          annual_leave_day: item.annual_leave_day,
+          pro_rate_formula: item.pro_rate_formula,
+          contract_type: {
+            id: item.contract_type?.id || "",
+            name: item.contract_type?.name || ""
+          }
+        }));
+        
+        setEntitlements(formattedEntitlements);
       } catch (error) {
-        console.error("Error fetching entitlement data:", error);
-        toast.error("Failed to load entitlement data");
+        console.error("Error fetching entitlements:", error);
+        toast({
+          title: "Error loading entitlements",
+          description: "Could not load leave entitlements for this site.",
+          variant: "destructive"
+        });
       } finally {
         setLoading(false);
       }
     }
-
+    
     if (siteId) {
-      fetchData();
+      fetchEntitlements();
     }
-  }, [siteId]);
+  }, [siteId, toast]);
 
-  const handleEdit = (entitlement: Entitlement) => {
-    setEditId(entitlement.id);
-    form.reset({
-      contractType: entitlement.contract_type_id,
-      annualLeaveDays: entitlement.annual_leave_day,
-      proRateFormula: entitlement.pro_rate_formula || "",
-    });
-  };
-
-  const onSubmit = async (values: FormValues) => {
-    try {
-      const { contractType, annualLeaveDays, proRateFormula } = values;
-
-      if (editId) {
-        // Update existing entitlement
-        const { error } = await supabase
-          .from("nd_leave_entitlement")
-          .update({
-            contract_type_id: contractType,
-            annual_leave_day: annualLeaveDays,
-            pro_rate_formula: proRateFormula || null,
-            updated_by: (await supabase.auth.getUser()).data.user?.id,
-          })
-          .eq("id", editId);
-
-        if (error) throw error;
-        toast.success("Entitlement updated successfully");
-      } else {
-        // Create new entitlement
-        const { error } = await supabase
-          .from("nd_leave_entitlement")
-          .insert({
-            contract_type_id: contractType,
-            annual_leave_day: annualLeaveDays,
-            pro_rate_formula: proRateFormula || null,
-            created_by: (await supabase.auth.getUser()).data.user?.id,
-          });
-
-        if (error) throw error;
-        toast.success("Entitlement added successfully");
-      }
-
-      // Reset form and refresh data
-      form.reset({
-        contractType: "",
-        annualLeaveDays: 0,
-        proRateFormula: "",
+  const handleAddEntitlement = async () => {
+    if (!newEntitlement.contract_type_id) {
+      toast({
+        title: "Missing information",
+        description: "Please select a contract type.",
+        variant: "destructive"
       });
-      setEditId(null);
-      
-      // Refresh the entitlements list
+      return;
+    }
+    
+    try {
       const { data, error } = await supabase
         .from("nd_leave_entitlement")
+        .insert({
+          site_id: siteId,
+          contract_type_id: newEntitlement.contract_type_id,
+          annual_leave_day: newEntitlement.annual_leave_day || 0,
+          pro_rate_formula: newEntitlement.pro_rate_formula || ""
+        })
         .select(`
           id, 
+          site_id, 
           contract_type_id, 
           annual_leave_day, 
           pro_rate_formula,
-          contract_type:contract_type_id (id, name)
-        `);
+          contract_type:nd_contract_type(id, name)
+        `)
+        .single();
       
       if (error) throw error;
-      setEntitlements(data || []);
-
-    } catch (error) {
-      console.error("Error saving entitlement:", error);
-      toast.error("Failed to save entitlement");
+      
+      // Transform the returned data to match our Entitlement type
+      const newRecord: Entitlement = {
+        id: data.id,
+        site_id: data.site_id,
+        contract_type_id: data.contract_type_id,
+        annual_leave_day: data.annual_leave_day,
+        pro_rate_formula: data.pro_rate_formula,
+        contract_type: {
+          id: data.contract_type.id,
+          name: data.contract_type.name
+        }
+      };
+      
+      setEntitlements([...entitlements, newRecord]);
+      
+      setIsAddDialogOpen(false);
+      setNewEntitlement({
+        site_id: siteId,
+        annual_leave_day: 0,
+        pro_rate_formula: ""
+      });
+      
+      toast({
+        title: "Entitlement added",
+        description: "Leave entitlement has been added successfully."
+      });
+    } catch (error: any) {
+      console.error("Error adding entitlement:", error);
+      toast({
+        title: "Error adding entitlement",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
 
-  if (loading) {
+  const handleDeleteEntitlement = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("nd_leave_entitlement")
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
+      
+      setEntitlements(entitlements.filter(e => e.id !== id));
+      
+      toast({
+        title: "Entitlement deleted",
+        description: "Leave entitlement has been deleted successfully."
+      });
+    } catch (error: any) {
+      console.error("Error deleting entitlement:", error);
+      toast({
+        title: "Error deleting entitlement",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  if (!siteId) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-64 w-full" />
-      </div>
+      <Card>
+        <CardContent className="py-10 text-center">
+          <AlertCircle className="mx-auto h-10 w-10 text-yellow-500 mb-4" />
+          <CardTitle className="mb-2">No Site Selected</CardTitle>
+          <CardDescription>
+            Please select a site to manage leave entitlements.
+          </CardDescription>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <Card>
-        <CardHeader>
-          <CardTitle>{editId ? "Edit Entitlement" : "Add New Entitlement"}</CardTitle>
-          <CardDescription>
-            Configure leave entitlement days for different contract types
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="contractType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Contract Type</FormLabel>
-                      <FormControl>
-                        <select 
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          {...field}
-                        >
-                          <option value="">Select contract type</option>
-                          {contractTypes.map(type => (
-                            <option key={type.id} value={type.id}>{type.name}</option>
-                          ))}
-                        </select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="annualLeaveDays"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Annual Leave Days</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="proRateFormula"
-                  render={({ field }) => (
-                    <FormItem className="col-span-1 md:col-span-2">
-                      <FormLabel>Pro Rate Formula (Optional)</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Formula used to calculate prorated leave for partial years (e.g., "days/12*months_worked")
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                {editId && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => {
-                      setEditId(null);
-                      form.reset({
-                        contractType: "",
-                        annualLeaveDays: 0,
-                        proRateFormula: "",
-                      });
-                    }}
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div>
+            <CardTitle>Leave Entitlement</CardTitle>
+            <CardDescription>
+              Configure leave entitlements for different contract types
+            </CardDescription>
+          </div>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" /> Add Entitlement
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Leave Entitlement</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div>
+                  <Label htmlFor="contract-type">Contract Type</Label>
+                  <Select 
+                    onValueChange={(value) => setNewEntitlement({
+                      ...newEntitlement,
+                      contract_type_id: value
+                    })}
                   >
-                    Cancel
-                  </Button>
-                )}
-                <Button type="submit">
-                  {editId ? "Update Entitlement" : "Add Entitlement"}
+                    <SelectTrigger id="contract-type">
+                      <SelectValue placeholder="Select a contract type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {contractTypes.map((type) => (
+                        <SelectItem key={type.id} value={type.id}>
+                          {type.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="annual-leave">Annual Leave Days</Label>
+                  <Input
+                    id="annual-leave"
+                    type="number"
+                    value={newEntitlement.annual_leave_day || 0}
+                    onChange={(e) => setNewEntitlement({
+                      ...newEntitlement,
+                      annual_leave_day: parseInt(e.target.value)
+                    })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="pro-rate-formula">Pro-rate Formula</Label>
+                  <Input
+                    id="pro-rate-formula"
+                    value={newEntitlement.pro_rate_formula || ""}
+                    onChange={(e) => setNewEntitlement({
+                      ...newEntitlement,
+                      pro_rate_formula: e.target.value
+                    })}
+                    placeholder="e.g., (days_worked / 365) * annual_leave"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAddEntitlement}>
+                  <Save className="h-4 w-4 mr-2" /> Save
                 </Button>
               </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Leave Entitlements</CardTitle>
-          <CardDescription>
-            Overview of leave entitlements by contract type
-          </CardDescription>
+            </DialogContent>
+          </Dialog>
         </CardHeader>
         <CardContent>
-          {entitlements.length > 0 ? (
+          {loading ? (
+            <div className="py-6 text-center">
+              <p className="text-muted-foreground">Loading entitlements...</p>
+            </div>
+          ) : entitlements.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Contract Type</TableHead>
                   <TableHead>Annual Leave Days</TableHead>
-                  <TableHead>Pro Rate Formula</TableHead>
+                  <TableHead>Pro-rate Formula</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {entitlements.map((entitlement) => (
                   <TableRow key={entitlement.id}>
-                    <TableCell>{entitlement.contract_type?.name}</TableCell>
+                    <TableCell>{entitlement.contract_type.name}</TableCell>
                     <TableCell>{entitlement.annual_leave_day}</TableCell>
-                    <TableCell>{entitlement.pro_rate_formula || "N/A"}</TableCell>
+                    <TableCell>{entitlement.pro_rate_formula || "-"}</TableCell>
                     <TableCell className="text-right">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleEdit(entitlement)}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteEntitlement(entitlement.id)}
                       >
-                        Edit
+                        <Trash className="h-4 w-4 text-red-500" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -306,8 +325,9 @@ export function EntitlementSettings({ siteId }: EntitlementSettingsProps) {
               </TableBody>
             </Table>
           ) : (
-            <div className="flex justify-center items-center h-32 bg-muted/20 rounded-lg border border-dashed">
-              <p className="text-muted-foreground">No entitlements configured yet</p>
+            <div className="py-6 text-center">
+              <p className="text-muted-foreground">No entitlements configured for this site.</p>
+              <p className="text-muted-foreground">Click "Add Entitlement" to create one.</p>
             </div>
           )}
         </CardContent>
