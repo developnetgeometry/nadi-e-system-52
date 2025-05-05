@@ -3,8 +3,7 @@ import {
   fetchSites,
 } from "@/components/site/hook/site-utils";
 import { supabase } from "@/lib/supabase";
-import { AssetType } from "@/types/asset";
-import { Inventory } from "@/types/inventory";
+import { Inventory, InventoryType } from "@/types/inventory";
 import { Site } from "@/types/site";
 
 export const inventoryClient = {
@@ -12,7 +11,8 @@ export const inventoryClient = {
     organizationId: string | null,
     siteId: string | null
   ): Promise<Inventory[]> => {
-    const allSites = await fetchSites(organizationId);
+    // Pass isTPUser and isDUSPUser as false by default
+    const allSites = await fetchSites(organizationId, false, false);
 
     let query = supabase
       .from("nd_inventory")
@@ -55,17 +55,17 @@ export const inventoryClient = {
           profile = await fetchSiteBySiteId(siteId);
         } else {
           profile = allSites.find((s) => s.id === item.site?.site_profile_id);
-          profile = formatProfile(profile);
+          if (profile) profile = formatProfile(profile);
         }
 
         return {
           ...item,
           type: item.nd_inventory_type,
-          brand: item.nd_brand,
           site: profile ? { ...profile } : null,
         };
       })
     );
+
     return filteredData;
   },
   fetchInventoryById: async (id: string): Promise<Inventory> => {
@@ -93,7 +93,7 @@ export const inventoryClient = {
     };
   },
 
-  fetchInventoryTypes: async (): Promise<AssetType[]> => {
+  fetchInventoryTypes: async (): Promise<InventoryType[]> => {
     const { data, error } = await supabase
       .from("nd_inventory_type")
       .select("*");
@@ -102,6 +102,6 @@ export const inventoryClient = {
       console.error("Error fetching inventory types:", error);
       throw error;
     }
-    return data as AssetType[];
+    return data as InventoryType[];
   },
 };

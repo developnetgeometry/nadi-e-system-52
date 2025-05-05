@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-const StaffPage = () => {
+const StaffPage: React.FC = () => {
   return <div>Page Staff</div>;
 };
 

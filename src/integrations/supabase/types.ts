@@ -6195,6 +6195,7 @@ export type Database = {
           parliament_rfid: number | null
           phase_id: number | null
           ref_id: string | null
+          refid_test: string | null
           region_id: number | null
           remark: string | null
           sitename: string | null
@@ -6232,6 +6233,7 @@ export type Database = {
           parliament_rfid?: number | null
           phase_id?: number | null
           ref_id?: string | null
+          refid_test?: string | null
           region_id?: number | null
           remark?: string | null
           sitename?: string | null
@@ -6269,6 +6271,7 @@ export type Database = {
           parliament_rfid?: number | null
           phase_id?: number | null
           ref_id?: string | null
+          refid_test?: string | null
           region_id?: number | null
           remark?: string | null
           sitename?: string | null
@@ -6414,6 +6417,20 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "nd_site_remark_nd_site_profile_fk"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_site_remark_nd_site_profile_fk"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile_name"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "nd_site_remark_type_id_fkey"
             columns: ["type_id"]

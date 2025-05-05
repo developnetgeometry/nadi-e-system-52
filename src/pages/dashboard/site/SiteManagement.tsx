@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Box, Package, Settings, DollarSign, Plus, CheckCircle, Clock, PauseCircle, XCircle, Building2, Bell } from "lucide-react";
@@ -122,7 +123,7 @@ const SiteDashboard = () => {
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{siteStats?.filter(site => site.active_status === 1).length || 0}</div>
+              <div className="text-2xl font-bold">{siteStats?.filter(site => site.nd_site_status?.eng === "In Operation").length || 0}</div>
             </CardContent>
           </Card>
           <Card className="flex-1 min-w-[200px]">
@@ -133,7 +134,7 @@ const SiteDashboard = () => {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{siteStats?.filter(site => site.active_status === 2).length || 0}</div>
+              <div className="text-2xl font-bold">{siteStats?.filter(site => site.nd_site_status?.eng === "In Progress").length || 0}</div>
             </CardContent>
           </Card>
           <Card className="flex-1 min-w-[200px]">
@@ -144,7 +145,7 @@ const SiteDashboard = () => {
               <PauseCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{siteStats?.filter(site => site.active_status === 3).length || 0}</div>
+              <div className="text-2xl font-bold">{siteStats?.filter(site => site.nd_site_status?.eng === "Temporarily Close").length || 0}</div>
             </CardContent>
           </Card>
           <Card className="flex-1 min-w-[200px]">
@@ -155,7 +156,7 @@ const SiteDashboard = () => {
               <XCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{siteStats?.filter(site => site.active_status === 4).length || 0}</div>
+              <div className="text-2xl font-bold">{siteStats?.filter(site => site.nd_site_status?.eng === "Permanently Close").length || 0}</div>
             </CardContent>
           </Card>
         </div>
