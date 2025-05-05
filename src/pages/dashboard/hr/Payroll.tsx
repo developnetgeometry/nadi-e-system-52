@@ -59,7 +59,7 @@ export default function PayrollPage() {
       case "6": // General Staff
         return <StaffPage />;
       default:
-        return <SuperAdminPage />; // Default to SuperAdminPage
+        return <div>Unknown role</div>; // Default to SuperAdminPage
     }
   };
 
