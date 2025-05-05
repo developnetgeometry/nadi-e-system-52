@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useUsers } from "@/hooks/use-users"; // Import useUsers hook
 import { SuperAdminPage } from "@/components/hr/payroll/SuperAdminPage";
@@ -40,16 +41,25 @@ export default function PayrollPage() {
     switch (role) {
       case "super_admin":
         return <SuperAdminPage />;
-      //   case "2":
-      //     return <MCMCPage />;
-      //   case "1":
-      //     return <DUSPPage />;
-      case "3":
+      case "2": // MCMC
+        return <MCMCPage />;
+      case "1": // DUSP
+        return <DUSPPage />;
+      // TP roles
+      case "tp_operation":
+      case "tp_admin":
+      case "tp_hr":
+      case "tp_pic":
+      case "tp_site":
+      case "3": // General TP
         return <TPPage />;
-      case "6":
+      // Staff roles
+      case "staff_manager":
+      case "staff_assistant_manager":
+      case "6": // General Staff
         return <StaffPage />;
       default:
-        return <SuperAdminPage />;
+        return <SuperAdminPage />; // Default to SuperAdminPage
     }
   };
 
