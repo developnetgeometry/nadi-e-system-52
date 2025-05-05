@@ -1,4 +1,3 @@
-
 import {
   fetchSiteBySiteId,
   fetchSites,
@@ -12,8 +11,7 @@ export const assetClient = {
     organizationId: string | null,
     siteId: string | null
   ): Promise<Asset[]> => {
-    // Pass isTPUser and isDUSPUser as false by default
-    const allSites = await fetchSites(organizationId, false, false);
+    const allSites = await fetchSites(organizationId);
 
     let query = supabase
       .from("nd_asset")
@@ -57,7 +55,7 @@ export const assetClient = {
           profile = await fetchSiteBySiteId(siteId);
         } else {
           profile = allSites.find((s) => s.id === item.site?.site_profile_id);
-          if (profile) profile = formatProfile(profile);
+          profile = formatProfile(profile);
         }
 
         return {

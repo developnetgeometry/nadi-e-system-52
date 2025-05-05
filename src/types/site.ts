@@ -1,4 +1,3 @@
-
 export interface Site {
   id: string;
   sitename: string;
@@ -30,7 +29,7 @@ export interface Site {
       id: string;
       name: string;
     };
-  };
+  }; // Add dusp_tp field for organization details
   nd_site_status: {
     eng: string;
   };

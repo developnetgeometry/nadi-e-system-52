@@ -1,105 +1,96 @@
+import React, { useState, useEffect } from 'react';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { User, Edit2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import ProfilePictureUploadDialog from '../../components/MemberPictureUploadDialog';
+import { supabase, SUPABASE_URL } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
-import React, { useState } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import ProfilePictureUploadDialog from "../../components/MemberPictureUploadDialog";
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+const MemberProfilePicture = () => {
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [profilePicture, setProfilePicture] = useState<string | null>(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-// Define the props
-interface MemberProfilePictureProps {
-  avatarUrl?: string;
-  memberId: string;
-  onAvatarChange?: (url: string) => void;
-}
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
 
-const MemberProfilePicture: React.FC<MemberProfilePictureProps> = ({ 
-  avatarUrl, 
-  memberId,
-  onAvatarChange
-}) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [avatar, setAvatar] = useState<string | undefined>(avatarUrl);
-  const { user } = useAuth();
-  const userId = user?.id || '';
-  
-  const handleFilesSelected = async (files: File[]) => {
-    if (files.length > 0) {
-      try {
-        // Update profile picture logic here
-        const file = files[0];
-        const fileName = `profile-${memberId}-${Date.now()}`;
-        
-        const { error: uploadError, data } = await supabase.storage
-          .from('avatars')
-          .upload(fileName, file, {
-            upsert: true,
-          });
+                const { data: profile, error } = await supabase
+                    .from("nd_member_photo")
+                    .select("photo")
+                    .eq("user_id", user.id)
+                    .single();
 
-        if (uploadError) {
-          throw uploadError;
+                if (error) throw error;
+
+                if (profile?.photo) {
+                    setProfilePicture(`${SUPABASE_URL}/storage/v1/object/public/profileimage/${profile.photo}`);
+                }
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchUserProfile();
+    }, []);
+
+    const handleEditClick = () => {
+        setIsDialogOpen(true);
+    };
+
+    const handleFilesSelected = (files: File[]) => {
+        setSelectedFiles(files);
+        if (files.length > 0) {
+            const file = files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setProfilePicture(e.target?.result as string);
+            };
+            reader.readAsDataURL(file);
         }
+    };
 
-        // Get public URL
-        const { data: urlData } = await supabase.storage
-          .from('avatars')
-          .getPublicUrl(fileName);
-
-        if (urlData?.publicUrl) {
-          setAvatar(urlData.publicUrl);
-          // Update member profile with new avatar URL
-          const { error: updateError } = await supabase
-            .from('member_profiles')
-            .update({ avatar_url: urlData.publicUrl })
-            .eq('id', memberId);
-
-          if (updateError) throw updateError;
-
-          if (onAvatarChange) {
-            onAvatarChange(urlData.publicUrl);
-          }
-
-          toast.success("Profile picture updated successfully");
-          setIsDialogOpen(false);
-        }
-      } catch (error) {
-        console.error("Error updating profile picture:", error);
-        toast.error("Failed to update profile picture");
-      }
-    }
-  };
-
-  const handleAvatarClick = () => {
-    setIsDialogOpen(true);
-  };
-
-  return (
-    <div className="flex flex-col items-center space-y-2">
-      <Avatar className="w-24 h-24 border cursor-pointer" onClick={handleAvatarClick}>
-        <AvatarImage src={avatar} alt="Profile" />
-        <AvatarFallback className="text-2xl">
-          {/* Extract first letter from user name/email for fallback */}
-          {user?.email?.charAt(0).toUpperCase() || "U"}
-        </AvatarFallback>
-      </Avatar>
-      
-      <button 
-        type="button"
-        onClick={handleAvatarClick}
-        className="text-sm text-blue-600 hover:text-blue-800"
-      >
-        Change Picture
-      </button>
-
-      <ProfilePictureUploadDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onFilesSelected={handleFilesSelected}
-        memberId={memberId}
-        userId={userId}
-      />
-    </div>
-  );
+    return (
+        <div className="flex flex-col items-center pt-8">
+            <div className="relative">
+                <Button
+                    className="p-0 rounded-full"
+                    onClick={handleEditClick}
+                >
+                    {isLoading ? (
+                        <Skeleton className="w-24 h-24 rounded-full" ></Skeleton >
+                    ) : (
+                        <Avatar className="w-24 h-24">
+                            <AvatarImage
+                                src={profilePicture}
+                                alt="Profile Picture"
+                                style={{ objectFit: 'cover' }}
+                            />
+                            <AvatarFallback className="w-full h-full bg-gray-300">
+                                <User className="text-gray-900" />
+                            </AvatarFallback>
+                        </Avatar>
+                    )}
+                </Button>
+                <Button
+                    className="absolute top-6 right-0 p-3 bg-white rounded-full shadow-md"
+                    onClick={handleEditClick}
+                >
+                    <Edit2 className="w-4 h-4 text-gray-600" />
+                </Button>
+            </div>
+            <ProfilePictureUploadDialog
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                onFilesSelected={handleFilesSelected}
+            />
+        </div>
+    );
 };
 
 export default MemberProfilePicture;
