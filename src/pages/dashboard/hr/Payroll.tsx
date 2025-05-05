@@ -9,6 +9,9 @@ import { StaffPage } from "@/components/hr/payroll/StaffPage";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 
+// Define the UserRole type here
+type UserRole = string;
+
 export default function PayrollPage() {
   const { role, changeRole } = useUserRole(); // Use the hook outside the component
   const { useUsersQuery } = useUsers(); // Fetch user profile
@@ -59,7 +62,7 @@ export default function PayrollPage() {
       case "6": // General Staff
         return <StaffPage />;
       default:
-        return <div>Unknown role</div>; // Default to SuperAdminPage
+        return <SuperAdminPage />; // Default to SuperAdminPage
     }
   };
 

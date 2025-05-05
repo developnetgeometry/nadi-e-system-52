@@ -1,9 +1,11 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
   title: string;
   value: string | number;
+  subValue?: string; // Added subValue as optional property
   icon?: React.ReactNode;
   trend?: {
     value: number;
@@ -16,6 +18,7 @@ interface StatCardProps {
 export function StatCard({
   title,
   value,
+  subValue,
   icon,
   trend,
   colorVariant = "default",
@@ -44,6 +47,9 @@ export function StatCard({
         <div className="text-2xl font-bold tracking-tight">
           <span className={colorClasses[colorVariant]}>{value}</span>
         </div>
+        {subValue && (
+          <div className="text-sm text-muted-foreground mt-1">{subValue}</div>
+        )}
         {trend && (
           <div className={cn("text-xs mt-1", trendColors)}>
             {trend.isPositive ? "+" : "-"}
