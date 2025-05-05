@@ -1,68 +1,73 @@
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { useUsers } from "@/hooks/use-users"; // Import useUsers hook
+import { useAuth } from "@/hooks/useAuth";
+import { useUserAccess } from "@/hooks/use-user-access";
 import { SuperAdminPage } from "@/components/hr/payroll/SuperAdminPage";
 import { MCMCPage } from "@/components/hr/payroll/MCMCPage";
 import { DUSPPage } from "@/components/hr/payroll/DUSPPage";
 import { TPPage } from "@/components/hr/payroll/TPPage";
 import { StaffPage } from "@/components/hr/payroll/StaffPage";
-import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-
-// Define the UserRole type here
-type UserRole = string;
+import { UserType } from "@/types/auth"; // Import UserType from auth types
 
 export default function PayrollPage() {
-  const { role, changeRole } = useUserRole(); // Use the hook outside the component
-  const { useUsersQuery } = useUsers(); // Fetch user profile
-  const { data: userProfiles } = useUsersQuery();
-  const userProfile = userProfiles?.[0]; // Assuming the first profile is needed
-  const [showRoleSelector, setShowRoleSelector] = useState(true);
+  const { userType, isSuperAdmin, accessChecked } = useUserAccess(); // Use the hook to get user type
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (userProfile?.user_group) {
-      changeRole(userProfile.user_group as UserRole); // Update role based on user_type
+    if (accessChecked) {
+      setLoading(false);
     }
-  }, [userProfile, changeRole]);
+  }, [accessChecked]);
 
-  function useUserRole(): {
-    role: string;
-    changeRole: (newRole: string) => void;
-  } {
-    const [role, setRole] = useState<string>("");
-
-    const changeRole = (newRole: string) => {
-      setRole(newRole);
-    };
-
-    console.log("Current role:", role);
-    return { role, changeRole };
-  }
-
-  // Render the appropriate dashboard based on user role
+  // Render the appropriate dashboard based on user type
   const renderDashboard = () => {
-    switch (role) {
-      case "super_admin":
-        return <SuperAdminPage />;
-      case "2": // MCMC
-        return <MCMCPage />;
-      case "1": // DUSP
-        return <DUSPPage />;
-      // TP roles
-      case "tp_operation":
-      case "tp_admin":
-      case "tp_hr":
-      case "tp_pic":
-      case "tp_site":
-      case "3": // General TP
-        return <TPPage />;
-      // Staff roles
-      case "staff_manager":
-      case "staff_assistant_manager":
-      case "6": // General Staff
-        return <StaffPage />;
-      default:
-        return <SuperAdminPage />; // Default to SuperAdminPage
+    // Add console.log to debug user type
+    console.log("Current user type for payroll:", userType);
+
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      );
+    }
+
+    // Check user type and return appropriate component
+    if (isSuperAdmin || userType === "super_admin") {
+      return <SuperAdminPage />;
+    } else if (userType === "mcmc_admin" || userType === "mcmc_operation" || userType === "mcmc_management" || userType === "2") {
+      return <MCMCPage />;
+    } else if (userType === "dusp_admin" || userType === "dusp_management" || userType === "dusp_operation" || userType === "1") {
+      return <DUSPPage />;
+    } else if (
+      userType === "tp_operation" || 
+      userType === "tp_admin" || 
+      userType === "tp_hr" || 
+      userType === "tp_pic" || 
+      userType === "tp_site" || 
+      userType === "tp_region" || 
+      userType === "tp_finance" || 
+      userType === "3"
+    ) {
+      return <TPPage />;
+    } else if (
+      userType === "staff_manager" || 
+      userType === "staff_assistant_manager" || 
+      userType === "6"
+    ) {
+      return <StaffPage />;
+    } else {
+      // Default to a message for unknown user types
+      return (
+        <div className="p-8">
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded">
+            <h3 className="font-bold">Unknown User Type</h3>
+            <p>Your user type ({userType || "not set"}) does not have access to the payroll system.</p>
+            <p>Please contact an administrator for assistance.</p>
+          </div>
+        </div>
+      );
     }
   };
 

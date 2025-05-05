@@ -6415,20 +6415,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nd_site_remark_site_id_fkey"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "nd_site_profile"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nd_site_remark_site_id_fkey"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "nd_site_profile_name"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "nd_site_remark_type_id_fkey"
             columns: ["type_id"]
             isOneToOne: false
