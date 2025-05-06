@@ -16,17 +16,23 @@ export const AdminPage = () => {
             title="Total Staff" 
             value="124" 
             subValue="Active employees"
+            icon={<Icons.users className="h-5 w-5 text-blue-600" />}
           />
           <StatCard 
             title="Monthly Payroll" 
             value="RM 452,800" 
             subValue="+2.4% from last month"
             colorVariant="success"
+            trend={{
+              value: 2.4,
+              isPositive: true
+            }}
           />
           <StatCard 
             title="Average Salary" 
             value="RM 3,650" 
             subValue="Per employee"
+            icon={<Icons.dollarSign className="h-5 w-5 text-blue-600" />}
           />
         </div>
         

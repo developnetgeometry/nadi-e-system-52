@@ -1,8 +1,7 @@
 
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Icons } from "@/components/ui/icons";
 
 export interface ProfilePictureUploadDialogProps {
@@ -13,37 +12,23 @@ export interface ProfilePictureUploadDialogProps {
   userId: string;
 }
 
-export function ProfilePictureUploadDialog({
+export const ProfilePictureUploadDialog: React.FC<ProfilePictureUploadDialogProps> = ({
   open,
   onOpenChange,
   onFilesSelected,
   memberId,
   userId
-}: ProfilePictureUploadDialogProps) {
-  const { toast } = useToast();
+}) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    const fileArray = Array.from(files);
-    const validFiles = fileArray.filter(file => file.type.startsWith('image/'));
-
-    if (validFiles.length !== fileArray.length) {
-      toast({
-        title: "Invalid file type",
-        description: "Only image files are allowed",
-        variant: "destructive"
-      });
-      return;
+  const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      onFilesSelected(files);
     }
-
-    onFilesSelected(validFiles);
-    onOpenChange(false);
   };
 
-  const triggerFileInput = () => {
+  const handleButtonClick = () => {
     fileInputRef.current?.click();
   };
 
@@ -53,26 +38,32 @@ export function ProfilePictureUploadDialog({
         <DialogHeader>
           <DialogTitle>Upload Profile Picture</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-4 py-4">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          <Button 
-            onClick={triggerFileInput}
-            className="flex items-center justify-center gap-2"
-          >
-            <Icons.upload className="h-4 w-4" />
+        <div className="flex flex-col items-center justify-center p-6 space-y-4">
+          <div className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg border-gray-300 bg-gray-50 cursor-pointer hover:bg-gray-100">
+            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <Icons.upload className="w-10 h-10 mb-3 text-gray-400" />
+              <p className="mb-2 text-sm text-gray-500">
+                <span className="font-semibold">Click to upload</span> or drag and drop
+              </p>
+              <p className="text-xs text-gray-500">PNG, JPG or GIF (MAX. 2MB)</p>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileSelection}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="button" onClick={handleButtonClick}>
             Select Image
           </Button>
-          <p className="text-sm text-muted-foreground text-center">
-            Supported formats: JPG, PNG, GIF. Max size: 5MB.
-          </p>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default ProfilePictureUploadDialog;

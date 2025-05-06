@@ -1,88 +1,91 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/lib/supabase";
-import { useToast } from "@/components/ui/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
-interface StaffSite {
+interface Staff {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  site_id: string;
+  position: string;
+  department: string;
+  status: string;
+}
+
+interface Site {
   id: string;
   sitename: string;
 }
 
-export function useStaffSites() {
+export const useStaffSites = () => {
   const { user } = useAuth();
-  const [sites, setSites] = useState<StaffSite[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const { toast } = useToast();
+  const [selectedSite, setSelectedSite] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchStaffSites = async () => {
-      if (!user) return;
+  const { data: sites, isLoading: sitesLoading } = useQuery({
+    queryKey: ["staff-sites"],
+    queryFn: async () => {
+      // Mock implementation
+      const mockSites: Site[] = [
+        { id: "1", sitename: "Site A" },
+        { id: "2", sitename: "Site B" },
+        { id: "3", sitename: "Site C" }
+      ];
+      return mockSites;
+    },
+    enabled: !!user
+  });
+
+  const { data: staff, isLoading: staffLoading } = useQuery({
+    queryKey: ["site-staff", selectedSite],
+    queryFn: async () => {
+      if (!selectedSite) return [];
       
-      setIsLoading(true);
-      setError(null);
+      // Mock implementation
+      const mockStaff: Staff[] = [
+        { 
+          id: "1", 
+          name: "John Doe", 
+          email: "john@example.com", 
+          phone: "1234567890", 
+          site_id: "1", 
+          position: "Manager", 
+          department: "Administration", 
+          status: "Active" 
+        },
+        { 
+          id: "2", 
+          name: "Jane Smith", 
+          email: "jane@example.com", 
+          phone: "0987654321", 
+          site_id: "1", 
+          position: "Supervisor", 
+          department: "Operations", 
+          status: "Active" 
+        }
+      ];
       
-      try {
-        // First check if the user is a super admin
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role_id')
-          .eq('user_id', user.id)
-          .single();
-        
-        if (roleError && roleError.code !== 'PGRST116') {
-          throw roleError;
-        }
-        
-        // If user is a super admin, get all sites
-        if (roleData?.role_id === 'super_admin') {
-          const { data, error } = await supabase
-            .from('nd_site_profile')
-            .select('id, sitename')
-            .order('sitename');
-          
-          if (error) throw error;
-          
-          setSites(data as StaffSite[]);
-          return;
-        }
-        
-        // Otherwise, get only the sites the staff is assigned to
-        const { data, error } = await supabase
-          .from('staff_site_assignment')
-          .select(`
-            site:site_id (
-              id, 
-              sitename
-            )
-          `)
-          .eq('staff_id', user.id);
-        
-        if (error) throw error;
-        
-        // Extract and flatten the site data
-        const staffSites = data.map((item) => ({
-          id: item.site.id,
-          sitename: item.site.sitename
-        }));
-        
-        setSites(staffSites);
-      } catch (err) {
-        console.error('Error fetching staff sites:', err);
-        setError(err as Error);
-        toast({
-          title: "Error",
-          description: "Failed to load sites",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchStaffSites();
-  }, [user, toast]);
-  
-  return { sites, isLoading, error };
-}
+      return mockStaff.filter(s => s.site_id === selectedSite);
+    },
+    enabled: !!selectedSite
+  });
+
+  const formatSitesForSelect = () => {
+    if (!sites) return [];
+    return sites.map(site => ({
+      value: site.id,
+      label: site.sitename
+    }));
+  };
+
+  return {
+    sites,
+    staff,
+    selectedSite,
+    setSelectedSite,
+    sitesLoading,
+    staffLoading,
+    formatSitesForSelect
+  };
+};
