@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Card,
@@ -85,7 +86,7 @@ const SiteManagement: React.FC<SiteManagementProps> = () => {
   const [rowSelection, setRowSelection] = useState({});
 
   const {
-    sites,
+    data: sites = [],
     isLoading,
     isError,
     error,
@@ -94,14 +95,14 @@ const SiteManagement: React.FC<SiteManagementProps> = () => {
 
   const {
     mutate: toggleActiveStatus,
-    isLoading: isToggleLoading,
+    isPending: isToggleLoading,
     isError: isToggleError,
     error: toggleError,
   } = useToggleSiteActiveStatus();
 
   const {
     mutate: deleteSiteMutation,
-    isLoading: isDeleteLoading,
+    isPending: isDeleteLoading,
     isError: isDeleteError,
     error: deleteError,
   } = useDeleteSite();
@@ -246,7 +247,6 @@ const SiteManagement: React.FC<SiteManagementProps> = () => {
   ];
 
   // Find the problematic export function call and update it
-  // Expected: exportSitesAsCSV(sites) with 1 argument
   const handleExportCSV = () => {
     const csvContent = exportSitesAsCSV(sites || []);
 
