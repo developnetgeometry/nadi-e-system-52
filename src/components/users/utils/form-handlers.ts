@@ -65,6 +65,10 @@ export async function handleCreateUser(data: UserFormData) {
       
       // For TP (Technology Partner) users
       else if (groupName.includes("tp") || groupName.includes("tech partner")) {
+        // Parse date strings to proper formats if they exist
+        const joinDate = data.join_date ? new Date(data.join_date).toISOString() : null;
+        const dobDate = data.dob ? new Date(data.dob).toISOString() : null;
+
         const { error: tpError } = await supabase
           .from("nd_tech_partner_profile")
           .insert({
@@ -76,6 +80,16 @@ export async function handleCreateUser(data: UserFormData) {
             position_id: data.position_id ? parseInt(data.position_id) : null,
             tech_partner_id: data.tech_partner_id ? parseInt(data.tech_partner_id) : null,
             is_active: true,
+            // Additional TP fields
+            personal_email: data.personal_email || null,
+            join_date: joinDate,
+            qualification: data.qualification || null,
+            dob: dobDate,
+            place_of_birth: data.place_of_birth || null,
+            marital_status: data.marital_status ? parseInt(data.marital_status) : null,
+            race_id: data.race_id ? parseInt(data.race_id) : null,
+            religion_id: data.religion_id ? parseInt(data.religion_id) : null,
+            nationality_id: data.nationality_id ? parseInt(data.nationality_id) : null,
           });
         
         if (tpError) throw tpError;
@@ -242,6 +256,10 @@ export async function handleUpdateUser(data: UserFormData, user: Profile) {
       
       // For TP (Technology Partner) users
       else if (groupName.includes("tp") || groupName.includes("tech partner")) {
+        // Parse date strings to proper formats if they exist
+        const joinDate = data.join_date ? new Date(data.join_date).toISOString() : null;
+        const dobDate = data.dob ? new Date(data.dob).toISOString() : null;
+
         if (tpProfile) {
           // Update existing TP profile
           const { error: tpError } = await supabase
@@ -253,6 +271,17 @@ export async function handleUpdateUser(data: UserFormData, user: Profile) {
               work_email: data.work_email,
               position_id: data.position_id ? parseInt(data.position_id) : null,
               tech_partner_id: data.tech_partner_id ? parseInt(data.tech_partner_id) : null,
+              // Additional TP fields
+              personal_email: data.personal_email || null,
+              join_date: joinDate,
+              qualification: data.qualification || null,
+              dob: dobDate,
+              place_of_birth: data.place_of_birth || null,
+              marital_status: data.marital_status ? parseInt(data.marital_status) : null,
+              race_id: data.race_id ? parseInt(data.race_id) : null,
+              religion_id: data.religion_id ? parseInt(data.religion_id) : null,
+              nationality_id: data.nationality_id ? parseInt(data.nationality_id) : null,
+              is_active: true,
             })
             .eq("user_id", user.id);
           
@@ -269,6 +298,16 @@ export async function handleUpdateUser(data: UserFormData, user: Profile) {
               work_email: data.work_email,
               position_id: data.position_id ? parseInt(data.position_id) : null,
               tech_partner_id: data.tech_partner_id ? parseInt(data.tech_partner_id) : null,
+              // Additional TP fields
+              personal_email: data.personal_email || null,
+              join_date: joinDate,
+              qualification: data.qualification || null,
+              dob: dobDate,
+              place_of_birth: data.place_of_birth || null,
+              marital_status: data.marital_status ? parseInt(data.marital_status) : null,
+              race_id: data.race_id ? parseInt(data.race_id) : null,
+              religion_id: data.religion_id ? parseInt(data.religion_id) : null,
+              nationality_id: data.nationality_id ? parseInt(data.nationality_id) : null,
               is_active: true,
             });
           

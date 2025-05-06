@@ -17,6 +17,7 @@ import { UserConfirmPasswordField } from "./form-fields/UserConfirmPasswordField
 import { UserICNumberField } from "./form-fields/UserICNumberField";
 import { UserPositionField } from "./form-fields/UserPositionField";
 import { UserTechPartnerField } from "./form-fields/UserTechPartnerField";
+import { TechPartnerForm } from "./form-fields/tp/TechPartnerForm";
 import { handleCreateUser, handleUpdateUser } from "./utils/form-handlers";
 import { UserFormData } from "./types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -31,7 +32,7 @@ const userFormSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   full_name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   user_type: z.string(),
-  user_group: z.string().optional(),
+  user_group: z.string(),
   phone_number: z.string()
     .regex(/^(\+?6?01)[0-9]{8,9}$/, { 
       message: "Please enter a valid Malaysian phone number (e.g., +60123456789 or 01123456789)" 
@@ -48,6 +49,16 @@ const userFormSchema = z.object({
     .min(8, { message: "Password must be at least 8 characters" })
     .optional(),
   confirm_password: z.string().optional(),
+  // Additional fields for TP
+  personal_email: z.string().email({ message: "Please enter a valid email address" }).optional().or(z.literal('')),
+  join_date: z.string().optional(),
+  qualification: z.string().optional(),
+  dob: z.string().optional(),
+  place_of_birth: z.string().optional(),
+  marital_status: z.string().optional(),
+  race_id: z.string().optional(),
+  religion_id: z.string().optional(),
+  nationality_id: z.string().optional(),
 }).refine(data => {
   if (data.password && !data.confirm_password) {
     return false;
@@ -95,6 +106,16 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       confirm_password: "",
       position_id: "",
       tech_partner_id: "",
+      // Initialize additional TP fields
+      personal_email: "",
+      join_date: "",
+      qualification: "",
+      dob: "",
+      place_of_birth: "",
+      marital_status: "",
+      race_id: "",
+      religion_id: "",
+      nationality_id: "",
     },
   });
   
@@ -115,7 +136,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       // Check if user is TP
       const { data: tpProfile } = await supabase
         .from("nd_tech_partner_profile")
-        .select("position_id, tech_partner_id")
+        .select("position_id, tech_partner_id, personal_email, join_date, qualification, dob, place_of_birth, marital_status, race_id, religion_id, nationality_id")
         .eq("user_id", user.id)
         .eq("is_active", true)
         .maybeSingle();
@@ -158,6 +179,37 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         }
         if (profileData.tp.tech_partner_id) {
           form.setValue("tech_partner_id", profileData.tp.tech_partner_id.toString());
+        }
+        // Set TP specific fields if available
+        if (profileData.tp.personal_email) {
+          form.setValue("personal_email", profileData.tp.personal_email);
+        }
+        if (profileData.tp.join_date) {
+          // Convert date to string format for input type="date"
+          const joinDate = new Date(profileData.tp.join_date);
+          form.setValue("join_date", joinDate.toISOString().split('T')[0]);
+        }
+        if (profileData.tp.qualification) {
+          form.setValue("qualification", profileData.tp.qualification);
+        }
+        if (profileData.tp.dob) {
+          const dob = new Date(profileData.tp.dob);
+          form.setValue("dob", dob.toISOString().split('T')[0]);
+        }
+        if (profileData.tp.place_of_birth) {
+          form.setValue("place_of_birth", profileData.tp.place_of_birth);
+        }
+        if (profileData.tp.marital_status) {
+          form.setValue("marital_status", profileData.tp.marital_status.toString());
+        }
+        if (profileData.tp.race_id) {
+          form.setValue("race_id", profileData.tp.race_id.toString());
+        }
+        if (profileData.tp.religion_id) {
+          form.setValue("religion_id", profileData.tp.religion_id.toString());
+        }
+        if (profileData.tp.nationality_id) {
+          form.setValue("nationality_id", profileData.tp.nationality_id.toString());
         }
       }
       if (profileData.dusp && profileData.dusp.position_id) {
@@ -295,14 +347,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             )}
             
             {shouldShowTpFields() && (
-              <div className="mt-4 p-4 bg-muted rounded-md">
-                <h3 className="text-lg font-medium mb-3">Technology Partner Information</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <UserPositionField form={form} isLoading={isLoading} />
-                  <UserTechPartnerField form={form} isLoading={isLoading} />
-                </div>
-              </div>
+              <TechPartnerForm form={form} isLoading={isLoading} />
             )}
             
             {shouldShowDuspFields() && (
