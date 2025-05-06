@@ -22,9 +22,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface UserTypeFieldProps {
   form: UseFormReturn<UserFormData>;
   isLoading: boolean;
+  required?: boolean;
 }
 
-export function UserTypeField({ form, isLoading }: UserTypeFieldProps) {
+export function UserTypeField({ form, isLoading, required = true }: UserTypeFieldProps) {
   const { data: userTypes, isLoading: isLoadingTypes } = useQuery({
     queryKey: ["user-types"],
     queryFn: async () => {
@@ -44,7 +45,7 @@ export function UserTypeField({ form, isLoading }: UserTypeFieldProps) {
       name="user_type"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>User Type</FormLabel>
+          <FormLabel>{required ? "User Type *" : "User Type"}</FormLabel>
           {isLoadingTypes ? (
             <Skeleton className="h-10 w-full" />
           ) : (
