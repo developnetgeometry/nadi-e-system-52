@@ -96,6 +96,15 @@ export const handleCreateUser = async (data: UserFormData): Promise<any> => {
       }
     }
 
+    // If organization_id is provided, add user to organization_users table
+    if (data.organization_id && data.organization_role) {
+      await supabase.from('organization_users').insert({
+        user_id: userData.id,
+        organization_id: data.organization_id,
+        role: data.organization_role
+      });
+    }
+
     return userData;
   } catch (error: any) {
     console.error('Error creating user:', error);

@@ -32,6 +32,7 @@ import { supabase } from "@/lib/supabase";
 import { createStaffMember } from "@/lib/staff";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserAccess } from "@/hooks/use-user-access";
+import { useUserMetadata } from "@/hooks/use-user-metadata";
 
 const staffFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -52,6 +53,14 @@ const staffFormSchema = z.object({
     .regex(/^\d{6}-\d{2}-\d{4}$/, { 
       message: "Please enter a valid IC number in the format xxxxxx-xx-xxxx" 
     }),
+  personal_email: z.string().email({ message: "Please enter a valid personal email" }).optional().or(z.literal('')),
+  qualification: z.string().optional().or(z.literal('')),
+  dob: z.string().optional().or(z.literal('')),
+  place_of_birth: z.string().optional().or(z.literal('')),
+  marital_status: z.string().optional().or(z.literal('')),
+  race_id: z.string().optional().or(z.literal('')),
+  religion_id: z.string().optional().or(z.literal('')),
+  nationality_id: z.string().optional().or(z.literal('')),
 });
 
 type StaffFormValues = z.infer<typeof staffFormSchema>;
@@ -79,6 +88,13 @@ export function StaffFormDialog({
   const [userTypes, setUserTypes] = useState<string[]>([]);
   const { user } = useAuth();
   const { userType: currentUserType } = useUserAccess();
+  const userMetadataString = useUserMetadata();
+  
+  const [races, setRaces] = useState<{id: string, eng: string}[]>([]);
+  const [religions, setReligions] = useState<{id: string, eng: string}[]>([]);
+  const [nationalities, setNationalities] = useState<{id: string, eng: string}[]>([]);
+  const [maritalStatuses, setMaritalStatuses] = useState<{id: string, eng: string}[]>([]);
+  const [cities, setCities] = useState<{id: string, name: string}[]>([]);
   
   const [currentUserCredentials, setCurrentUserCredentials] = useState<{
     email?: string;
@@ -116,9 +132,84 @@ export function StaffFormDialog({
       }
     };
 
+    const fetchRaces = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('nd_races')
+          .select('id, eng')
+          .order('eng');
+        
+        if (error) throw error;
+        if (data) setRaces(data);
+      } catch (err) {
+        console.error('Error fetching races:', err);
+      }
+    };
+
+    const fetchReligions = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('nd_religion')
+          .select('id, eng')
+          .order('eng');
+        
+        if (error) throw error;
+        if (data) setReligions(data);
+      } catch (err) {
+        console.error('Error fetching religions:', err);
+      }
+    };
+
+    const fetchNationalities = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('nd_nationalities')
+          .select('id, eng')
+          .order('eng');
+        
+        if (error) throw error;
+        if (data) setNationalities(data);
+      } catch (err) {
+        console.error('Error fetching nationalities:', err);
+      }
+    };
+
+    const fetchMaritalStatuses = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('nd_marital_status')
+          .select('id, eng')
+          .order('eng');
+        
+        if (error) throw error;
+        if (data) setMaritalStatuses(data);
+      } catch (err) {
+        console.error('Error fetching marital statuses:', err);
+      }
+    };
+
+    const fetchCities = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('nd_city')
+          .select('id, name')
+          .order('name');
+        
+        if (error) throw error;
+        if (data) setCities(data);
+      } catch (err) {
+        console.error('Error fetching cities:', err);
+      }
+    };
+
     if (organizationId) {
       fetchSites();
       fetchUserTypes();
+      fetchRaces();
+      fetchReligions();
+      fetchNationalities();
+      fetchMaritalStatuses();
+      fetchCities();
     }
   }, [organizationId, toast]);
 
@@ -133,6 +224,14 @@ export function StaffFormDialog({
       siteLocation: "",
       phone_number: "",
       ic_number: "",
+      personal_email: "",
+      qualification: "",
+      dob: "",
+      place_of_birth: "",
+      marital_status: "",
+      race_id: "",
+      religion_id: "",
+      nationality_id: "",
     },
   });
 
@@ -191,11 +290,33 @@ export function StaffFormDialog({
         throw new Error('Invalid site location format');
       }
       
+      // Parse organization ID from user metadata if available
+      let parsedOrganizationId = organizationId;
+      if (userMetadataString) {
+        try {
+          const metadata = JSON.parse(userMetadataString);
+          if (metadata.organization_id) {
+            parsedOrganizationId = metadata.organization_id;
+          }
+        } catch (error) {
+          console.error("Error parsing user metadata:", error);
+        }
+      }
+
       const result = await createStaffMember({
         ...data,
-        organizationId,
+        organizationId: parsedOrganizationId,
         siteLocation: siteLocationId, // Convert to number to match bigint in database
       });
+
+      // If result includes user_id, add user to organization_users table
+      if (result.data && result.data.user_id) {
+        await supabase.from('organization_users').insert({
+          user_id: result.data.user_id,
+          organization_id: parsedOrganizationId,
+          role: 'staff'
+        });
+      }
 
       onStaffAdded({
         ...result.data,
@@ -224,7 +345,7 @@ export function StaffFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
@@ -239,7 +360,7 @@ export function StaffFormDialog({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>Full Name*</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="John Doe" />
                     </FormControl>
@@ -253,9 +374,23 @@ export function StaffFormDialog({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Work Email*</FormLabel>
                     <FormControl>
                       <Input {...field} type="email" placeholder="user@example.com" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="personal_email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Personal Email</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="email" placeholder="personal@example.com" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -267,7 +402,7 @@ export function StaffFormDialog({
                 name="ic_number"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>IC Number</FormLabel>
+                    <FormLabel>IC Number*</FormLabel>
                     <FormControl>
                       <Input 
                         {...field} 
@@ -300,7 +435,7 @@ export function StaffFormDialog({
                 name="userType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>User Type</FormLabel>
+                    <FormLabel>User Type*</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -327,7 +462,21 @@ export function StaffFormDialog({
                 name="employDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Employment Date</FormLabel>
+                    <FormLabel>Employment Date*</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="join_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Join Date</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -341,7 +490,7 @@ export function StaffFormDialog({
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel>Status*</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -364,7 +513,7 @@ export function StaffFormDialog({
                 name="siteLocation"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Site Location</FormLabel>
+                    <FormLabel>Site Location*</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -377,6 +526,159 @@ export function StaffFormDialog({
                         {availableSites.map((site) => (
                           <SelectItem key={site.id} value={site.id}>
                             {site.sitename}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="qualification"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Qualification</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Bachelor's Degree, etc." />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="dob"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date of Birth</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="place_of_birth"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Place of Birth</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select city" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="max-h-60 overflow-y-auto">
+                        {cities.map((city) => (
+                          <SelectItem key={city.id} value={city.name}>
+                            {city.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="marital_status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Marital Status</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select marital status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {maritalStatuses.map((status) => (
+                          <SelectItem key={status.id} value={status.id}>
+                            {status.eng}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="race_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Race</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select race" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {races.map((race) => (
+                          <SelectItem key={race.id} value={race.id}>
+                            {race.eng}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="religion_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Religion</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select religion" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {religions.map((religion) => (
+                          <SelectItem key={religion.id} value={religion.id}>
+                            {religion.eng}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="nationality_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nationality</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select nationality" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {nationalities.map((nationality) => (
+                          <SelectItem key={nationality.id} value={nationality.id}>
+                            {nationality.eng}
                           </SelectItem>
                         ))}
                       </SelectContent>
