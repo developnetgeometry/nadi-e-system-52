@@ -1,57 +1,69 @@
+
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { useUsers } from "@/hooks/use-users"; // Import useUsers hook
-import { SuperAdminPage } from "@/components/hr/payroll/SuperAdminPage";
-import { MCMCPage } from "@/components/hr/payroll/MCMCPage";
-import { DUSPPage } from "@/components/hr/payroll/DUSPPage";
-import { TPPage } from "@/components/hr/payroll/TPPage";
-import { StaffPage } from "@/components/hr/payroll/StaffPage";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { UserRole } from "@/types/user";
+import { SuperAdminPage } from "@/components/hr/payroll/SuperAdminPage";
+import { AdminPage } from "@/components/hr/payroll/AdminPage";
 
-export default function PayrollPage() {
-  const { role, changeRole } = useUserRole(); // Use the hook outside the component
-  const { useUsersQuery } = useUsers(); // Fetch user profile
-  const { data: userProfiles } = useUsersQuery();
-  const userProfile = userProfiles?.[0]; // Assuming the first profile is needed
-  const [showRoleSelector, setShowRoleSelector] = useState(true);
-
+export default function Payroll() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  
   useEffect(() => {
-    if (userProfile?.user_group) {
-      changeRole(userProfile.user_group as UserRole); // Update role based on user_type
-    }
-  }, [userProfile, changeRole]);
-
-  function useUserRole(): {
-    role: string;
-    changeRole: (newRole: string) => void;
-  } {
-    const [role, setRole] = useState<string>("");
-
-    const changeRole = (newRole: string) => {
-      setRole(newRole);
+    const checkUserRole = async () => {
+      try {
+        // For demo purposes, we'll just set a default role
+        // In production, you would fetch the actual role from your backend
+        setUserRole(UserRole.SUPER_ADMIN);
+      } catch (error) {
+        console.error("Error checking user role:", error);
+        toast({
+          title: "Error",
+          description: "Failed to determine user role",
+          variant: "destructive"
+        });
+      }
     };
-
-    console.log("Current role:", role);
-    return { role, changeRole };
-  }
-
-  // Render the appropriate dashboard based on user role
-  const renderDashboard = () => {
-    switch (role) {
-      case "super_admin":
-        return <SuperAdminPage />;
-      //   case "2":
-      //     return <MCMCPage />;
-      //   case "1":
-      //     return <DUSPPage />;
-      case "3":
-        return <TPPage />;
-      case "6":
-        return <StaffPage />;
-      default:
-        return <SuperAdminPage />;
+    
+    if (user) {
+      checkUserRole();
     }
-  };
-
-  return <DashboardLayout>{renderDashboard()}</DashboardLayout>;
+  }, [user, toast]);
+  
+  // Show different views based on user role
+  if (userRole === UserRole.SUPER_ADMIN) {
+    return <SuperAdminPage />;
+  }
+  
+  if (userRole === UserRole.ADMIN || userRole === UserRole.MANAGER) {
+    return <AdminPage />;
+  }
+  
+  // Default view for staff
+  return (
+    <DashboardLayout>
+      <div className="container mx-auto py-8">
+        <h1 className="text-2xl font-bold mb-6">Payroll</h1>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>My Payslips</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">
+                You can view and download your payslips here
+              </p>
+              <Button>View Latest Payslip</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
 }

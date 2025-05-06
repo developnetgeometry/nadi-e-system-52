@@ -1,337 +1,313 @@
 
-import { useEffect, useState } from "react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, Plus, Save, Trash } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/lib/supabase";
 
-interface ContractType {
+interface EntitlementSettingsProps {
+  siteId: string | null;
+}
+
+interface EntitlementType {
   id: string;
   name: string;
 }
 
-interface Entitlement {
-  id: string;
+interface LeaveEntitlement {
+  id?: string;
   site_id: string;
-  contract_type_id: string;
-  annual_leave_day: number;
-  pro_rate_formula: string;
-  contract_type: ContractType;
-}
-
-interface EntitlementSettingsProps {
-  siteId: string;
+  entitlement_type_id: string;
+  days_per_year: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export function EntitlementSettings({ siteId }: EntitlementSettingsProps) {
-  const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
-  const [contractTypes, setContractTypes] = useState<ContractType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newEntitlement, setNewEntitlement] = useState<Partial<Entitlement>>({
-    site_id: siteId,
-    annual_leave_day: 0,
-    pro_rate_formula: ""
-  });
+  const [entitlements, setEntitlements] = useState<LeaveEntitlement[]>([]);
+  const [entitlementTypes, setEntitlementTypes] = useState<EntitlementType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedType, setSelectedType] = useState<string>("");
+  const [daysPerYear, setDaysPerYear] = useState<number>(0);
   const { toast } = useToast();
-
-  // Fetch entitlements for the selected site
+  
   useEffect(() => {
-    async function fetchEntitlements() {
-      setLoading(true);
+    // Fetch entitlement types first (like Annual Leave, Sick Leave, etc.)
+    const fetchEntitlementTypes = async () => {
       try {
-        // Fetch contract types first
-        const { data: contractTypesData, error: contractTypesError } = await supabase
-          .from("nd_contract_type")
-          .select("id, name");
+        const { data, error } = await supabase
+          .from('nd_leave_entitlement_types')
+          .select('id, name')
+          .order('name');
         
-        if (contractTypesError) throw contractTypesError;
-        setContractTypes(contractTypesData as ContractType[]);
+        if (error) throw error;
         
-        // Then fetch entitlements for the selected site
-        const { data: entitlementsData, error: entitlementsError } = await supabase
-          .from("nd_leave_entitlement")
-          .select(`
-            id, 
-            site_id, 
-            contract_type_id, 
-            annual_leave_day, 
-            pro_rate_formula,
-            contract_type:nd_contract_type(id, name)
-          `)
-          .eq("site_id", siteId);
-        
-        if (entitlementsError) throw entitlementsError;
-        
-        // Transform the data to ensure proper typing
-        const formattedEntitlements = entitlementsData.map((item: any) => ({
-          id: item.id,
-          site_id: item.site_id,
-          contract_type_id: item.contract_type_id,
-          annual_leave_day: item.annual_leave_day,
-          pro_rate_formula: item.pro_rate_formula,
-          contract_type: {
-            id: item.contract_type?.id || "",
-            name: item.contract_type?.name || ""
-          }
-        }));
-        
-        setEntitlements(formattedEntitlements);
+        setEntitlementTypes(data as EntitlementType[]);
       } catch (error) {
-        console.error("Error fetching entitlements:", error);
+        console.error('Error fetching entitlement types:', error);
         toast({
-          title: "Error loading entitlements",
-          description: "Could not load leave entitlements for this site.",
+          title: "Error",
+          description: "Failed to load entitlement types",
+          variant: "destructive"
+        });
+      }
+    };
+    
+    fetchEntitlementTypes();
+  }, [toast]);
+  
+  useEffect(() => {
+    if (!siteId) {
+      setIsLoading(false);
+      return;
+    }
+    
+    const fetchEntitlements = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('nd_leave_entitlement')
+          .select('*')
+          .eq('site_id', siteId);
+        
+        if (error) throw error;
+        
+        setEntitlements(data as LeaveEntitlement[]);
+      } catch (error) {
+        console.error('Error fetching entitlements:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load entitlements for this site",
           variant: "destructive"
         });
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
-    }
+    };
     
-    if (siteId) {
-      fetchEntitlements();
-    }
+    fetchEntitlements();
   }, [siteId, toast]);
-
+  
   const handleAddEntitlement = async () => {
-    if (!newEntitlement.contract_type_id) {
+    if (!siteId) {
       toast({
-        title: "Missing information",
-        description: "Please select a contract type.",
+        title: "Error",
+        description: "Please select a site first",
         variant: "destructive"
       });
       return;
     }
     
+    if (!selectedType) {
+      toast({
+        title: "Error",
+        description: "Please select an entitlement type",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (daysPerYear <= 0) {
+      toast({
+        title: "Error",
+        description: "Days per year must be greater than 0",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Check if entitlement for this type already exists
+    const exists = entitlements.find(e => e.entitlement_type_id === selectedType);
+    if (exists) {
+      toast({
+        title: "Error",
+        description: "Entitlement for this type already exists. Please update it instead.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const newEntitlement: LeaveEntitlement = {
+      site_id: siteId,
+      entitlement_type_id: selectedType,
+      days_per_year: daysPerYear,
+      is_active: true
+    };
+    
     try {
       const { data, error } = await supabase
-        .from("nd_leave_entitlement")
-        .insert({
-          site_id: siteId,
-          contract_type_id: newEntitlement.contract_type_id,
-          annual_leave_day: newEntitlement.annual_leave_day || 0,
-          pro_rate_formula: newEntitlement.pro_rate_formula || ""
-        })
-        .select(`
-          id, 
-          site_id, 
-          contract_type_id, 
-          annual_leave_day, 
-          pro_rate_formula,
-          contract_type:nd_contract_type(id, name)
-        `)
-        .single();
+        .from('nd_leave_entitlement')
+        .insert(newEntitlement)
+        .select();
       
       if (error) throw error;
       
-      // Transform the returned data to match our Entitlement type
-      const newRecord: Entitlement = {
-        id: data.id,
-        site_id: data.site_id,
-        contract_type_id: data.contract_type_id,
-        annual_leave_day: data.annual_leave_day,
-        pro_rate_formula: data.pro_rate_formula,
-        contract_type: {
-          id: data.contract_type.id,
-          name: data.contract_type.name
-        }
-      };
-      
-      setEntitlements([...entitlements, newRecord]);
-      
-      setIsAddDialogOpen(false);
-      setNewEntitlement({
-        site_id: siteId,
-        annual_leave_day: 0,
-        pro_rate_formula: ""
-      });
+      setEntitlements([...entitlements, data[0] as LeaveEntitlement]);
       
       toast({
-        title: "Entitlement added",
-        description: "Leave entitlement has been added successfully."
+        title: "Success",
+        description: "Entitlement added successfully",
       });
-    } catch (error: any) {
-      console.error("Error adding entitlement:", error);
+      
+      // Reset form
+      setSelectedType("");
+      setDaysPerYear(0);
+    } catch (error) {
+      console.error('Error adding entitlement:', error);
       toast({
-        title: "Error adding entitlement",
-        description: error.message,
+        title: "Error",
+        description: "Failed to add entitlement",
         variant: "destructive"
       });
     }
   };
-
-  const handleDeleteEntitlement = async (id: string) => {
+  
+  const handleUpdateEntitlement = async (id: string, days: number) => {
+    if (!siteId) return;
+    
     try {
       const { error } = await supabase
-        .from("nd_leave_entitlement")
-        .delete()
-        .eq("id", id);
+        .from('nd_leave_entitlement')
+        .update({ days_per_year: days })
+        .eq('id', id);
       
       if (error) throw error;
       
-      setEntitlements(entitlements.filter(e => e.id !== id));
+      setEntitlements(entitlements.map(ent => 
+        ent.id === id ? { ...ent, days_per_year: days } : ent
+      ));
       
       toast({
-        title: "Entitlement deleted",
-        description: "Leave entitlement has been deleted successfully."
+        title: "Success",
+        description: "Entitlement updated successfully",
       });
-    } catch (error: any) {
-      console.error("Error deleting entitlement:", error);
+    } catch (error) {
+      console.error('Error updating entitlement:', error);
       toast({
-        title: "Error deleting entitlement",
-        description: error.message,
+        title: "Error",
+        description: "Failed to update entitlement",
         variant: "destructive"
       });
     }
   };
-
+  
+  const getEntitlementTypeName = (typeId: string) => {
+    const type = entitlementTypes.find(t => t.id === typeId);
+    return type ? type.name : "Unknown";
+  };
+  
   if (!siteId) {
     return (
       <Card>
-        <CardContent className="py-10 text-center">
-          <AlertCircle className="mx-auto h-10 w-10 text-yellow-500 mb-4" />
-          <CardTitle className="mb-2">No Site Selected</CardTitle>
-          <CardDescription>
-            Please select a site to manage leave entitlements.
-          </CardDescription>
+        <CardHeader>
+          <CardTitle>Leave Entitlements</CardTitle>
+        </CardHeader>
+        <CardContent className="text-center py-8">
+          Please select a site to manage leave entitlements
         </CardContent>
       </Card>
     );
   }
-
+  
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <div>
-            <CardTitle>Leave Entitlement</CardTitle>
-            <CardDescription>
-              Configure leave entitlements for different contract types
-            </CardDescription>
-          </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" /> Add Entitlement
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Leave Entitlement</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div>
-                  <Label htmlFor="contract-type">Contract Type</Label>
-                  <Select 
-                    onValueChange={(value) => setNewEntitlement({
-                      ...newEntitlement,
-                      contract_type_id: value
-                    })}
-                  >
-                    <SelectTrigger id="contract-type">
-                      <SelectValue placeholder="Select a contract type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {contractTypes.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>
-                          {type.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="annual-leave">Annual Leave Days</Label>
-                  <Input
-                    id="annual-leave"
-                    type="number"
-                    value={newEntitlement.annual_leave_day || 0}
-                    onChange={(e) => setNewEntitlement({
-                      ...newEntitlement,
-                      annual_leave_day: parseInt(e.target.value)
-                    })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="pro-rate-formula">Pro-rate Formula</Label>
-                  <Input
-                    id="pro-rate-formula"
-                    value={newEntitlement.pro_rate_formula || ""}
-                    onChange={(e) => setNewEntitlement({
-                      ...newEntitlement,
-                      pro_rate_formula: e.target.value
-                    })}
-                    placeholder="e.g., (days_worked / 365) * annual_leave"
-                  />
+    <Card>
+      <CardHeader>
+        <CardTitle>Leave Entitlements</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="text-center py-8">Loading entitlements...</div>
+        ) : (
+          <>
+            <div className="grid gap-6 mb-8">
+              <div className="space-y-2">
+                <h3 className="font-medium">Add New Entitlement</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="entitlement-type">Entitlement Type</Label>
+                    <Select
+                      value={selectedType}
+                      onValueChange={setSelectedType}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {entitlementTypes.map((type) => (
+                          <SelectItem key={type.id} value={type.id}>
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="days-per-year">Days per Year</Label>
+                    <Input
+                      id="days-per-year"
+                      type="number"
+                      min="0"
+                      value={daysPerYear}
+                      onChange={(e) => setDaysPerYear(parseInt(e.target.value, 10))}
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <Button onClick={handleAddEntitlement} className="w-full">
+                      Add Entitlement
+                    </Button>
+                  </div>
                 </div>
               </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleAddEntitlement}>
-                  <Save className="h-4 w-4 mr-2" /> Save
-                </Button>
+              
+              <div className="space-y-2">
+                <h3 className="font-medium">Current Entitlements</h3>
+                {entitlements.length === 0 ? (
+                  <div className="text-center py-4 border rounded-md">
+                    No entitlements have been set for this site
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {entitlements.map((entitlement) => (
+                      <div key={entitlement.id} className="flex items-center justify-between p-4 border rounded-md">
+                        <div>
+                          <h4 className="font-medium">{getEntitlementTypeName(entitlement.entitlement_type_id)}</h4>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="0"
+                            className="w-24"
+                            value={entitlement.days_per_year}
+                            onChange={(e) => {
+                              const newValue = parseInt(e.target.value, 10);
+                              const updatedEntitlements = entitlements.map(ent => 
+                                ent.id === entitlement.id ? { ...ent, days_per_year: newValue } : ent
+                              );
+                              setEntitlements(updatedEntitlements);
+                            }}
+                          />
+                          <span className="text-sm">days</span>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => entitlement.id && handleUpdateEntitlement(entitlement.id, entitlement.days_per_year)}
+                          >
+                            Update
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </DialogContent>
-          </Dialog>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="py-6 text-center">
-              <p className="text-muted-foreground">Loading entitlements...</p>
             </div>
-          ) : entitlements.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Contract Type</TableHead>
-                  <TableHead>Annual Leave Days</TableHead>
-                  <TableHead>Pro-rate Formula</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {entitlements.map((entitlement) => (
-                  <TableRow key={entitlement.id}>
-                    <TableCell>{entitlement.contract_type.name}</TableCell>
-                    <TableCell>{entitlement.annual_leave_day}</TableCell>
-                    <TableCell>{entitlement.pro_rate_formula || "-"}</TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteEntitlement(entitlement.id)}
-                      >
-                        <Trash className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="py-6 text-center">
-              <p className="text-muted-foreground">No entitlements configured for this site.</p>
-              <p className="text-muted-foreground">Click "Add Entitlement" to create one.</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }

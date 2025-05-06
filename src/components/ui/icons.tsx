@@ -34,6 +34,7 @@ import {
   Briefcase,
   LucideProps,
   Building,
+  Folder,
 } from "lucide-react";
 
 export type IconKey =
@@ -70,7 +71,8 @@ export type IconKey =
   | "phone"
   | "mapPin"
   | "briefcase"
-  | "building";
+  | "building"
+  | "folder";
 
 export const Icons = {
   home: Home,
@@ -107,4 +109,5 @@ export const Icons = {
   mapPin: MapPin,
   briefcase: Briefcase,
   building: Building,
+  folder: Folder,
 } as Record<IconKey, React.ComponentType<LucideProps>>;
