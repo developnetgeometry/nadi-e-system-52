@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -15,19 +14,25 @@ import { UserGroupField } from "./form-fields/UserGroupField";
 import { UserPasswordField } from "./form-fields/UserPasswordField";
 import { UserConfirmPasswordField } from "./form-fields/UserConfirmPasswordField";
 import { UserICNumberField } from "./form-fields/UserICNumberField";
-import { UserGenderField } from "./form-fields/UserGenderField"; // Import the new field
+import { UserGenderField } from "./form-fields/UserGenderField";
+import { UserWorkEmailField } from "./form-fields/UserWorkEmailField";
+import { UserPositionField } from "./form-fields/UserPositionField";
+import { UserTechPartnerField } from "./form-fields/UserTechPartnerField";
 import { handleCreateUser, handleUpdateUser } from "./utils/form-handlers";
 import { UserFormData } from "./types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useUserGroups, getGroupById, isMcmcGroup, isTpGroup } from "./hooks/use-user-groups";
 
 const userFormSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   full_name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   user_type: z.string(),
   user_group: z.string().optional(),
-  gender: z.string().optional(), // Added gender validation
+  gender: z.string().optional(),
   phone_number: z.string()
     .regex(/^(\+?6?01)[0-9]{8,9}$/, { 
       message: "Please enter a valid Malaysian phone number (e.g., +60123456789 or 01123456789)" 
@@ -38,6 +43,9 @@ const userFormSchema = z.object({
     .regex(/^\d{6}-\d{2}-\d{4}$/, { 
       message: "Please enter a valid IC number in the format xxxxxx-xx-xxxx" 
     }),
+  work_email: z.string().email({ message: "Please enter a valid work email" }).optional(),
+  position_id: z.string().optional(),
+  tech_partner_id: z.string().optional(),
   password: z.string()
     .min(8, { message: "Password must be at least 8 characters" })
     .optional(),
@@ -72,7 +80,9 @@ interface UserFormProps {
 export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedUserGroup, setSelectedUserGroup] = useState<string | undefined>(user?.user_group?.toString());
   const { toast } = useToast();
+  const { data: userGroups = [] } = useUserGroups();
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
@@ -81,15 +91,90 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       full_name: user?.full_name || "",
       user_type: user?.user_type || "member",
       user_group: user?.user_group?.toString() || "",
-      gender: user?.gender || "", // Added gender default value
+      gender: user?.gender || "",
       phone_number: user?.phone_number || "",
       ic_number: user?.ic_number || "",
+      work_email: user?.work_email || "",
       password: "",
       confirm_password: "",
+      position_id: "",
+      tech_partner_id: "",
     },
   });
   
   console.log("UserForm user:", JSON.stringify(user));
+
+  // Fetch user profile data if editing
+  const { data: profileData } = useQuery({
+    queryKey: ["user-profiles", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+
+      // Check if user is MCMC
+      const { data: mcmcProfile } = await supabase
+        .from("nd_mcmc_profile")
+        .select("position_id")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      
+      // Check if user is TP
+      const { data: tpProfile } = await supabase
+        .from("nd_tech_partner_profile")
+        .select("position_id, tech_partner_id")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      
+      return {
+        mcmc: mcmcProfile,
+        tp: tpProfile
+      };
+    },
+    enabled: !!user?.id,
+  });
+
+  // Set position and partner data if available
+  useEffect(() => {
+    if (profileData) {
+      if (profileData.mcmc && profileData.mcmc.position_id) {
+        form.setValue("position_id", profileData.mcmc.position_id.toString());
+      }
+      if (profileData.tp) {
+        if (profileData.tp.position_id) {
+          form.setValue("position_id", profileData.tp.position_id.toString());
+        }
+        if (profileData.tp.tech_partner_id) {
+          form.setValue("tech_partner_id", profileData.tp.tech_partner_id.toString());
+        }
+      }
+    }
+  }, [profileData, form]);
+
+  // Watch the user group field to conditionally render fields
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "user_group") {
+        setSelectedUserGroup(value.user_group);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
+  
+  // Determine if MCMC specific fields should be shown
+  const shouldShowMcmcFields = () => {
+    if (!selectedUserGroup) return false;
+    const group = getGroupById(userGroups, selectedUserGroup);
+    return isMcmcGroup(group);
+  };
+  
+  // Determine if TP specific fields should be shown
+  const shouldShowTpFields = () => {
+    if (!selectedUserGroup) return false;
+    const group = getGroupById(userGroups, selectedUserGroup);
+    return isTpGroup(group);
+  };
 
   const onSubmit = async (data: UserFormData) => {
     setIsLoading(true);
@@ -151,17 +236,37 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
               </Alert>
             )}
             
+            {/* Basic User Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <UserEmailField form={form} isLoading={isLoading} isEditMode={!!user} />
               <UserNameField form={form} isLoading={isLoading} />
               <UserICNumberField form={form} isLoading={isLoading} />
               <UserPhoneField form={form} isLoading={isLoading} />
-              <UserGenderField form={form} isLoading={isLoading} /> {/* Added GenderField */}
+              <UserGenderField form={form} isLoading={isLoading} />
+              <UserWorkEmailField form={form} isLoading={isLoading} />
               <UserTypeField form={form} isLoading={isLoading} />
               <UserGroupField form={form} isLoading={isLoading} />
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Conditional fields based on user group */}
+            {(shouldShowMcmcFields() || shouldShowTpFields()) && (
+              <div className="mt-4 p-4 bg-muted rounded-md">
+                <h3 className="text-lg font-medium mb-3">
+                  {shouldShowMcmcFields() ? "MCMC Profile Information" : "Technology Partner Information"}
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <UserPositionField form={form} isLoading={isLoading} />
+                  
+                  {shouldShowTpFields() && (
+                    <UserTechPartnerField form={form} isLoading={isLoading} />
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Password fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <UserPasswordField form={form} isLoading={isLoading} isEditMode={!!user} />
               <UserConfirmPasswordField form={form} isLoading={isLoading} isEditMode={!!user} />
             </div>
