@@ -1,3 +1,4 @@
+
 import { UseFormReturn } from "react-hook-form";
 import { UserFormData } from "../../types";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -6,31 +7,44 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
+import { OrganizationType } from "@/types/organization";
+
 interface TechPartnerFormProps {
   form: UseFormReturn<UserFormData>;
   isLoading: boolean;
 }
+
 export function TechPartnerForm({
   form,
   isLoading
 }: TechPartnerFormProps) {
-  // Fetch tech partners
+  // Fetch organizations of type 'tp' (Technology Partner)
   const {
-    data: techPartners,
-    isLoading: isLoadingTechPartners
+    data: organizations,
+    isLoading: isLoadingOrganizations
   } = useQuery({
-    queryKey: ["tech-partners"],
+    queryKey: ["organizations-tp"],
     queryFn: async () => {
       const {
         data,
         error
-      } = await supabase.from("nd_tech_partner").select("id, name").order("name", {
-        ascending: true
-      });
+      } = await supabase.from("organizations")
+        .select("id, name")
+        .eq("type", "tp" as OrganizationType)
+        .order("name", { ascending: true });
+      
       if (error) throw error;
       return data;
     }
   });
+
+  // Fetch available roles for organizations
+  const roleOptions = [
+    { id: "admin", name: "Admin" },
+    { id: "member", name: "Member" },
+    { id: "manager", name: "Manager" },
+    { id: "viewer", name: "Viewer" }
+  ];
 
   // Fetch races
   const {
@@ -105,35 +119,53 @@ export function TechPartnerForm({
   });
 
   // Check if any data is still loading
-  const isDataLoading = isLoadingTechPartners || isLoadingRaces || isLoadingReligions || isLoadingMaritalStatuses || isLoadingNationalities;
+  const isDataLoading = isLoadingOrganizations || isLoadingRaces || isLoadingReligions || isLoadingMaritalStatuses || isLoadingNationalities;
+  
   return <div className="mt-4 p-4 bg-muted rounded-md">
       <h3 className="text-lg font-medium mb-3">Technology Partner Information</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        {/* Tech Partner Organization */}
-        <FormField control={form.control} name="tech_partner_id" render={({
-        field
-      }) => <FormItem>
-              <FormLabel>Organization *</FormLabel>
-              {isLoadingTechPartners ? <Skeleton className="h-10 w-full" /> : <Select disabled={isLoading} onValueChange={field.onChange} value={field.value}>
+        {/* Technology Partner Organization */}
+        <FormField control={form.control} name="organization_id" render={({
+          field
+        }) => <FormItem>
+              <FormLabel>Organization <span className="text-red-500">*</span></FormLabel>
+              {isLoadingOrganizations ? <Skeleton className="h-10 w-full" /> : <Select disabled={isLoading} onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select organization" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {techPartners?.map(partner => <SelectItem key={partner.id} value={partner.id.toString()}>
-                        {partner.name}
+                    {organizations?.map(org => <SelectItem key={org.id} value={org.id}>
+                        {org.name}
                       </SelectItem>)}
                   </SelectContent>
                 </Select>}
               <FormMessage />
             </FormItem>} />
         
-        {/* Position ID - reused from existing components */}
-        <FormField control={form.control} name="position_id" render={({
-        field
-      }) => {}} />
+        {/* Organization Role */}
+        <FormField control={form.control} name="organization_role" render={({
+          field
+        }) => <FormItem>
+              <FormLabel>Role <span className="text-red-500">*</span></FormLabel>
+              <Select disabled={isLoading} onValueChange={field.onChange} value={field.value || ""}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {roleOptions.map(role => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -197,7 +229,7 @@ export function TechPartnerForm({
         field
       }) => <FormItem>
               <FormLabel>Marital Status</FormLabel>
-              {isLoadingMaritalStatuses ? <Skeleton className="h-10 w-full" /> : <Select disabled={isLoading} onValueChange={field.onChange} value={field.value}>
+              {isLoadingMaritalStatuses ? <Skeleton className="h-10 w-full" /> : <Select disabled={isLoading} onValueChange={field.onChange} value={field.value || ""}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select marital status" />
@@ -217,7 +249,7 @@ export function TechPartnerForm({
         field
       }) => <FormItem>
               <FormLabel>Race</FormLabel>
-              {isLoadingRaces ? <Skeleton className="h-10 w-full" /> : <Select disabled={isLoading} onValueChange={field.onChange} value={field.value}>
+              {isLoadingRaces ? <Skeleton className="h-10 w-full" /> : <Select disabled={isLoading} onValueChange={field.onChange} value={field.value || ""}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select race" />
@@ -237,7 +269,7 @@ export function TechPartnerForm({
         field
       }) => <FormItem>
               <FormLabel>Religion</FormLabel>
-              {isLoadingReligions ? <Skeleton className="h-10 w-full" /> : <Select disabled={isLoading} onValueChange={field.onChange} value={field.value}>
+              {isLoadingReligions ? <Skeleton className="h-10 w-full" /> : <Select disabled={isLoading} onValueChange={field.onChange} value={field.value || ""}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select religion" />
@@ -257,7 +289,7 @@ export function TechPartnerForm({
         field
       }) => <FormItem>
               <FormLabel>Nationality</FormLabel>
-              {isLoadingNationalities ? <Skeleton className="h-10 w-full" /> : <Select disabled={isLoading} onValueChange={field.onChange} value={field.value}>
+              {isLoadingNationalities ? <Skeleton className="h-10 w-full" /> : <Select disabled={isLoading} onValueChange={field.onChange} value={field.value || ""}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select nationality" />

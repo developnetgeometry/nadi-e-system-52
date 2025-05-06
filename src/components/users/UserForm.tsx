@@ -16,7 +16,6 @@ import { UserPasswordField } from "./form-fields/UserPasswordField";
 import { UserConfirmPasswordField } from "./form-fields/UserConfirmPasswordField";
 import { UserICNumberField } from "./form-fields/UserICNumberField";
 import { UserPositionField } from "./form-fields/UserPositionField";
-import { UserTechPartnerField } from "./form-fields/UserTechPartnerField";
 import { TechPartnerForm } from "./form-fields/tp/TechPartnerForm";
 import { handleCreateUser, handleUpdateUser } from "./utils/form-handlers";
 import { UserFormData } from "./types";
@@ -44,7 +43,8 @@ const userFormSchema = z.object({
       message: "Please enter a valid IC number in the format xxxxxx-xx-xxxx" 
     }),
   position_id: z.string().optional(),
-  tech_partner_id: z.string().optional(),
+  organization_id: z.string().optional(),
+  organization_role: z.string().optional(),
   password: z.string()
     .min(8, { message: "Password must be at least 8 characters" })
     .optional(),
@@ -105,7 +105,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       password: "",
       confirm_password: "",
       position_id: "",
-      tech_partner_id: "",
+      organization_id: "",
+      organization_role: "member",
       // Initialize additional TP fields
       personal_email: "",
       join_date: "",
@@ -157,11 +158,19 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         .eq("is_active", true)
         .maybeSingle();
       
+      // Get organization user data
+      const { data: orgUser } = await supabase
+        .from("organization_users")
+        .select("organization_id, role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      
       return {
         mcmc: mcmcProfile,
         tp: tpProfile,
         dusp: duspProfile,
-        sso: ssoProfile
+        sso: ssoProfile,
+        organization: orgUser
       };
     },
     enabled: !!user?.id,
@@ -218,6 +227,15 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       if (profileData.sso && profileData.sso.position_id) {
         form.setValue("position_id", profileData.sso.position_id.toString());
       }
+      // Set organization data if available
+      if (profileData.organization) {
+        if (profileData.organization.organization_id) {
+          form.setValue("organization_id", profileData.organization.organization_id);
+        }
+        if (profileData.organization.role) {
+          form.setValue("organization_role", profileData.organization.role);
+        }
+      }
     }
   }, [profileData, form]);
 
@@ -260,18 +278,63 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
     return isSsoGroup(group);
   };
 
+  const handleAddUserToOrganization = async (userId: string, organizationId: string, role: string) => {
+    try {
+      // Check if the user is already in the organization
+      const { data: existingUserOrg } = await supabase
+        .from('organization_users')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('organization_id', organizationId)
+        .maybeSingle();
+      
+      if (existingUserOrg) {
+        // Update the role if the user is already in the organization
+        await supabase
+          .from('organization_users')
+          .update({ role })
+          .eq('id', existingUserOrg.id);
+      } else {
+        // Add the user to the organization with the specified role
+        await supabase
+          .from('organization_users')
+          .insert({
+            user_id: userId,
+            organization_id: organizationId,
+            role
+          });
+      }
+    } catch (error) {
+      console.error("Error adding user to organization:", error);
+      throw new Error("Failed to add user to organization");
+    }
+  };
+
   const onSubmit = async (data: UserFormData) => {
     setIsLoading(true);
     setError(null);
     try {
       if (user) {
+        // Update user
         await handleUpdateUser(data, user);
+        
+        // If TP user and organization_id is provided, update organization_users
+        if (shouldShowTpFields() && data.organization_id) {
+          await handleAddUserToOrganization(user.id, data.organization_id, data.organization_role || 'member');
+        }
+        
         toast({
           title: "Success",
           description: "User updated successfully",
         });
       } else {
-        await handleCreateUser(data);
+        // Create new user
+        const newUser = await handleCreateUser(data);
+        
+        // If TP user and organization_id is provided, add to organization_users
+        if (shouldShowTpFields() && data.organization_id && newUser) {
+          await handleAddUserToOrganization(newUser.id, data.organization_id, data.organization_role || 'member');
+        }
         
         toast({
           title: "Success",
