@@ -14,5 +14,23 @@ export const inventoryClient = {
     }
 
     return data;
+  },
+
+  async fetchInventories(organizationId?: string | null, site_id?: string | null) {
+    // Mock implementation for now
+    console.log("Fetching inventories with:", { organizationId, site_id });
+    return [];
+  },
+
+  async fetchInventoryById(id: string) {
+    // Mock implementation for now
+    console.log("Fetching inventory by ID:", id);
+    return null;
+  },
+
+  async fetchInventoryTypes() {
+    // Mock implementation for now
+    console.log("Fetching inventory types");
+    return [];
   }
 };

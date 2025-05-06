@@ -5,7 +5,6 @@ import { Site, SiteStatus, Phase, Region, District, Parliament, Dun, Mukim, Stat
 export type { Site, SiteStatus, Phase, Region, District, Parliament, Dun, Mukim, State, Technology, Bandwidth, BuildingType, Zone, CategoryArea, BuildingLevel, Socioeconomic, Space };
 
 // Placeholder functions for fetching site data
-// In a real application, these would connect to an API or database
 export const fetchSites = async (organizationId?: string | null, isTPUser?: boolean, isDUSPUser?: boolean): Promise<Site[]> => {
   // Mock implementation
   console.log("Fetching sites with:", { organizationId, isTPUser, isDUSPUser });
@@ -18,6 +17,7 @@ export const fetchSiteBySiteId = async (siteId: string): Promise<Site> => {
   return Promise.resolve({} as Site);
 };
 
+// Basic fetcher functions without parameters
 export const fetchSiteStatus = async (): Promise<SiteStatus[]> => {
   return Promise.resolve([]);
 };
