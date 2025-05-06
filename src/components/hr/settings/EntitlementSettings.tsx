@@ -1,313 +1,317 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface EntitlementSettingsProps {
-  siteId: string | null;
+  siteId: string;
 }
 
-interface EntitlementType {
+const formSchema = z.object({
+  contractType: z.string().min(1, "Contract type is required"),
+  annualLeaveDays: z.coerce.number().min(0, "Days cannot be negative"),
+  proRateFormula: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+interface Entitlement {
   id: string;
-  name: string;
-}
-
-interface LeaveEntitlement {
-  id?: string;
-  site_id: string;
-  entitlement_type_id: string;
-  days_per_year: number;
-  is_active: boolean;
-  created_at?: string;
-  updated_at?: string;
+  contract_type_id: string;
+  annual_leave_day: number;
+  pro_rate_formula: string | null;
+  contract_type: {
+    id: string;
+    name: string;
+  };
 }
 
 export function EntitlementSettings({ siteId }: EntitlementSettingsProps) {
-  const [entitlements, setEntitlements] = useState<LeaveEntitlement[]>([]);
-  const [entitlementTypes, setEntitlementTypes] = useState<EntitlementType[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedType, setSelectedType] = useState<string>("");
-  const [daysPerYear, setDaysPerYear] = useState<number>(0);
-  const { toast } = useToast();
-  
+  const [loading, setLoading] = useState(true);
+  const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
+  const [contractTypes, setContractTypes] = useState<{ id: string; name: string }[]>([]);
+  const [editId, setEditId] = useState<string | null>(null);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      contractType: "",
+      annualLeaveDays: 0,
+      proRateFormula: "",
+    },
+  });
+
   useEffect(() => {
-    // Fetch entitlement types first (like Annual Leave, Sick Leave, etc.)
-    const fetchEntitlementTypes = async () => {
+    async function fetchData() {
       try {
-        const { data, error } = await supabase
-          .from('nd_leave_entitlement_types')
-          .select('id, name')
-          .order('name');
-        
-        if (error) throw error;
-        
-        setEntitlementTypes(data as EntitlementType[]);
+        setLoading(true);
+
+        // Fetch contract types
+        const { data: contractTypesData, error: contractTypesError } = await supabase
+          .from("nd_contract_type")
+          .select("id, name");
+
+        if (contractTypesError) throw contractTypesError;
+        setContractTypes(contractTypesData || []);
+
+        // Fetch entitlements
+        const { data: entitlementsData, error: entitlementsError } = await supabase
+          .from("nd_leave_entitlement")
+          .select(`
+            id, 
+            contract_type_id, 
+            annual_leave_day, 
+            pro_rate_formula,
+            contract_type:contract_type_id (id, name)
+          `);
+
+        if (entitlementsError) throw entitlementsError;
+        setEntitlements(entitlementsData || []);
+
       } catch (error) {
-        console.error('Error fetching entitlement types:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load entitlement types",
-          variant: "destructive"
-        });
-      }
-    };
-    
-    fetchEntitlementTypes();
-  }, [toast]);
-  
-  useEffect(() => {
-    if (!siteId) {
-      setIsLoading(false);
-      return;
-    }
-    
-    const fetchEntitlements = async () => {
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('nd_leave_entitlement')
-          .select('*')
-          .eq('site_id', siteId);
-        
-        if (error) throw error;
-        
-        setEntitlements(data as LeaveEntitlement[]);
-      } catch (error) {
-        console.error('Error fetching entitlements:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load entitlements for this site",
-          variant: "destructive"
-        });
+        console.error("Error fetching entitlement data:", error);
+        toast.error("Failed to load entitlement data");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
-    };
-    
-    fetchEntitlements();
-  }, [siteId, toast]);
-  
-  const handleAddEntitlement = async () => {
-    if (!siteId) {
-      toast({
-        title: "Error",
-        description: "Please select a site first",
-        variant: "destructive"
-      });
-      return;
     }
-    
-    if (!selectedType) {
-      toast({
-        title: "Error",
-        description: "Please select an entitlement type",
-        variant: "destructive"
-      });
-      return;
+
+    if (siteId) {
+      fetchData();
     }
-    
-    if (daysPerYear <= 0) {
-      toast({
-        title: "Error",
-        description: "Days per year must be greater than 0",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Check if entitlement for this type already exists
-    const exists = entitlements.find(e => e.entitlement_type_id === selectedType);
-    if (exists) {
-      toast({
-        title: "Error",
-        description: "Entitlement for this type already exists. Please update it instead.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    const newEntitlement: LeaveEntitlement = {
-      site_id: siteId,
-      entitlement_type_id: selectedType,
-      days_per_year: daysPerYear,
-      is_active: true
-    };
-    
+  }, [siteId]);
+
+  const handleEdit = (entitlement: Entitlement) => {
+    setEditId(entitlement.id);
+    form.reset({
+      contractType: entitlement.contract_type_id,
+      annualLeaveDays: entitlement.annual_leave_day,
+      proRateFormula: entitlement.pro_rate_formula || "",
+    });
+  };
+
+  const onSubmit = async (values: FormValues) => {
     try {
+      const { contractType, annualLeaveDays, proRateFormula } = values;
+
+      if (editId) {
+        // Update existing entitlement
+        const { error } = await supabase
+          .from("nd_leave_entitlement")
+          .update({
+            contract_type_id: contractType,
+            annual_leave_day: annualLeaveDays,
+            pro_rate_formula: proRateFormula || null,
+            updated_by: (await supabase.auth.getUser()).data.user?.id,
+          })
+          .eq("id", editId);
+
+        if (error) throw error;
+        toast.success("Entitlement updated successfully");
+      } else {
+        // Create new entitlement
+        const { error } = await supabase
+          .from("nd_leave_entitlement")
+          .insert({
+            contract_type_id: contractType,
+            annual_leave_day: annualLeaveDays,
+            pro_rate_formula: proRateFormula || null,
+            created_by: (await supabase.auth.getUser()).data.user?.id,
+          });
+
+        if (error) throw error;
+        toast.success("Entitlement added successfully");
+      }
+
+      // Reset form and refresh data
+      form.reset({
+        contractType: "",
+        annualLeaveDays: 0,
+        proRateFormula: "",
+      });
+      setEditId(null);
+      
+      // Refresh the entitlements list
       const { data, error } = await supabase
-        .from('nd_leave_entitlement')
-        .insert(newEntitlement)
-        .select();
+        .from("nd_leave_entitlement")
+        .select(`
+          id, 
+          contract_type_id, 
+          annual_leave_day, 
+          pro_rate_formula,
+          contract_type:contract_type_id (id, name)
+        `);
       
       if (error) throw error;
-      
-      setEntitlements([...entitlements, data[0] as LeaveEntitlement]);
-      
-      toast({
-        title: "Success",
-        description: "Entitlement added successfully",
-      });
-      
-      // Reset form
-      setSelectedType("");
-      setDaysPerYear(0);
+      setEntitlements(data || []);
+
     } catch (error) {
-      console.error('Error adding entitlement:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add entitlement",
-        variant: "destructive"
-      });
+      console.error("Error saving entitlement:", error);
+      toast.error("Failed to save entitlement");
     }
   };
-  
-  const handleUpdateEntitlement = async (id: string, days: number) => {
-    if (!siteId) return;
-    
-    try {
-      const { error } = await supabase
-        .from('nd_leave_entitlement')
-        .update({ days_per_year: days })
-        .eq('id', id);
-      
-      if (error) throw error;
-      
-      setEntitlements(entitlements.map(ent => 
-        ent.id === id ? { ...ent, days_per_year: days } : ent
-      ));
-      
-      toast({
-        title: "Success",
-        description: "Entitlement updated successfully",
-      });
-    } catch (error) {
-      console.error('Error updating entitlement:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update entitlement",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const getEntitlementTypeName = (typeId: string) => {
-    const type = entitlementTypes.find(t => t.id === typeId);
-    return type ? type.name : "Unknown";
-  };
-  
-  if (!siteId) {
+
+  if (loading) {
     return (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>{editId ? "Edit Entitlement" : "Add New Entitlement"}</CardTitle>
+          <CardDescription>
+            Configure leave entitlement days for different contract types
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="contractType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contract Type</FormLabel>
+                      <FormControl>
+                        <select 
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          {...field}
+                        >
+                          <option value="">Select contract type</option>
+                          {contractTypes.map(type => (
+                            <option key={type.id} value={type.id}>{type.name}</option>
+                          ))}
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="annualLeaveDays"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Annual Leave Days</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="proRateFormula"
+                  render={({ field }) => (
+                    <FormItem className="col-span-1 md:col-span-2">
+                      <FormLabel>Pro Rate Formula (Optional)</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Formula used to calculate prorated leave for partial years (e.g., "days/12*months_worked")
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                {editId && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => {
+                      setEditId(null);
+                      form.reset({
+                        contractType: "",
+                        annualLeaveDays: 0,
+                        proRateFormula: "",
+                      });
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                )}
+                <Button type="submit">
+                  {editId ? "Update Entitlement" : "Add Entitlement"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Leave Entitlements</CardTitle>
+          <CardDescription>
+            Overview of leave entitlements by contract type
+          </CardDescription>
         </CardHeader>
-        <CardContent className="text-center py-8">
-          Please select a site to manage leave entitlements
+        <CardContent>
+          {entitlements.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Contract Type</TableHead>
+                  <TableHead>Annual Leave Days</TableHead>
+                  <TableHead>Pro Rate Formula</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {entitlements.map((entitlement) => (
+                  <TableRow key={entitlement.id}>
+                    <TableCell>{entitlement.contract_type?.name}</TableCell>
+                    <TableCell>{entitlement.annual_leave_day}</TableCell>
+                    <TableCell>{entitlement.pro_rate_formula || "N/A"}</TableCell>
+                    <TableCell className="text-right">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleEdit(entitlement)}
+                      >
+                        Edit
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="flex justify-center items-center h-32 bg-muted/20 rounded-lg border border-dashed">
+              <p className="text-muted-foreground">No entitlements configured yet</p>
+            </div>
+          )}
         </CardContent>
       </Card>
-    );
-  }
-  
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Leave Entitlements</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="text-center py-8">Loading entitlements...</div>
-        ) : (
-          <>
-            <div className="grid gap-6 mb-8">
-              <div className="space-y-2">
-                <h3 className="font-medium">Add New Entitlement</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="entitlement-type">Entitlement Type</Label>
-                    <Select
-                      value={selectedType}
-                      onValueChange={setSelectedType}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {entitlementTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.id}>
-                            {type.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="days-per-year">Days per Year</Label>
-                    <Input
-                      id="days-per-year"
-                      type="number"
-                      min="0"
-                      value={daysPerYear}
-                      onChange={(e) => setDaysPerYear(parseInt(e.target.value, 10))}
-                    />
-                  </div>
-                  <div className="flex items-end">
-                    <Button onClick={handleAddEntitlement} className="w-full">
-                      Add Entitlement
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <h3 className="font-medium">Current Entitlements</h3>
-                {entitlements.length === 0 ? (
-                  <div className="text-center py-4 border rounded-md">
-                    No entitlements have been set for this site
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {entitlements.map((entitlement) => (
-                      <div key={entitlement.id} className="flex items-center justify-between p-4 border rounded-md">
-                        <div>
-                          <h4 className="font-medium">{getEntitlementTypeName(entitlement.entitlement_type_id)}</h4>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="number"
-                            min="0"
-                            className="w-24"
-                            value={entitlement.days_per_year}
-                            onChange={(e) => {
-                              const newValue = parseInt(e.target.value, 10);
-                              const updatedEntitlements = entitlements.map(ent => 
-                                ent.id === entitlement.id ? { ...ent, days_per_year: newValue } : ent
-                              );
-                              setEntitlements(updatedEntitlements);
-                            }}
-                          />
-                          <span className="text-sm">days</span>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => entitlement.id && handleUpdateEntitlement(entitlement.id, entitlement.days_per_year)}
-                          >
-                            Update
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+    </div>
   );
 }

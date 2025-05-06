@@ -183,9 +183,9 @@ export const AssetFormDialog = ({
       if (site) {
         setSelectedSite(site);
         if (!isStaffUser) {
-          const locations = ((site.nd_site_space ?? []).map(
+          const locations = (site.nd_site_space ?? []).map(
             (s): Space => s.nd_space
-          )) as Space[];
+          );
           setLocations(locations);
         }
 
@@ -489,7 +489,6 @@ export const AssetFormDialog = ({
                   </SelectTrigger>
                   <SelectContent>
                     {locations &&
-                      locations.length > 0 &&
                       locations.map((location, index) => (
                         <SelectItem key={index} value={location.id.toString()}>
                           {location.eng}

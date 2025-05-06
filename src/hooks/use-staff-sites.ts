@@ -83,8 +83,8 @@ export const useStaffSites = () => {
           ? staffJobs
               .filter(job => job.nd_site_profile)
               .map(job => ({
-                id: job.nd_site_profile?.id || "",
-                sitename: job.nd_site_profile?.sitename || ""
+                id: job.nd_site_profile.id,
+                sitename: job.nd_site_profile.sitename
               }))
           : [];
           
@@ -92,8 +92,8 @@ export const useStaffSites = () => {
           ? staffContracts
               .filter(contract => contract.nd_site_profile)
               .map(contract => ({
-                id: contract.nd_site_profile?.id || "",
-                sitename: contract.nd_site_profile?.sitename || ""
+                id: contract.nd_site_profile.id,
+                sitename: contract.nd_site_profile.sitename
               }))
           : [];
           
@@ -106,12 +106,12 @@ export const useStaffSites = () => {
         setStaffSites(uniqueSites);
       } catch (err) {
         console.error("Error fetching staff sites:", err);
-        setError("Failed to fetch staff sites");
+        setError(err instanceof Error ? err.message : "An unknown error occurred");
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchStaffSites();
   }, [user]);
 

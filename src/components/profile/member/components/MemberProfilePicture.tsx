@@ -1,108 +1,96 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { User, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
-import { Icons } from "@/components/ui/icons";
-import { ProfilePictureUploadDialog } from "./ProfilePictureUploadDialog";
+import ProfilePictureUploadDialog from '../../components/MemberPictureUploadDialog';
+import { supabase, SUPABASE_URL } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface MemberProfilePictureProps {
-  memberId: string;
-  userId: string;
-  profilePictureUrl?: string;
-  onProfilePictureChange?: (url: string) => void;
-}
+const MemberProfilePicture = () => {
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [profilePicture, setProfilePicture] = useState<string | null>(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-export function MemberProfilePicture({
-  memberId,
-  userId,
-  profilePictureUrl,
-  onProfilePictureChange
-}: MemberProfilePictureProps) {
-  const { toast } = useToast();
-  const [isUploading, setIsUploading] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentPictureUrl, setCurrentPictureUrl] = useState(profilePictureUrl);
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
 
-  const handleFilesSelected = async (files: File[]) => {
-    if (files.length === 0) return;
+                const { data: profile, error } = await supabase
+                    .from("nd_member_photo")
+                    .select("photo")
+                    .eq("user_id", user.id)
+                    .single();
 
-    setIsUploading(true);
-    try {
-      // In a real implementation, this would upload to your backend or storage service
-      // For now, we'll simulate it with a timeout and use a local URL
-      const file = files[0];
-      const url = URL.createObjectURL(file);
-      
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setCurrentPictureUrl(url);
-      if (onProfilePictureChange) {
-        onProfilePictureChange(url);
-      }
-      
-      toast({
-        title: "Profile picture updated",
-        description: "Your profile picture has been updated successfully.",
-      });
-    } catch (error) {
-      console.error("Error uploading profile picture:", error);
-      toast({
-        title: "Upload failed",
-        description: "Failed to upload profile picture. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
+                if (error) throw error;
 
-  return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-6 flex flex-col items-center">
-        <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 mb-4 relative">
-          {currentPictureUrl ? (
-            <img
-              src={currentPictureUrl}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Icons.user className="h-16 w-16 text-gray-400" />
+                if (profile?.photo) {
+                    setProfilePicture(`${SUPABASE_URL}/storage/v1/object/public/profileimage/${profile.photo}`);
+                }
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchUserProfile();
+    }, []);
+
+    const handleEditClick = () => {
+        setIsDialogOpen(true);
+    };
+
+    const handleFilesSelected = (files: File[]) => {
+        setSelectedFiles(files);
+        if (files.length > 0) {
+            const file = files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setProfilePicture(e.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    return (
+        <div className="flex flex-col items-center pt-8">
+            <div className="relative">
+                <Button
+                    className="p-0 rounded-full"
+                    onClick={handleEditClick}
+                >
+                    {isLoading ? (
+                        <Skeleton className="w-24 h-24 rounded-full" ></Skeleton >
+                    ) : (
+                        <Avatar className="w-24 h-24">
+                            <AvatarImage
+                                src={profilePicture}
+                                alt="Profile Picture"
+                                style={{ objectFit: 'cover' }}
+                            />
+                            <AvatarFallback className="w-full h-full bg-gray-300">
+                                <User className="text-gray-900" />
+                            </AvatarFallback>
+                        </Avatar>
+                    )}
+                </Button>
+                <Button
+                    className="absolute top-6 right-0 p-3 bg-white rounded-full shadow-md"
+                    onClick={handleEditClick}
+                >
+                    <Edit2 className="w-4 h-4 text-gray-600" />
+                </Button>
             </div>
-          )}
+            <ProfilePictureUploadDialog
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                onFilesSelected={handleFilesSelected}
+            />
         </div>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-2"
-          onClick={() => setIsDialogOpen(true)}
-          disabled={isUploading}
-        >
-          {isUploading ? (
-            <>
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-              Uploading...
-            </>
-          ) : (
-            <>
-              <Icons.upload className="mr-2 h-4 w-4" />
-              Change Picture
-            </>
-          )}
-        </Button>
-        
-        <ProfilePictureUploadDialog
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          onFilesSelected={handleFilesSelected}
-          memberId={memberId}
-          userId={userId}
-        />
-      </CardContent>
-    </Card>
-  );
-}
+    );
+};
+
+export default MemberProfilePicture;

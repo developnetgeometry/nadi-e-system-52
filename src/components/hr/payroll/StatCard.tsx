@@ -1,61 +1,53 @@
-
-import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export interface StatCardProps {
+interface StatCardProps {
   title: string;
-  value: string;
-  subValue?: string;
-  colorVariant?: "default" | "success" | "warning" | "danger";
-  icon?: React.ReactElement;
+  value: string | number;
+  icon?: React.ReactNode;
   trend?: {
     value: number;
     isPositive: boolean;
   };
+  colorVariant?: "default" | "success" | "warning" | "danger";
+  className?: string;
 }
 
-export function StatCard({ 
-  title, 
-  value, 
-  subValue, 
-  colorVariant = "default",
+export function StatCard({
+  title,
+  value,
   icon,
-  trend
+  trend,
+  colorVariant = "default",
+  className,
 }: StatCardProps) {
-  const getColorClass = () => {
-    switch (colorVariant) {
-      case "success":
-        return "text-green-600";
-      case "warning":
-        return "text-amber-600";
-      case "danger":
-        return "text-red-600";
-      default:
-        return "text-blue-600";
-    }
+  const colorClasses = {
+    default: "",
+    success: "text-nadi-success",
+    warning: "text-nadi-warning",
+    danger: "text-nadi-alert",
   };
 
+  const trendColors = trend?.isPositive
+    ? "text-nadi-success"
+    : "text-nadi-alert";
+
   return (
-    <Card>
-      <CardHeader className="pb-2 flex items-start justify-between">
+    <Card className={cn("shadow-sm", className)}>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        {icon && (
-          <div className="p-2 rounded-md bg-muted">
-            {icon}
-          </div>
-        )}
+        {icon && <div className="text-muted-foreground opacity-70">{icon}</div>}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {subValue && (
-          <p className={`text-xs mt-1 ${getColorClass()}`}>{subValue}</p>
-        )}
+        <div className="text-2xl font-bold tracking-tight">
+          <span className={colorClasses[colorVariant]}>{value}</span>
+        </div>
         {trend && (
-          <div className={`flex items-center mt-1 text-xs ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-            {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
+          <div className={cn("text-xs mt-1", trendColors)}>
+            {trend.isPositive ? "+" : "-"}
+            {trend.value}% from previous period
           </div>
         )}
       </CardContent>
