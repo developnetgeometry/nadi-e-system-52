@@ -4256,6 +4256,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "nd_member_address_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: true
+            referencedRelation: "nd_member_profile"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "nd_member_address_state_id_fkey"
             columns: ["state_id"]
             isOneToOne: false

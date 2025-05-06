@@ -1,10 +1,9 @@
 
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useStaffSites } from "@/hooks/use-staff-sites";
+import { useWorkHours } from "@/hooks/use-work-hours";
 import {
   Dialog,
   DialogContent,
@@ -36,20 +35,6 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Edit2, Plus, Trash2 } from "lucide-react";
 
-interface WorkHourConfig {
-  id: string;
-  site_id: number;
-  day_of_week: string;
-  start_time: string;
-  end_time: string;
-  is_active: boolean;
-}
-
-interface Site {
-  id: string;
-  sitename: string;
-}
-
 const weekDays = [
   { value: "monday", label: "Monday" },
   { value: "tuesday", label: "Tuesday" },
@@ -80,11 +65,17 @@ type FormValues = z.infer<typeof workHourSchema>;
 
 export const WorkHourManager = () => {
   const [open, setOpen] = useState(false);
-  const [selectedConfig, setSelectedConfig] = useState<WorkHourConfig | null>(null);
+  const [selectedConfig, setSelectedConfig] = useState<any | null>(null);
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const { staffSites, isLoading: loadingSites } = useStaffSites();
+  const { 
+    workHours, 
+    isLoading: loadingWorkHours, 
+    createWorkHour, 
+    updateWorkHour, 
+    deleteWorkHour 
+  } = useWorkHours(selectedSite);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(workHourSchema),
@@ -93,121 +84,6 @@ export const WorkHourManager = () => {
       startTime: "09:00",
       endTime: "17:00",
       isActive: true,
-    },
-  });
-
-  // Get work hour configurations
-  const { data: workHours, isLoading: loadingWorkHours } = useQuery({
-    queryKey: ["workHours", selectedSite],
-    queryFn: async () => {
-      if (!selectedSite) return [];
-      
-      const { data, error } = await supabase
-        .from("nd_work_hour_config")
-        .select("*")
-        .eq("site_id", selectedSite)
-        .order("day_of_week", { ascending: true });
-
-      if (error) throw error;
-      return data as WorkHourConfig[];
-    },
-    enabled: !!selectedSite,
-  });
-
-  // Create new work hour config
-  const createWorkHour = useMutation({
-    mutationFn: async (values: FormValues) => {
-      const { data, error } = await supabase.from("nd_work_hour_config").insert([
-        {
-          site_id: values.siteId,
-          day_of_week: values.dayOfWeek,
-          start_time: values.startTime,
-          end_time: values.endTime,
-          is_active: values.isActive,
-        },
-      ]);
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workHours", selectedSite] });
-      toast({
-        title: "Success",
-        description: "Work hour configuration has been added successfully",
-      });
-      setOpen(false);
-      form.reset();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to add work hour configuration: " + error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Update existing work hour config
-  const updateWorkHour = useMutation({
-    mutationFn: async (values: FormValues & { id: string }) => {
-      const { data, error } = await supabase
-        .from("nd_work_hour_config")
-        .update({
-          site_id: values.siteId,
-          day_of_week: values.dayOfWeek,
-          start_time: values.startTime,
-          end_time: values.endTime,
-          is_active: values.isActive,
-        })
-        .eq("id", values.id);
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workHours", selectedSite] });
-      toast({
-        title: "Success",
-        description: "Work hour configuration has been updated successfully",
-      });
-      setOpen(false);
-      form.reset();
-      setSelectedConfig(null);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to update work hour configuration: " + error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Delete work hour config
-  const deleteWorkHour = useMutation({
-    mutationFn: async (id: string) => {
-      const { data, error } = await supabase
-        .from("nd_work_hour_config")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workHours", selectedSite] });
-      toast({
-        title: "Success",
-        description: "Work hour configuration has been deleted successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to delete work hour configuration: " + error.message,
-        variant: "destructive",
-      });
     },
   });
 
@@ -241,7 +117,7 @@ export const WorkHourManager = () => {
     setOpen(true);
   };
 
-  const handleEdit = (config: WorkHourConfig) => {
+  const handleEdit = (config: any) => {
     setSelectedConfig(config);
     setOpen(true);
   };
@@ -249,8 +125,10 @@ export const WorkHourManager = () => {
   const onSubmit = (values: FormValues) => {
     if (selectedConfig) {
       updateWorkHour.mutate({ ...values, id: selectedConfig.id });
+      setOpen(false);
     } else {
       createWorkHour.mutate(values);
+      setOpen(false);
     }
   };
 
@@ -347,7 +225,9 @@ export const WorkHourManager = () => {
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => deleteWorkHour.mutate(config.id)}
+                        onClick={() => {
+                          deleteWorkHour.mutate(config.id);
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
