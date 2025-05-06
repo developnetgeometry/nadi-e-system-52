@@ -11,7 +11,7 @@ export interface UserFormData {
   password?: string;
   confirm_password?: string;
   gender?: string;
-  work_email?: string; // Added work email field
+  work_email?: string;
   // Fields for specific user groups (MCMC, TP)
   position_id?: string;
   tech_partner_id?: string;
@@ -26,5 +26,5 @@ export interface Profile {
   phone_number?: string;
   ic_number?: string;
   gender?: string;
-  work_email?: string; // Added work email field
+  work_email?: string;
 }

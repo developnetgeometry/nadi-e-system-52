@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,8 +15,6 @@ import { UserGroupField } from "./form-fields/UserGroupField";
 import { UserPasswordField } from "./form-fields/UserPasswordField";
 import { UserConfirmPasswordField } from "./form-fields/UserConfirmPasswordField";
 import { UserICNumberField } from "./form-fields/UserICNumberField";
-import { UserGenderField } from "./form-fields/UserGenderField";
-import { UserWorkEmailField } from "./form-fields/UserWorkEmailField";
 import { UserPositionField } from "./form-fields/UserPositionField";
 import { UserTechPartnerField } from "./form-fields/UserTechPartnerField";
 import { handleCreateUser, handleUpdateUser } from "./utils/form-handlers";
@@ -32,7 +31,6 @@ const userFormSchema = z.object({
   full_name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   user_type: z.string(),
   user_group: z.string().optional(),
-  gender: z.string().optional(),
   phone_number: z.string()
     .regex(/^(\+?6?01)[0-9]{8,9}$/, { 
       message: "Please enter a valid Malaysian phone number (e.g., +60123456789 or 01123456789)" 
@@ -43,7 +41,6 @@ const userFormSchema = z.object({
     .regex(/^\d{6}-\d{2}-\d{4}$/, { 
       message: "Please enter a valid IC number in the format xxxxxx-xx-xxxx" 
     }),
-  work_email: z.string().email({ message: "Please enter a valid work email" }).optional(),
   position_id: z.string().optional(),
   tech_partner_id: z.string().optional(),
   password: z.string()
@@ -91,10 +88,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       full_name: user?.full_name || "",
       user_type: user?.user_type || "member",
       user_group: user?.user_group?.toString() || "",
-      gender: user?.gender || "",
       phone_number: user?.phone_number || "",
       ic_number: user?.ic_number || "",
-      work_email: user?.work_email || "",
       password: "",
       confirm_password: "",
       position_id: "",
@@ -102,8 +97,6 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
     },
   });
   
-  console.log("UserForm user:", JSON.stringify(user));
-
   // Fetch user profile data if editing
   const { data: profileData } = useQuery({
     queryKey: ["user-profiles", user?.id],
@@ -238,14 +231,15 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             
             {/* Basic User Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <UserEmailField form={form} isLoading={isLoading} isEditMode={!!user} />
-              <UserNameField form={form} isLoading={isLoading} />
-              <UserICNumberField form={form} isLoading={isLoading} />
-              <UserPhoneField form={form} isLoading={isLoading} />
-              <UserGenderField form={form} isLoading={isLoading} />
-              <UserWorkEmailField form={form} isLoading={isLoading} />
-              <UserTypeField form={form} isLoading={isLoading} />
+              {/* User Group and Type - Moved to the top */}
               <UserGroupField form={form} isLoading={isLoading} />
+              <UserTypeField form={form} isLoading={isLoading} />
+              
+              {/* Required fields with asterisk */}
+              <UserEmailField form={form} isLoading={isLoading} isEditMode={!!user} required />
+              <UserNameField form={form} isLoading={isLoading} required />
+              <UserICNumberField form={form} isLoading={isLoading} required />
+              <UserPhoneField form={form} isLoading={isLoading} required />
             </div>
             
             {/* Conditional fields based on user group */}

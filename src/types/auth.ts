@@ -1,4 +1,3 @@
-
 export type UserType =
   | "member"
   | "vendor"
@@ -38,6 +37,7 @@ export interface Profile {
   user_type: UserType;
   user_group?: string; // Added user_group property
   gender?: string; // Added gender property
+  work_email?: string; // Added work_email property
   nd_user_group?: { 
     group_name: string;
     id: string;
