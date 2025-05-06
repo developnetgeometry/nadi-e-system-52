@@ -90,6 +90,66 @@ export const handleCreateUser = async (data: UserFormData): Promise<any> => {
             });
           }
           break;
+
+        case '6': // Site Staff
+          // Create staff profile with all the additional fields
+          await supabase.from('nd_staff_profile').insert({
+            user_id: userData.id,
+            fullname: data.full_name,
+            work_email: data.email,
+            mobile_no: data.phone_number,
+            ic_no: data.ic_number,
+            personal_email: data.personal_email,
+            dob: data.dob,
+            gender_id: data.gender_id,
+            place_of_birth: data.place_of_birth,
+            marital_status: data.marital_status,
+            race_id: data.race_id,
+            religion_id: data.religion_id,
+            nationality_id: data.nationality_id,
+            is_active: true,
+          });
+
+          // Add address information if provided
+          if (data.permanent_address1) {
+            await supabase.from('nd_staff_address').insert({
+              staff_id: userData.id,
+              address1: data.permanent_address1,
+              address2: data.permanent_address2 || null,
+              postcode: data.permanent_postcode || null,
+              city: data.permanent_city || null,
+              state_id: data.permanent_state || null,
+              is_active: true,
+              remark: 'permanent',
+            });
+          }
+
+          // Add correspondence address if it's different from permanent
+          if (!data.same_as_permanent && data.correspondence_address1) {
+            await supabase.from('nd_staff_address').insert({
+              staff_id: userData.id,
+              address1: data.correspondence_address1,
+              address2: data.correspondence_address2 || null,
+              postcode: data.correspondence_postcode || null,
+              city: data.correspondence_city || null,
+              state_id: data.correspondence_state || null,
+              is_active: true,
+              remark: 'correspondence',
+            });
+          }
+
+          // Add work info if provided
+          if (data.epf_no || data.socso_no || data.income_tax_no || data.bank_account_no) {
+            await supabase.from('nd_staff_pay_info').insert({
+              staff_id: userData.id,
+              epf_no: data.epf_no || null,
+              socso_no: data.socso_no || null,
+              tax_no: data.income_tax_no || null,
+              bank_acc_no: data.bank_account_no || null,
+              bank_id: data.bank_name || null,
+            });
+          }
+          break;
           
         default:
           break;
