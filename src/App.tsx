@@ -1,142 +1,136 @@
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-} from "react-router-dom";
-import { Home } from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import { useEffect, useState } from "react";
-import { supabase } from "./lib/supabase";
-import Profile from "./pages/Profile";
-import Settings from "./pages/dashboard/Settings";
-import UnderDevelopment from "./pages/UnderDevelopment";
-import Site from "./pages/dashboard/site/Site";
-import SiteDetails from "./pages/dashboard/site/SiteDetails";
-import Staff from "./pages/dashboard/staff/Staff";
-import StaffDetails from "./pages/dashboard/staff/StaffDetails";
-import Attendance from "./pages/dashboard/hr/Attendance";
-import PayrollPage from "./pages/dashboard/hr/Payroll";
-import HRSettings from "./pages/dashboard/hr/HRSettings";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Suspense } from "react";
+import Landing from "@/pages/Landing";
+import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/components/theme-provider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Login from "@/pages/auth/Login";
+import Register from "@/pages/auth/Register";
+import MemberLogin from "@/pages/auth/MemberLogin";
+import { dashboardRoutes } from "@/routes/dashboard.routes";
+import { memberRoutes } from "@/routes/member.routes";
+import { moduleRoutes } from "@/routes/module.routes";
+import UIComponents from "@/pages/UIComponents";
+import OrganizationDetails from "@/pages/dashboard/OrganizationDetails";
+import NotFound from "@/pages/NotFound";
+import UnderDevelopment from "@/pages/UnderDevelopment";
+import NoAccess from "@/pages/NoAccess";
+
+// Import example pages
+import HomeExample from "@/pages/examples/HomeExample";
+import DetailExample from "@/pages/examples/DetailExample";
+import SettingsExample from "@/pages/examples/SettingsExample";
+import Announcements from "@/pages/dashboard/Announcements";
+import AnnouncementSettings from "@/pages/dashboard/AnnouncementSettings";
+import CreateAnnouncement from "@/pages/demo/CreateAnnouncement";
+import Takwim from "@/pages/dashboard/Takwim";
+// import NotificationManagement from "@/pages/dashboard/NotificationManagement";
+import Notifications from "@/pages/dashboard/Notifications";
+
+const queryClient = new QueryClient();
+
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+  </div>
+);
 
 function App() {
-  const [session, setSession] = useState(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-  }, []);
-
-  function ProtectedRoute({ children }) {
-    if (!session) {
-      return <Navigate to="/login" replace />;
-    }
-    return children;
-  }
-
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/settings"
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/lookup-settings"
-          element={
-            <ProtectedRoute>
-              <UnderDevelopment />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/site"
-          element={
-            <ProtectedRoute>
-              <Site />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/site/:id"
-          element={
-            <ProtectedRoute>
-              <SiteDetails />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/staff"
-          element={
-            <ProtectedRoute>
-              <Staff />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/staff/:id"
-          element={
-            <ProtectedRoute>
-              <StaffDetails />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/hr/attendance"
-          element={
-            <ProtectedRoute>
-              <Attendance />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/hr/payroll"
-          element={
-            <ProtectedRoute>
-              <PayrollPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard/hr/settings"
-          element={
-            <ProtectedRoute>
-              <HRSettings />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <Router>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/member-login" element={<MemberLogin />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/ui-components" element={<UIComponents />} />
+
+              <Route path="/examples/home" element={<HomeExample />} />
+              <Route path="/examples/detail" element={<DetailExample />} />
+              <Route path="/examples/settings" element={<SettingsExample />} />
+
+              {/* Dashboard Routes */}
+              {dashboardRoutes.map((route, index) => (
+                <Route
+                  key={`dashboard-${index}`}
+                  path={route.path}
+                  element={route.element}
+                />
+              ))}
+
+              {/* Member Routes */}
+              {memberRoutes.map((route, index) => (
+                <Route
+                  key={`member-${index}`}
+                  path={route.path}
+                  element={route.element}
+                />
+              ))}
+
+              {/* Module Routes */}
+              {moduleRoutes.map((route, index) => (
+                <Route
+                  key={`module-${index}`}
+                  path={route.path}
+                  element={route.element}
+                />
+              ))}
+
+              <Route
+                path="/admin/organizations/:id"
+                element={<OrganizationDetails />}
+              />
+
+              <Route path="/under-development" element={<UnderDevelopment />} />
+
+              <Route path="/no-access" element={<NoAccess />} />
+
+              {/* Dashboard routes */}
+              {dashboardRoutes.map((route) => (
+                <Route
+                  key={route.path}
+                  path={route.path}
+                  element={
+                    <Suspense fallback={<LoadingSpinner />}>
+                      {route.element}
+                    </Suspense>
+                  }
+                />
+              ))}
+
+              <Route path="/demo/announcements" element={<Announcements />} />
+              <Route
+                path="/demo/announcements/create"
+                element={<CreateAnnouncement />}
+              />
+              <Route
+                path="/demo/announcement-settings"
+                element={<AnnouncementSettings />}
+              />
+
+              {/* Module routes */}
+              {Array.isArray(moduleRoutes) &&
+                moduleRoutes.map((route) => (
+                  <Route
+                    key={route.path}
+                    path={route.path}
+                    element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        {route.element}
+                      </Suspense>
+                    }
+                  />
+                ))}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </Router>
+        <Toaster />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
 
