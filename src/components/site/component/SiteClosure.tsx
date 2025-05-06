@@ -36,3 +36,5 @@ export const SiteClosure: React.FC<SiteClosureProps> = ({
     </Dialog>
   );
 };
+
+// No default export here, we're using named exports

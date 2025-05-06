@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from "react";
 import {
   Table,
@@ -11,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { TableRowNumber } from "@/components/ui/TableRowNumber";
 import { FilePlus, Loader2, Edit, Trash2, Settings, CheckCircle, XCircle, Clock, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import SiteClosure from "./SiteClosure";
+import { SiteClosure } from "./SiteClosure";
 import SiteClosureDetailDialog from "./SiteClosureDetailDialog";
 import { useSiteId } from "@/hooks/use-site-id";
 import { useQuery } from "@tanstack/react-query";

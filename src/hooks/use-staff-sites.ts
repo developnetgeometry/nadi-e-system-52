@@ -84,8 +84,8 @@ export const useStaffSites = () => {
           ? staffJobs
               .filter(job => job.nd_site_profile)
               .map(job => ({
-                id: job.nd_site_profile?.id,
-                sitename: job.nd_site_profile?.sitename
+                id: job.nd_site_profile?.id || "",
+                sitename: job.nd_site_profile?.sitename || ""
               }))
           : [];
           
@@ -93,13 +93,13 @@ export const useStaffSites = () => {
           ? staffContracts
               .filter(contract => contract.nd_site_profile)
               .map(contract => ({
-                id: contract.nd_site_profile?.id,
-                sitename: contract.nd_site_profile?.sitename
+                id: contract.nd_site_profile?.id || "",
+                sitename: contract.nd_site_profile?.sitename || ""
               }))
           : [];
           
         // Combine and remove duplicates based on site ID
-        const combinedSites = [...sitesFromJobs, ...sitesFromContracts] as StaffSite[];
+        const combinedSites = [...sitesFromJobs, ...sitesFromContracts];
         const uniqueSites = Array.from(
           new Map(combinedSites.map(site => [site.id, site])).values()
         );

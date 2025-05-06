@@ -68,7 +68,7 @@ import {
 } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
 import { exportSitesAsCSV } from "@/utils/export-utils";
-import { ClosurePage } from "@/components/site/component/ClosurePage";
+import ClosurePage from "@/components/site/component/ClosurePage";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 
 interface SiteManagementProps { }
