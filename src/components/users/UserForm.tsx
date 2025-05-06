@@ -24,7 +24,8 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useUserGroups, getGroupById, isMcmcGroup, isTpGroup } from "./hooks/use-user-groups";
+import { useUserGroups, getGroupById, isMcmcGroup, isTpGroup, isDuspGroup, isSsoGroup, isVendorGroup } from "./hooks/use-user-groups";
+import { RequiredFieldNotice } from "./form-fields/RequiredFieldNotice";
 
 const userFormSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -119,9 +120,27 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         .eq("is_active", true)
         .maybeSingle();
       
+      // Check if user is DUSP
+      const { data: duspProfile } = await supabase
+        .from("nd_dusp_profile")
+        .select("position_id")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      
+      // Check if user is SSO
+      const { data: ssoProfile } = await supabase
+        .from("nd_sso_profile")
+        .select("position_id")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+      
       return {
         mcmc: mcmcProfile,
-        tp: tpProfile
+        tp: tpProfile,
+        dusp: duspProfile,
+        sso: ssoProfile
       };
     },
     enabled: !!user?.id,
@@ -140,6 +159,12 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         if (profileData.tp.tech_partner_id) {
           form.setValue("tech_partner_id", profileData.tp.tech_partner_id.toString());
         }
+      }
+      if (profileData.dusp && profileData.dusp.position_id) {
+        form.setValue("position_id", profileData.dusp.position_id.toString());
+      }
+      if (profileData.sso && profileData.sso.position_id) {
+        form.setValue("position_id", profileData.sso.position_id.toString());
       }
     }
   }, [profileData, form]);
@@ -167,6 +192,20 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
     if (!selectedUserGroup) return false;
     const group = getGroupById(userGroups, selectedUserGroup);
     return isTpGroup(group);
+  };
+  
+  // Determine if DUSP specific fields should be shown
+  const shouldShowDuspFields = () => {
+    if (!selectedUserGroup) return false;
+    const group = getGroupById(userGroups, selectedUserGroup);
+    return isDuspGroup(group);
+  };
+  
+  // Determine if SSO specific fields should be shown
+  const shouldShowSsoFields = () => {
+    if (!selectedUserGroup) return false;
+    const group = getGroupById(userGroups, selectedUserGroup);
+    return isSsoGroup(group);
   };
 
   const onSubmit = async (data: UserFormData) => {
@@ -229,6 +268,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
               </Alert>
             )}
             
+            <RequiredFieldNotice />
+            
             {/* Basic User Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* User Group and Type - Moved to the top */}
@@ -243,26 +284,51 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             </div>
             
             {/* Conditional fields based on user group */}
-            {(shouldShowMcmcFields() || shouldShowTpFields()) && (
+            {shouldShowMcmcFields() && (
               <div className="mt-4 p-4 bg-muted rounded-md">
-                <h3 className="text-lg font-medium mb-3">
-                  {shouldShowMcmcFields() ? "MCMC Profile Information" : "Technology Partner Information"}
-                </h3>
+                <h3 className="text-lg font-medium mb-3">MCMC Profile Information</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <UserPositionField form={form} isLoading={isLoading} />
-                  
-                  {shouldShowTpFields() && (
-                    <UserTechPartnerField form={form} isLoading={isLoading} />
-                  )}
+                </div>
+              </div>
+            )}
+            
+            {shouldShowTpFields() && (
+              <div className="mt-4 p-4 bg-muted rounded-md">
+                <h3 className="text-lg font-medium mb-3">Technology Partner Information</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <UserPositionField form={form} isLoading={isLoading} />
+                  <UserTechPartnerField form={form} isLoading={isLoading} />
+                </div>
+              </div>
+            )}
+            
+            {shouldShowDuspFields() && (
+              <div className="mt-4 p-4 bg-muted rounded-md">
+                <h3 className="text-lg font-medium mb-3">DUSP Profile Information</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <UserPositionField form={form} isLoading={isLoading} />
+                </div>
+              </div>
+            )}
+            
+            {shouldShowSsoFields() && (
+              <div className="mt-4 p-4 bg-muted rounded-md">
+                <h3 className="text-lg font-medium mb-3">SSO Profile Information</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <UserPositionField form={form} isLoading={isLoading} />
                 </div>
               </div>
             )}
             
             {/* Password fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <UserPasswordField form={form} isLoading={isLoading} isEditMode={!!user} />
-              <UserConfirmPasswordField form={form} isLoading={isLoading} isEditMode={!!user} />
+              <UserPasswordField form={form} isLoading={isLoading} isEditMode={!!user} required={!user} />
+              <UserConfirmPasswordField form={form} isLoading={isLoading} isEditMode={!!user} required={!user} />
             </div>
 
             <div className="flex justify-end gap-4 pt-4">

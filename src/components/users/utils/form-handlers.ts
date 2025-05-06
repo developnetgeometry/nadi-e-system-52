@@ -80,6 +80,40 @@ export async function handleCreateUser(data: UserFormData) {
         
         if (tpError) throw tpError;
       }
+      
+      // For DUSP users
+      else if (groupName.includes("dusp")) {
+        const { error: duspError } = await supabase
+          .from("nd_dusp_profile")
+          .insert({
+            user_id: userData.user.id,
+            fullname: data.full_name,
+            ic_no: data.ic_number,
+            mobile_no: data.phone_number,
+            work_email: data.work_email,
+            position_id: data.position_id ? parseInt(data.position_id) : null,
+            is_active: true,
+          });
+        
+        if (duspError) throw duspError;
+      }
+      
+      // For SSO users
+      else if (groupName.includes("sso")) {
+        const { error: ssoError } = await supabase
+          .from("nd_sso_profile")
+          .insert({
+            user_id: userData.user.id,
+            fullname: data.full_name,
+            ic_no: data.ic_number,
+            mobile_no: data.phone_number,
+            work_email: data.work_email,
+            position_id: data.position_id ? parseInt(data.position_id) : null,
+            is_active: true,
+          });
+        
+        if (ssoError) throw ssoError;
+      }
     }
   }
   
@@ -122,6 +156,20 @@ export async function handleUpdateUser(data: UserFormData, user: Profile) {
   // Check if user has TP profile
   const { data: tpProfile } = await supabase
     .from("nd_tech_partner_profile")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+    
+  // Check if user has DUSP profile
+  const { data: duspProfile } = await supabase
+    .from("nd_dusp_profile")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+    
+  // Check if user has SSO profile
+  const { data: ssoProfile } = await supabase
+    .from("nd_sso_profile")
     .select("id")
     .eq("user_id", user.id)
     .single();
@@ -171,10 +219,22 @@ export async function handleUpdateUser(data: UserFormData, user: Profile) {
           if (mcmcError) throw mcmcError;
         }
         
-        // If user previously had a TP profile but now changed to MCMC, deactivate TP profile
+        // Deactivate other profiles
         if (tpProfile) {
           await supabase
             .from("nd_tech_partner_profile")
+            .update({ is_active: false })
+            .eq("user_id", user.id);
+        }
+        if (duspProfile) {
+          await supabase
+            .from("nd_dusp_profile")
+            .update({ is_active: false })
+            .eq("user_id", user.id);
+        }
+        if (ssoProfile) {
+          await supabase
+            .from("nd_sso_profile")
             .update({ is_active: false })
             .eq("user_id", user.id);
         }
@@ -215,15 +275,136 @@ export async function handleUpdateUser(data: UserFormData, user: Profile) {
           if (tpError) throw tpError;
         }
         
-        // If user previously had a MCMC profile but now changed to TP, deactivate MCMC profile
+        // Deactivate other profiles
         if (mcmcProfile) {
           await supabase
             .from("nd_mcmc_profile")
             .update({ is_active: false })
             .eq("user_id", user.id);
         }
-      } else {
-        // For other user groups, deactivate both profiles if they exist
+        if (duspProfile) {
+          await supabase
+            .from("nd_dusp_profile")
+            .update({ is_active: false })
+            .eq("user_id", user.id);
+        }
+        if (ssoProfile) {
+          await supabase
+            .from("nd_sso_profile")
+            .update({ is_active: false })
+            .eq("user_id", user.id);
+        }
+      }
+      
+      // For DUSP users
+      else if (groupName.includes("dusp")) {
+        if (duspProfile) {
+          // Update existing DUSP profile
+          const { error: duspError } = await supabase
+            .from("nd_dusp_profile")
+            .update({
+              fullname: data.full_name,
+              ic_no: data.ic_number,
+              mobile_no: data.phone_number,
+              work_email: data.work_email,
+              position_id: data.position_id ? parseInt(data.position_id) : null,
+            })
+            .eq("user_id", user.id);
+          
+          if (duspError) throw duspError;
+        } else {
+          // Create new DUSP profile
+          const { error: duspError } = await supabase
+            .from("nd_dusp_profile")
+            .insert({
+              user_id: user.id,
+              fullname: data.full_name,
+              ic_no: data.ic_number,
+              mobile_no: data.phone_number,
+              work_email: data.work_email,
+              position_id: data.position_id ? parseInt(data.position_id) : null,
+              is_active: true,
+            });
+          
+          if (duspError) throw duspError;
+        }
+        
+        // Deactivate other profiles
+        if (mcmcProfile) {
+          await supabase
+            .from("nd_mcmc_profile")
+            .update({ is_active: false })
+            .eq("user_id", user.id);
+        }
+        if (tpProfile) {
+          await supabase
+            .from("nd_tech_partner_profile")
+            .update({ is_active: false })
+            .eq("user_id", user.id);
+        }
+        if (ssoProfile) {
+          await supabase
+            .from("nd_sso_profile")
+            .update({ is_active: false })
+            .eq("user_id", user.id);
+        }
+      }
+      
+      // For SSO users
+      else if (groupName.includes("sso")) {
+        if (ssoProfile) {
+          // Update existing SSO profile
+          const { error: ssoError } = await supabase
+            .from("nd_sso_profile")
+            .update({
+              fullname: data.full_name,
+              ic_no: data.ic_number,
+              mobile_no: data.phone_number,
+              work_email: data.work_email,
+              position_id: data.position_id ? parseInt(data.position_id) : null,
+            })
+            .eq("user_id", user.id);
+          
+          if (ssoError) throw ssoError;
+        } else {
+          // Create new SSO profile
+          const { error: ssoError } = await supabase
+            .from("nd_sso_profile")
+            .insert({
+              user_id: user.id,
+              fullname: data.full_name,
+              ic_no: data.ic_number,
+              mobile_no: data.phone_number,
+              work_email: data.work_email,
+              position_id: data.position_id ? parseInt(data.position_id) : null,
+              is_active: true,
+            });
+          
+          if (ssoError) throw ssoError;
+        }
+        
+        // Deactivate other profiles
+        if (mcmcProfile) {
+          await supabase
+            .from("nd_mcmc_profile")
+            .update({ is_active: false })
+            .eq("user_id", user.id);
+        }
+        if (tpProfile) {
+          await supabase
+            .from("nd_tech_partner_profile")
+            .update({ is_active: false })
+            .eq("user_id", user.id);
+        }
+        if (duspProfile) {
+          await supabase
+            .from("nd_dusp_profile")
+            .update({ is_active: false })
+            .eq("user_id", user.id);
+        }
+      }
+      else {
+        // For other user groups, deactivate all specific profiles if they exist
         if (mcmcProfile) {
           await supabase
             .from("nd_mcmc_profile")
@@ -234,6 +415,20 @@ export async function handleUpdateUser(data: UserFormData, user: Profile) {
         if (tpProfile) {
           await supabase
             .from("nd_tech_partner_profile")
+            .update({ is_active: false })
+            .eq("user_id", user.id);
+        }
+        
+        if (duspProfile) {
+          await supabase
+            .from("nd_dusp_profile")
+            .update({ is_active: false })
+            .eq("user_id", user.id);
+        }
+        
+        if (ssoProfile) {
+          await supabase
+            .from("nd_sso_profile")
             .update({ is_active: false })
             .eq("user_id", user.id);
         }
