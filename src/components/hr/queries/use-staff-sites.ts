@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
@@ -61,7 +62,7 @@ export function useStaffSites() {
         if (error) throw error;
         
         // Extract and flatten the site data
-        const staffSites = data.map(item => ({
+        const staffSites = data.map((item) => ({
           id: item.site.id,
           sitename: item.site.sitename
         }));
