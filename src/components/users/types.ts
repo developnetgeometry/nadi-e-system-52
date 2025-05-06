@@ -10,6 +10,7 @@ export interface UserFormData {
   ic_number: string;
   password?: string;
   confirm_password?: string;
+  gender?: string; // Added gender field
 }
 
 export interface Profile {
@@ -20,4 +21,5 @@ export interface Profile {
   user_group?: string;
   phone_number?: string;
   ic_number?: string;
+  gender?: string; // Added gender field
 }

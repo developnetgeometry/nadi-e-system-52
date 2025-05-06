@@ -2,58 +2,63 @@
 import { supabase } from "@/lib/supabase";
 import { UserFormData } from "../types";
 import { Profile } from "@/types/auth";
-import { useToast } from "@/hooks/use-toast";
-import { createUser } from "@/routes/api/createUser";
 
-export const handleCreateUser = async (data: UserFormData) => {
-  try {
-    // Get the current user's ID to use as created_by
-    const { data: userData } = await supabase.auth.getUser();
-    const createdBy = userData?.user?.id || "";
+export async function handleCreateUser(data: UserFormData) {
+  // First create the auth user
+  const { data: userData, error: signUpError } = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password || "",
+    options: {
+      data: {
+        full_name: data.full_name,
+      },
+    },
+  });
 
-    // Use the createUser helper function that properly constructs the URL
-    const responseData = await createUser({
-      email: data.email,
-      fullName: data.full_name,
-      userType: data.user_type,
-      userGroup: data.user_group,
-      phoneNumber: data.phone_number,
-      icNumber: data.ic_number,
-      password: data.password,
-      createdBy: createdBy
-    });
+  if (signUpError) throw signUpError;
+  if (!userData.user) throw new Error("Failed to create user");
 
-    return responseData;
-  } catch (error) {
-    console.error('Error creating user:', error);
-    throw error;
-  }
-};
-
-export const handleUpdateUser = async (data: UserFormData, user: Profile) => {
-  // Update existing user
+  // Then update the profile with additional fields
   const { error: profileError } = await supabase
     .from("profiles")
     .update({
       full_name: data.full_name,
-      user_type: data.user_type,
-      user_group: data.user_group,
       phone_number: data.phone_number,
       ic_number: data.ic_number,
-      updated_at: new Date().toISOString(),
+      user_type: data.user_type,
+      user_group: data.user_group ? parseInt(data.user_group) : null,
+      gender: data.gender, // Added gender field
     })
-    .eq("id", user.id);
+    .eq("id", userData.user.id);
 
   if (profileError) throw profileError;
+  return userData;
+}
 
-  // Update user table
-  const { error: userError } = await supabase
-    .from("users")
+export async function handleUpdateUser(data: UserFormData, user: Profile) {
+  // Update the profile
+  const { error: updateError } = await supabase
+    .from("profiles")
     .update({
+      full_name: data.full_name,
       phone_number: data.phone_number,
-      updated_by: (await supabase.auth.getUser()).data.user?.id,
+      ic_number: data.ic_number,
+      user_type: data.user_type,
+      user_group: data.user_group ? parseInt(data.user_group) : null,
+      gender: data.gender, // Added gender field
     })
     .eq("id", user.id);
 
-  if (userError) throw userError;
-};
+  if (updateError) throw updateError;
+
+  // Update password if provided
+  if (data.password) {
+    const { error: passwordError } = await supabase.auth.updateUser({
+      password: data.password,
+    });
+
+    if (passwordError) throw passwordError;
+  }
+
+  return user;
+}

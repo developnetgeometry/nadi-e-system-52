@@ -37,6 +37,7 @@ export interface Profile {
   avatar_url?: string;
   user_type: UserType;
   user_group?: string; // Added user_group property
+  gender?: string; // Added gender property
   nd_user_group?: { 
     group_name: string;
     id: string;

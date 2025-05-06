@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +15,7 @@ import { UserGroupField } from "./form-fields/UserGroupField";
 import { UserPasswordField } from "./form-fields/UserPasswordField";
 import { UserConfirmPasswordField } from "./form-fields/UserConfirmPasswordField";
 import { UserICNumberField } from "./form-fields/UserICNumberField";
+import { UserGenderField } from "./form-fields/UserGenderField"; // Import the new field
 import { handleCreateUser, handleUpdateUser } from "./utils/form-handlers";
 import { UserFormData } from "./types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -25,6 +27,7 @@ const userFormSchema = z.object({
   full_name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   user_type: z.string(),
   user_group: z.string().optional(),
+  gender: z.string().optional(), // Added gender validation
   phone_number: z.string()
     .regex(/^(\+?6?01)[0-9]{8,9}$/, { 
       message: "Please enter a valid Malaysian phone number (e.g., +60123456789 or 01123456789)" 
@@ -78,6 +81,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       full_name: user?.full_name || "",
       user_type: user?.user_type || "member",
       user_group: user?.user_group?.toString() || "",
+      gender: user?.gender || "", // Added gender default value
       phone_number: user?.phone_number || "",
       ic_number: user?.ic_number || "",
       password: "",
@@ -152,6 +156,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
               <UserNameField form={form} isLoading={isLoading} />
               <UserICNumberField form={form} isLoading={isLoading} />
               <UserPhoneField form={form} isLoading={isLoading} />
+              <UserGenderField form={form} isLoading={isLoading} /> {/* Added GenderField */}
               <UserTypeField form={form} isLoading={isLoading} />
               <UserGroupField form={form} isLoading={isLoading} />
             </div>

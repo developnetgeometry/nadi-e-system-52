@@ -9816,6 +9816,7 @@ export type Database = {
           jenis_ekonomi1: string | null
           jenis_ekonomy2: string | null
           mukim: string | null
+          mukim_id: number | null
           nadicategory: string | null
           population_3km: string | null
           population_5km: string | null
@@ -9847,6 +9848,7 @@ export type Database = {
           jenis_ekonomi1?: string | null
           jenis_ekonomy2?: string | null
           mukim?: string | null
+          mukim_id?: number | null
           nadicategory?: string | null
           population_3km?: string | null
           population_5km?: string | null
@@ -9878,6 +9880,7 @@ export type Database = {
           jenis_ekonomi1?: string | null
           jenis_ekonomy2?: string | null
           mukim?: string | null
+          mukim_id?: number | null
           nadicategory?: string | null
           population_3km?: string | null
           population_5km?: string | null
