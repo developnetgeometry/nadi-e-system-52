@@ -17,7 +17,7 @@ export const fetchSiteBySiteId = async (siteId: string): Promise<Site> => {
   return Promise.resolve({} as Site);
 };
 
-// Basic fetcher functions without parameters
+// Basic fetcher functions with parameter support
 export const fetchSiteStatus = async (): Promise<SiteStatus[]> => {
   return Promise.resolve([]);
 };
@@ -30,19 +30,23 @@ export const fetchRegion = async (): Promise<Region[]> => {
   return Promise.resolve([]);
 };
 
-export const fetchDistrict = async (): Promise<District[]> => {
+export const fetchDistrict = async (stateId?: string): Promise<District[]> => {
+  console.log("Fetching districts for state:", stateId);
   return Promise.resolve([]);
 };
 
-export const fetchParliament = async (): Promise<Parliament[]> => {
+export const fetchParliament = async (stateId?: string): Promise<Parliament[]> => {
+  console.log("Fetching parliaments for state:", stateId);
   return Promise.resolve([]);
 };
 
-export const fetchDun = async (): Promise<Dun[]> => {
+export const fetchDun = async (parliamentId?: string): Promise<Dun[]> => {
+  console.log("Fetching DUNs for parliament:", parliamentId);
   return Promise.resolve([]);
 };
 
-export const fetchMukim = async (): Promise<Mukim[]> => {
+export const fetchMukim = async (districtId?: string): Promise<Mukim[]> => {
+  console.log("Fetching mukims for district:", districtId);
   return Promise.resolve([]);
 };
 
@@ -94,7 +98,7 @@ export const fetchAllDistricts = async (): Promise<District[]> => {
   return Promise.resolve([]);
 };
 
-// Just aliases for the functions mentioned in the errors
+// Alias functions that match what the component is expecting
 export const fetchAllMukims = fetchMukim;
 export const fetchAllParliaments = fetchParliament;
 export const fetchAllDuns = fetchDun;

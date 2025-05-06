@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { TableRowNumber } from "@/components/ui/TableRowNumber";
 import { FilePlus, Loader2, Edit, Trash2, Settings, CheckCircle, XCircle, Clock, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import SiteClosureForm from "./SiteClosure";
+import SiteClosure from "./SiteClosure";
 import SiteClosureDetailDialog from "./SiteClosureDetailDialog";
 import { useSiteId } from "@/hooks/use-site-id";
 import { useQuery } from "@tanstack/react-query";
@@ -943,7 +943,7 @@ const ClosurePage: React.FC<ClosurePageProps> = ({ siteId }) => {
         )}
       </div>
 
-      <SiteClosureForm
+      <SiteClosure
         open={isSiteClosureOpen}
         onOpenChange={handleDialogOpenChange}
         siteId={effectiveSiteId || ""}
