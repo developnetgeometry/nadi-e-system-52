@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -76,7 +75,9 @@ const leaveTypeSchema = z.object({
 
 const entitlementSchema = z.object({
   contractTypeId: z.coerce.number(),
-  annualLeaveDays: z.coerce.number().min(0, "Leave days must be a positive number"),
+  annualLeaveDays: z.coerce
+    .number()
+    .min(0, "Leave days must be a positive number"),
   proRateFormula: z.string().optional(),
 });
 
@@ -86,8 +87,11 @@ type EntitlementFormValues = z.infer<typeof entitlementSchema>;
 export const EntitlementManager = () => {
   const [leaveTypeDialog, setLeaveTypeDialog] = useState(false);
   const [entitlementDialog, setEntitlementDialog] = useState(false);
-  const [selectedLeaveType, setSelectedLeaveType] = useState<LeaveType | null>(null);
-  const [selectedEntitlement, setSelectedEntitlement] = useState<LeaveEntitlement | null>(null);
+  const [selectedLeaveType, setSelectedLeaveType] = useState<LeaveType | null>(
+    null
+  );
+  const [selectedEntitlement, setSelectedEntitlement] =
+    useState<LeaveEntitlement | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -253,13 +257,15 @@ export const EntitlementManager = () => {
   // Create new entitlement
   const createEntitlement = useMutation({
     mutationFn: async (values: EntitlementFormValues) => {
-      const { data, error } = await supabase.from("nd_leave_entitlement").insert([
-        {
-          contract_type_id: values.contractTypeId,
-          annual_leave_day: values.annualLeaveDays,
-          pro_rate_formula: values.proRateFormula,
-        },
-      ]);
+      const { data, error } = await supabase
+        .from("nd_leave_entitlement")
+        .insert([
+          {
+            contract_type_id: values.contractTypeId,
+            annual_leave_day: values.annualLeaveDays,
+            pro_rate_formula: values.proRateFormula,
+          },
+        ]);
 
       if (error) throw error;
       return data;
@@ -370,7 +376,8 @@ export const EntitlementManager = () => {
   const handleAddEntitlement = () => {
     setSelectedEntitlement(null);
     entitlementForm.reset({
-      contractTypeId: contractTypes && contractTypes.length > 0 ? contractTypes[0].id : 0,
+      contractTypeId:
+        contractTypes && contractTypes.length > 0 ? contractTypes[0].id : 0,
       annualLeaveDays: 0,
       proRateFormula: "",
     });
@@ -409,7 +416,11 @@ export const EntitlementManager = () => {
       <div>
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">Leave Types</h3>
-          <Button onClick={handleAddLeaveType} variant="outline" className="flex items-center gap-2">
+          <Button
+            onClick={handleAddLeaveType}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
             <Plus className="h-4 w-4" />
             <span>Add Leave Type</span>
           </Button>
@@ -426,11 +437,13 @@ export const EntitlementManager = () => {
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-base">{leaveType.name}</CardTitle>
+                      <CardTitle className="text-base">
+                        {leaveType.name}
+                      </CardTitle>
                       <CardDescription>Code: {leaveType.code}</CardDescription>
                     </div>
-                    <div 
-                      className="w-6 h-6 rounded-full" 
+                    <div
+                      className="w-6 h-6 rounded-full"
                       style={{ backgroundColor: leaveType.color_code }}
                     />
                   </div>
@@ -475,7 +488,11 @@ export const EntitlementManager = () => {
       <div>
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">Contract Entitlements</h3>
-          <Button onClick={handleAddEntitlement} variant="outline" className="flex items-center gap-2">
+          <Button
+            onClick={handleAddEntitlement}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
             <Plus className="h-4 w-4" />
             <span>Add Entitlement</span>
           </Button>
@@ -508,11 +525,13 @@ export const EntitlementManager = () => {
                   return (
                     <tr key={entitlement.id} className="border-b">
                       <td className="px-4 py-3">
-                        {contractType ? contractType.name : 'Unknown'}
+                        {contractType ? contractType.name : "Unknown"}
                       </td>
-                      <td className="px-4 py-3">{entitlement.annual_leave_day}</td>
                       <td className="px-4 py-3">
-                        {entitlement.pro_rate_formula || 'N/A'}
+                        {entitlement.annual_leave_day}
+                      </td>
+                      <td className="px-4 py-3">
+                        {entitlement.pro_rate_formula || "N/A"}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex justify-end gap-2">
@@ -526,7 +545,9 @@ export const EntitlementManager = () => {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => deleteEntitlement.mutate(entitlement.id)}
+                            onClick={() =>
+                              deleteEntitlement.mutate(entitlement.id)
+                            }
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -537,7 +558,10 @@ export const EntitlementManager = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan={4} className="text-center py-4 text-muted-foreground">
+                  <td
+                    colSpan={4}
+                    className="text-center py-4 text-muted-foreground"
+                  >
                     No entitlements configured
                   </td>
                 </tr>
@@ -560,7 +584,10 @@ export const EntitlementManager = () => {
           </DialogHeader>
 
           <Form {...leaveTypeForm}>
-            <form onSubmit={leaveTypeForm.handleSubmit(submitLeaveTypeForm)} className="space-y-4">
+            <form
+              onSubmit={leaveTypeForm.handleSubmit(submitLeaveTypeForm)}
+              className="space-y-4"
+            >
               <FormField
                 control={leaveTypeForm.control}
                 name="name"
@@ -598,10 +625,14 @@ export const EntitlementManager = () => {
                       <FormLabel>Color</FormLabel>
                       <FormControl>
                         <div className="flex gap-2">
-                          <Input type="color" {...field} className="w-12 h-10 p-1" />
-                          <Input 
-                            type="text" 
-                            value={field.value} 
+                          <Input
+                            type="color"
+                            {...field}
+                            className="w-12 h-10 p-1"
+                          />
+                          <Input
+                            type="text"
+                            value={field.value}
                             onChange={field.onChange}
                             className="flex-1"
                           />
@@ -652,9 +683,11 @@ export const EntitlementManager = () => {
               />
 
               <DialogFooter>
-                <Button 
-                  type="submit" 
-                  disabled={createLeaveType.isPending || updateLeaveType.isPending}
+                <Button
+                  type="submit"
+                  disabled={
+                    createLeaveType.isPending || updateLeaveType.isPending
+                  }
                 >
                   {createLeaveType.isPending || updateLeaveType.isPending ? (
                     <span className="flex items-center gap-2">
@@ -684,7 +717,10 @@ export const EntitlementManager = () => {
           </DialogHeader>
 
           <Form {...entitlementForm}>
-            <form onSubmit={entitlementForm.handleSubmit(submitEntitlementForm)} className="space-y-4">
+            <form
+              onSubmit={entitlementForm.handleSubmit(submitEntitlementForm)}
+              className="space-y-4"
+            >
               <FormField
                 control={entitlementForm.control}
                 name="contractTypeId"
@@ -701,14 +737,15 @@ export const EntitlementManager = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {contractTypes && contractTypes.map((contractType) => (
-                          <SelectItem 
-                            key={contractType.id} 
-                            value={contractType.id.toString()}
-                          >
-                            {contractType.name}
-                          </SelectItem>
-                        ))}
+                        {contractTypes &&
+                          contractTypes.map((contractType) => (
+                            <SelectItem
+                              key={contractType.id}
+                              value={contractType.id.toString()}
+                            >
+                              {contractType.name}
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -740,7 +777,10 @@ export const EntitlementManager = () => {
                   <FormItem>
                     <FormLabel>Pro-Rate Formula (Optional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., days/12*months_worked" {...field} />
+                      <Input
+                        placeholder="e.g., days/12*months_worked"
+                        {...field}
+                      />
                     </FormControl>
                     <FormDescription>
                       Formula for calculating pro-rated leave
@@ -751,11 +791,14 @@ export const EntitlementManager = () => {
               />
 
               <DialogFooter>
-                <Button 
-                  type="submit" 
-                  disabled={createEntitlement.isPending || updateEntitlement.isPending}
+                <Button
+                  type="submit"
+                  disabled={
+                    createEntitlement.isPending || updateEntitlement.isPending
+                  }
                 >
-                  {createEntitlement.isPending || updateEntitlement.isPending ? (
+                  {createEntitlement.isPending ||
+                  updateEntitlement.isPending ? (
                     <span className="flex items-center gap-2">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                       Saving...

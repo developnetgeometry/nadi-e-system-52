@@ -1,8 +1,13 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { OffDaysManager } from "@/components/hr/settings/OffDaysManager";
 import { EntitlementManager } from "@/components/hr/settings/EntitlementManager";
 import { WorkHourManager } from "@/components/hr/settings/WorkHourManager";
@@ -27,7 +32,10 @@ const HRSettings = () => {
               <Calendar className="h-4 w-4" />
               <span>Off Days Management</span>
             </TabsTrigger>
-            <TabsTrigger value="entitlement" className="flex items-center gap-2">
+            <TabsTrigger
+              value="entitlement"
+              className="flex items-center gap-2"
+            >
               <Award className="h-4 w-4" />
               <span>Leave Entitlements</span>
             </TabsTrigger>

@@ -19,6 +19,8 @@ import Wallet from "@/pages/dashboard/financial/Wallet";
 import Attendance from "@/pages/dashboard/hr/Attendance";
 import Leave from "@/pages/dashboard/hr/Leave";
 import Payroll from "@/pages/dashboard/hr/Payroll";
+import StaffTraining from "@/pages/dashboard/hr/StaffTraining";
+import HRSettings from "@/pages/dashboard/hr/HRSettings";
 import InventoryDashboard from "@/pages/dashboard/inventory/InventoryDashboard";
 import InventorySettings from "@/pages/dashboard/inventory/InventorySettings";
 import POSDashboard from "@/pages/dashboard/pos/POSDashboard";
@@ -42,6 +44,9 @@ import CreateAnnouncement from "@/pages/dashboard/announcements/CreateAnnounceme
 import Takwim from "@/pages/dashboard/takwim/Takwim";
 import DashboardPage from "@/pages/dashboard/Dashboard";
 import NADIClosure from "@/pages/dashboard/site/NADIClosure";
+import Usage from "@/pages/dashboard/site/Usage";
+import KPI from "@/pages/dashboard/site/KPI";
+import NMS from "@/pages/dashboard/site/NMS";
 
 export const moduleRoutes: RouteObject[] = [
   // HR Routes
@@ -50,6 +55,14 @@ export const moduleRoutes: RouteObject[] = [
     element: (
       // <ProtectedRoute requiredPermission="view_hr_dashboard">
       <HRDashboard />
+      // </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/hr/settings",
+    element: (
+      // <ProtectedRoute requiredPermission="view_hr_dashboard">
+      <HRSettings />
       // </ProtectedRoute>
     ),
   },
@@ -90,6 +103,14 @@ export const moduleRoutes: RouteObject[] = [
     element: (
       // <ProtectedRoute requiredPermission="manage_leave">
       <Payroll />
+      // </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/hr/staff-training",
+    element: (
+      // <ProtectedRoute requiredPermission="manage_leave">
+      <StaffTraining />
       // </ProtectedRoute>
     ),
   },
@@ -338,6 +359,30 @@ export const moduleRoutes: RouteObject[] = [
   //     // </ProtectedRoute>
   //   ),
   // },
+  {
+    path: "/site/usage",
+    element: (
+      // <ProtectedRoute requiredPermission="view_site_details">
+      <Usage/>
+      // </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/site/kpi",
+    element: (
+      // <ProtectedRoute requiredPermission="view_site_details">
+      <KPI/>
+      // </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/site/nms",
+    element: (
+      // <ProtectedRoute requiredPermission="view_site_details">
+      <NMS/>
+      // </ProtectedRoute>
+    ),
+  },
   {
     path: "/docket-status", //For superadmin
     element: (

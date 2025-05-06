@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useStaffSites } from "@/hooks/use-staff-sites";
-import { useWorkHours } from "@/hooks/use-work-hours";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +35,20 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Edit2, Plus, Trash2 } from "lucide-react";
 
+interface WorkHourConfig {
+  id: string;
+  site_id: number;
+  day_of_week: string;
+  start_time: string;
+  end_time: string;
+  is_active: boolean;
+}
+
+interface Site {
+  id: string;
+  sitename: string;
+}
+
 const weekDays = [
   { value: "monday", label: "Monday" },
   { value: "tuesday", label: "Tuesday" },
@@ -65,17 +79,13 @@ type FormValues = z.infer<typeof workHourSchema>;
 
 export const WorkHourManager = () => {
   const [open, setOpen] = useState(false);
-  const [selectedConfig, setSelectedConfig] = useState<any | null>(null);
+  const [selectedConfig, setSelectedConfig] = useState<WorkHourConfig | null>(
+    null
+  );
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { staffSites, isLoading: loadingSites } = useStaffSites();
-  const { 
-    workHours, 
-    isLoading: loadingWorkHours, 
-    createWorkHour, 
-    updateWorkHour, 
-    deleteWorkHour 
-  } = useWorkHours(selectedSite);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(workHourSchema),
@@ -84,6 +94,125 @@ export const WorkHourManager = () => {
       startTime: "09:00",
       endTime: "17:00",
       isActive: true,
+    },
+  });
+
+  // Get work hour configurations
+  const { data: workHours, isLoading: loadingWorkHours } = useQuery({
+    queryKey: ["workHours", selectedSite],
+    queryFn: async () => {
+      if (!selectedSite) return [];
+
+      const { data, error } = await supabase
+        .from("nd_work_hour_config")
+        .select("*")
+        .eq("site_id", selectedSite)
+        .order("day_of_week", { ascending: true });
+
+      if (error) throw error;
+      return data as WorkHourConfig[];
+    },
+    enabled: !!selectedSite,
+  });
+
+  // Create new work hour config
+  const createWorkHour = useMutation({
+    mutationFn: async (values: FormValues) => {
+      const { data, error } = await supabase
+        .from("nd_work_hour_config")
+        .insert([
+          {
+            site_id: values.siteId,
+            day_of_week: values.dayOfWeek,
+            start_time: values.startTime,
+            end_time: values.endTime,
+            is_active: values.isActive,
+          },
+        ]);
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workHours", selectedSite] });
+      toast({
+        title: "Success",
+        description: "Work hour configuration has been added successfully",
+      });
+      setOpen(false);
+      form.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add work hour configuration: " + error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update existing work hour config
+  const updateWorkHour = useMutation({
+    mutationFn: async (values: FormValues & { id: string }) => {
+      const { data, error } = await supabase
+        .from("nd_work_hour_config")
+        .update({
+          site_id: values.siteId,
+          day_of_week: values.dayOfWeek,
+          start_time: values.startTime,
+          end_time: values.endTime,
+          is_active: values.isActive,
+        })
+        .eq("id", values.id);
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workHours", selectedSite] });
+      toast({
+        title: "Success",
+        description: "Work hour configuration has been updated successfully",
+      });
+      setOpen(false);
+      form.reset();
+      setSelectedConfig(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description:
+          "Failed to update work hour configuration: " + error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete work hour config
+  const deleteWorkHour = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase
+        .from("nd_work_hour_config")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workHours", selectedSite] });
+      toast({
+        title: "Success",
+        description: "Work hour configuration has been deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description:
+          "Failed to delete work hour configuration: " + error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -108,7 +237,11 @@ export const WorkHourManager = () => {
   const handleAddNew = () => {
     setSelectedConfig(null);
     form.reset({
-      siteId: selectedSite ? parseInt(selectedSite) : (staffSites && staffSites.length > 0 ? parseInt(staffSites[0].id) : 0),
+      siteId: selectedSite
+        ? parseInt(selectedSite)
+        : staffSites && staffSites.length > 0
+        ? parseInt(staffSites[0].id)
+        : 0,
       dayOfWeek: "monday",
       startTime: "09:00",
       endTime: "17:00",
@@ -117,7 +250,7 @@ export const WorkHourManager = () => {
     setOpen(true);
   };
 
-  const handleEdit = (config: any) => {
+  const handleEdit = (config: WorkHourConfig) => {
     setSelectedConfig(config);
     setOpen(true);
   };
@@ -125,20 +258,21 @@ export const WorkHourManager = () => {
   const onSubmit = (values: FormValues) => {
     if (selectedConfig) {
       updateWorkHour.mutate({ ...values, id: selectedConfig.id });
-      setOpen(false);
     } else {
       createWorkHour.mutate(values);
-      setOpen(false);
     }
   };
 
   const formatTime = (timeString: string) => {
     // Handle time format (e.g., convert "09:00:00" to "09:00 AM")
     try {
-      const [hours, minutes] = timeString.split(':');
+      const [hours, minutes] = timeString.split(":");
       const date = new Date();
       date.setHours(parseInt(hours), parseInt(minutes));
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     } catch (err) {
       return timeString;
     }
@@ -146,7 +280,7 @@ export const WorkHourManager = () => {
 
   // Get day name from value
   const getDayName = (dayValue: string) => {
-    const day = weekDays.find(d => d.value === dayValue);
+    const day = weekDays.find((d) => d.value === dayValue);
     return day ? day.label : dayValue;
   };
 
@@ -156,7 +290,7 @@ export const WorkHourManager = () => {
         <div className="flex items-center gap-4">
           <h3 className="text-lg font-medium">Work Hours Configuration</h3>
           {!loadingSites && staffSites && staffSites.length > 0 && (
-            <Select value={selectedSite || ''} onValueChange={setSelectedSite}>
+            <Select value={selectedSite || ""} onValueChange={setSelectedSite}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Select site" />
               </SelectTrigger>
@@ -170,7 +304,11 @@ export const WorkHourManager = () => {
             </Select>
           )}
         </div>
-        <Button onClick={handleAddNew} variant="outline" className="flex items-center gap-2">
+        <Button
+          onClick={handleAddNew}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
           <Plus className="h-4 w-4" />
           <span>Add Work Hours</span>
         </Button>
@@ -205,11 +343,13 @@ export const WorkHourManager = () => {
                   <td className="px-4 py-3">{formatTime(config.start_time)}</td>
                   <td className="px-4 py-3">{formatTime(config.end_time)}</td>
                   <td className="px-4 py-3">
-                    <span className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
-                      config.is_active 
-                        ? "bg-green-100 text-green-800" 
-                        : "bg-red-100 text-red-800"
-                    }`}>
+                    <span
+                      className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
+                        config.is_active
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
                       {config.is_active ? "Active" : "Inactive"}
                     </span>
                   </td>
@@ -225,9 +365,7 @@ export const WorkHourManager = () => {
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => {
-                          deleteWorkHour.mutate(config.id);
-                        }}
+                        onClick={() => deleteWorkHour.mutate(config.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -240,7 +378,9 @@ export const WorkHourManager = () => {
         </div>
       ) : (
         <div className="text-center p-12 border rounded-md">
-          <p className="text-muted-foreground">No work hour configurations found</p>
+          <p className="text-muted-foreground">
+            No work hour configurations found
+          </p>
           <p className="text-sm text-muted-foreground mt-2">
             Click "Add Work Hours" to create a new configuration
           </p>
@@ -276,11 +416,12 @@ export const WorkHourManager = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {staffSites && staffSites.map((site) => (
-                          <SelectItem key={site.id} value={site.id}>
-                            {site.sitename}
-                          </SelectItem>
-                        ))}
+                        {staffSites &&
+                          staffSites.map((site) => (
+                            <SelectItem key={site.id} value={site.id}>
+                              {site.sitename}
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -294,7 +435,10 @@ export const WorkHourManager = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Day of Week</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select day" />
@@ -365,9 +509,11 @@ export const WorkHourManager = () => {
               />
 
               <DialogFooter>
-                <Button 
-                  type="submit" 
-                  disabled={createWorkHour.isPending || updateWorkHour.isPending}
+                <Button
+                  type="submit"
+                  disabled={
+                    createWorkHour.isPending || updateWorkHour.isPending
+                  }
                 >
                   {createWorkHour.isPending || updateWorkHour.isPending ? (
                     <span className="flex items-center gap-2">

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -216,9 +215,7 @@ export const OffDaysManager = () => {
   // Handle calendar date selection
   useEffect(() => {
     if (offDays) {
-      const dates = offDays.map(
-        (offDay) => new Date(offDay.start_date)
-      );
+      const dates = offDays.map((offDay) => new Date(offDay.start_date));
       setSelectedDates(dates);
     }
   }, [offDays]);
@@ -245,7 +242,11 @@ export const OffDaysManager = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold">Off Days</h3>
-        <Button onClick={handleAddNew} variant="outline" className="flex items-center gap-2">
+        <Button
+          onClick={handleAddNew}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
           <Plus className="h-4 w-4" />
           <span>Add Off Day</span>
         </Button>
@@ -274,7 +275,7 @@ export const OffDaysManager = () => {
                 <div>
                   <h4 className="font-medium">{offDay.title}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {format(new Date(offDay.start_date), "MMMM dd, yyyy")} - 
+                    {format(new Date(offDay.start_date), "MMMM dd, yyyy")} -
                     {format(new Date(offDay.end_date), "MMMM dd, yyyy")}
                   </p>
                   {offDay.is_recurring && (
@@ -363,7 +364,9 @@ export const OffDaysManager = () => {
                       <FormControl>
                         <div className="relative">
                           <Input
-                            value={field.value ? format(field.value, "PPP") : ""}
+                            value={
+                              field.value ? format(field.value, "PPP") : ""
+                            }
                             readOnly
                             className="pl-10"
                             onChange={() => {}}
@@ -385,7 +388,9 @@ export const OffDaysManager = () => {
                       <FormControl>
                         <div className="relative">
                           <Input
-                            value={field.value ? format(field.value, "PPP") : ""}
+                            value={
+                              field.value ? format(field.value, "PPP") : ""
+                            }
                             readOnly
                             className="pl-10"
                             onChange={() => {}}
@@ -443,7 +448,10 @@ export const OffDaysManager = () => {
               )}
 
               <DialogFooter>
-                <Button type="submit" disabled={createOffDay.isPending || updateOffDay.isPending}>
+                <Button
+                  type="submit"
+                  disabled={createOffDay.isPending || updateOffDay.isPending}
+                >
                   {createOffDay.isPending || updateOffDay.isPending ? (
                     <span className="flex items-center gap-2">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
