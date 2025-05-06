@@ -11,7 +11,16 @@ import { Button } from "@/components/ui/button";
 import { Settings, Eye, EyeOff, Trash2, Search } from "lucide-react"; // Import Search icon
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react"; 
-import { fetchSites, Site, toggleSiteActiveStatus, deleteSite, fetchPhase, fetchRegion, fetchSiteStatus, fetchAllStates } from "./hook/site-utils"; // Import fetchPhase, fetchRegion, fetchStatus, and fetchAllStates
+import { 
+  fetchSites, 
+  fetchPhase, 
+  fetchRegion, 
+  fetchSiteStatus, 
+  fetchAllStates, 
+  toggleSiteActiveStatus, 
+  deleteSite,
+  type Site // Import Site as a type
+} from "./hook/site-utils"; // Import fetchPhase, fetchRegion, fetchStatus, and fetchAllStates
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { SiteFormDialog } from "./SiteFormDialog"; // Import SiteFormDialog
@@ -52,10 +61,11 @@ export const SiteList = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // When calling fetchSites, pass all three parameters
   const { data: sites = [], isLoading } = useQuery({
     queryKey: ['sites', organizationId],
-    queryFn: () => fetchSites(organizationId, isTPUser, isDUSPUser), // Pass isTPUser and isDUSPUser flags
-    enabled: !!organizationId || isSuperAdmin, // Disable query if no access
+    queryFn: () => fetchSites(organizationId, isTPUser, isDUSPUser),
+    enabled: !!organizationId || isSuperAdmin,
   });
   console.log(sites);
   const { data: phases = [] } = useQuery({

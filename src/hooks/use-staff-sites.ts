@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "./useAuth";
@@ -106,12 +107,12 @@ export const useStaffSites = () => {
         setStaffSites(uniqueSites);
       } catch (err) {
         console.error("Error fetching staff sites:", err);
-        setError(err instanceof Error ? err.message : "An unknown error occurred");
+        setError("Failed to fetch staff sites");
       } finally {
         setIsLoading(false);
       }
     };
-
+    
     fetchStaffSites();
   }, [user]);
 

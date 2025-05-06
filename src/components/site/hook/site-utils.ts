@@ -1,14 +1,20 @@
+
 import { Site, SiteStatus, Phase, Region, District, Parliament, Dun, Mukim, State, Technology, Bandwidth, BuildingType, Zone, CategoryArea, BuildingLevel, Socioeconomic, Space } from "@/types/site";
+
+// Export Site type explicitly
+export type { Site, SiteStatus, Phase, Region, District, Parliament, Dun, Mukim, State, Technology, Bandwidth, BuildingType, Zone, CategoryArea, BuildingLevel, Socioeconomic, Space };
 
 // Placeholder functions for fetching site data
 // In a real application, these would connect to an API or database
-export const fetchSites = async (): Promise<Site[]> => {
+export const fetchSites = async (organizationId?: string | null, isTPUser?: boolean, isDUSPUser?: boolean): Promise<Site[]> => {
   // Mock implementation
+  console.log("Fetching sites with:", { organizationId, isTPUser, isDUSPUser });
   return Promise.resolve([]);
 };
 
 export const fetchSiteBySiteId = async (siteId: string): Promise<Site> => {
   // Mock implementation
+  console.log("Fetching site by ID:", siteId);
   return Promise.resolve({} as Site);
 };
 
@@ -88,12 +94,19 @@ export const fetchAllDistricts = async (): Promise<District[]> => {
   return Promise.resolve([]);
 };
 
+// Just aliases for the functions mentioned in the errors
+export const fetchAllMukims = fetchMukim;
+export const fetchAllParliaments = fetchParliament;
+export const fetchAllDuns = fetchDun;
+
 export const toggleSiteActiveStatus = async (siteId: string, active: boolean): Promise<any> => {
   // Mock implementation
+  console.log("Toggling site status:", { siteId, active });
   return Promise.resolve({ success: true });
 };
 
 export const deleteSite = async (siteId: string): Promise<any> => {
   // Mock implementation
+  console.log("Deleting site:", siteId);
   return Promise.resolve({ success: true });
 };
