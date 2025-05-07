@@ -193,29 +193,7 @@ export const takwimItems = [
   { title: "Takwim Settings", path: "/takwim/settings" },
 ];
 
-export const demoPagesItems: MenuItem[] = [
-  {
-    title: "404 - Not Found",
-    path: "/not-found",
-  },
-  {
-    title: "Under Development",
-    path: "/under-development",
-  },
-  {
-    title: "No Access",
-    path: "/no-access",
-  },
-  {
-    title: "Announcements",
-    path: "/demo/announcements",
-  },
-  {
-    title: "Create Announcement",
-    path: "/demo/announcements/create",
-  },
-  {
-    title: "Announcement Settings",
-    path: "/demo/announcement-settings",
-  },
+export const bookingItems = [
+  { title: "Booking Management", path: "/booking" },
+  { title: "Booking Settings", path: "/booking/settings" },
 ];
