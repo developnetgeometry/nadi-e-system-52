@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -27,7 +28,7 @@ interface StaffTableProps {
   filteredStaff: StaffMember[];
   formatDate: (dateString: string) => string;
   statusColors: Record<string, string>;
-  onEdit: (staff: StaffMember) => void;
+  onEdit: (staffId: string) => void;
   onDelete: (staffId: string) => void;
   onView: (staffId: string) => void;
   onToggleStatus: (staffId: string, currentStatus: string) => void;
