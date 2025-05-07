@@ -51,6 +51,7 @@ const SiteStaff = () => {
   const userMetadataString = useUserMetadata();
   const { user } = useAuth();
   const { userType } = useUserAccess();
+import { useToast } from "@/hooks/use-toast";
 
   const [organizationInfo, setOrganizationInfo] = useState<{
     organization_id: string | null;
