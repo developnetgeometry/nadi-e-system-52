@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -5,7 +6,7 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
+const TOAST_LIMIT = 20
 const TOAST_REMOVE_DELAY = 1000000
 
 type ToasterToast = ToastProps & {
@@ -25,7 +26,7 @@ const actionTypes = {
 let count = 0
 
 function genId() {
-  count = (count + 1) % Number.MAX_SAFE_INTEGER
+  count = (count + 1) % Number.MAX_VALUE
   return count.toString()
 }
 
@@ -126,7 +127,7 @@ export const reducer = (state: State, action: Action): State => {
   }
 }
 
-const listeners: Array<(state: State) => void> = []
+const listeners: ((state: State) => void)[] = []
 
 let memoryState: State = { toasts: [] }
 
@@ -139,7 +140,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+function toast(props: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -162,11 +163,28 @@ function toast({ ...props }: Toast) {
   })
 
   return {
-    id: id,
+    id,
     dismiss,
     update,
   }
 }
+
+// Add variant methods to the toast object
+toast.success = (props: Omit<ToastProps, "variant">) => {
+  return toast({ ...props, variant: "default" });
+};
+
+toast.error = (props: Omit<ToastProps, "variant">) => {
+  return toast({ ...props, variant: "destructive" });
+};
+
+toast.warning = (props: Omit<ToastProps, "variant">) => {
+  return toast({ ...props, variant: "default" });
+};
+
+toast.info = (props: Omit<ToastProps, "variant">) => {
+  return toast({ ...props, variant: "default" });
+};
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
@@ -189,3 +207,4 @@ function useToast() {
 }
 
 export { useToast, toast }
+export type { ToastActionElement, ToastProps }

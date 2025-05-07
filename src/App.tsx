@@ -1,137 +1,130 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Suspense } from "react";
-import Landing from "@/pages/Landing";
-import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/components/theme-provider";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Login from "@/pages/auth/Login";
-import Register from "@/pages/auth/Register";
-import MemberLogin from "@/pages/auth/MemberLogin";
-import { dashboardRoutes } from "@/routes/dashboard.routes";
-import { memberRoutes } from "@/routes/member.routes";
-import { moduleRoutes } from "@/routes/module.routes";
-import UIComponents from "@/pages/UIComponents";
-import OrganizationDetails from "@/pages/dashboard/OrganizationDetails";
-import NotFound from "@/pages/NotFound";
-import UnderDevelopment from "@/pages/UnderDevelopment";
-import NoAccess from "@/pages/NoAccess";
-
-// Import example pages
-import HomeExample from "@/pages/examples/HomeExample";
-import DetailExample from "@/pages/examples/DetailExample";
-import SettingsExample from "@/pages/examples/SettingsExample";
-import Announcements from "@/pages/dashboard/Announcements";
-import AnnouncementSettings from "@/pages/dashboard/AnnouncementSettings";
-import CreateAnnouncement from "@/pages/demo/CreateAnnouncement";
-import Takwim from "@/pages/dashboard/Takwim";
-// import NotificationManagement from "@/pages/dashboard/NotificationManagement";
-import Notifications from "@/pages/dashboard/Notifications";
-
-const queryClient = new QueryClient();
-
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-  </div>
-);
+import React, { useEffect, useState } from 'react'
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from 'react-router-dom'
+import { useAuth } from './hooks/useAuth'
+import Login from './pages/auth/Login'
+import Register from './pages/auth/Register'
+import ForgotPassword from './pages/auth/ForgotPassword'
+import ResetPassword from './pages/auth/ResetPassword'
+import Dashboard from './pages/dashboard'
+import { Profile } from './pages/dashboard/Profile'
+import { Users } from './pages/dashboard/Users'
+import { useUserMetadata } from './hooks/use-user-metadata'
+import { useToast } from './hooks/use-toast'
+import Employees from './pages/dashboard/hr/Employees'
+import SiteStaff from './pages/dashboard/hr/SiteStaff'
+import StaffDetails from './pages/dashboard/hr/StaffDetails'
+import StaffEdit from './pages/dashboard/hr/StaffEdit'
+import StaffManagement from './pages/dashboard/hr/StaffManagement'
 
 function App() {
+  const { session } = useAuth()
+  const userMetadata = useUserMetadata()
+  const { toast } = useToast()
+  const [redirectTo, setRedirectTo] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (
+      session?.user &&
+      userMetadata &&
+      userMetadata !== 'undefined' &&
+      userMetadata !== 'null'
+    ) {
+      try {
+        const metadata = JSON.parse(userMetadata)
+        if (metadata && metadata.redirectTo) {
+          setRedirectTo(metadata.redirectTo)
+        }
+      } catch (error) {
+        console.error('Error parsing user metadata:', error)
+        toast({
+          title: 'Error',
+          description: 'Failed to parse user metadata.',
+          variant: 'destructive',
+        })
+      }
+    }
+  }, [session?.user, userMetadata, toast])
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-        <Router>
-          <Suspense fallback={<LoadingSpinner />}>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/member-login" element={<MemberLogin />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/ui-components" element={<UIComponents />} />
-
-              <Route path="/examples/home" element={<HomeExample />} />
-              <Route path="/examples/detail" element={<DetailExample />} />
-              <Route path="/examples/settings" element={<SettingsExample />} />
-
-              {/* Dashboard Routes */}
-              {dashboardRoutes.map((route, index) => (
-                <Route
-                  key={`dashboard-${index}`}
-                  path={route.path}
-                  element={route.element}
-                />
-              ))}
-
-              {/* Member Routes */}
-              {memberRoutes.map((route, index) => (
-                <Route
-                  key={`member-${index}`}
-                  path={route.path}
-                  element={route.element}
-                />
-              ))}
-
-              {/* Module Routes */}
-              {moduleRoutes.map((route, index) => (
-                <Route
-                  key={`module-${index}`}
-                  path={route.path}
-                  element={route.element}
-                />
-              ))}
-
-              <Route
-                path="/admin/organizations/:id"
-                element={<OrganizationDetails />}
-              />
-
-              <Route path="/under-development" element={<UnderDevelopment />} />
-
-              <Route path="/no-access" element={<NoAccess />} />
-
-              {/* Dashboard routes */}
-              {dashboardRoutes.map((route) => (
-                <Route
-                  key={route.path}
-                  path={route.path}
-                  element={
-                    <Suspense fallback={<LoadingSpinner />}>
-                      {route.element}
-                    </Suspense>
-                  }
-                />
-              ))}
-
-              <Route path="/demo/announcements" element={<Announcements />} />
-              <Route
-                path="/demo/announcements/create"
-                element={<CreateAnnouncement />}
-              />
-              <Route
-                path="/demo/announcement-settings"
-                element={<AnnouncementSettings />}
-              />
-
-              {/* Module routes */}
-              {Array.isArray(moduleRoutes) &&
-                moduleRoutes.map((route) => (
-                  <Route
-                    key={route.path}
-                    path={route.path}
-                    element={
-                      <Suspense fallback={<LoadingSpinner />}>
-                        {route.element}
-                      </Suspense>
-                    }
-                  />
-                ))}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </Router>
-        <Toaster />
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            session ? (
+              redirectTo ? (
+                <Navigate to={redirectTo} replace />
+              ) : (
+                <Navigate to="/dashboard" replace />
+              )
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/login"
+          element={session ? <Navigate to="/dashboard" replace /> : <Login />}
+        />
+        <Route
+          path="/register"
+          element={
+            session ? <Navigate to="/dashboard" replace /> : <Register />
+          }
+        />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        {/* Protected routes */}
+        <Route
+          path="/dashboard"
+          element={
+            session ? (
+              <Dashboard />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/dashboard/profile"
+          element={
+            session ? <Profile /> : <Navigate to="/login" replace />
+          }
+        />
+        <Route
+          path="/dashboard/users"
+          element={session ? <Users /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/hr/employees"
+          element={session ? <Employees /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/hr/site-staff"
+          element={session ? <SiteStaff /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/hr/staff/:staffId"
+          element={session ? <StaffDetails /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/hr/staff/edit/:staffId"
+          element={session ? <StaffEdit /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/dashboard/hr/staff-management"
+          element={session ? <StaffManagement /> : <Navigate to="/login" replace />}
+        />
+      </Routes>
+    </BrowserRouter>
+  )
 }
 
-export default App;
+export default App
+
