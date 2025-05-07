@@ -1,15 +1,6 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { UserPlus, Search, Filter, Building } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useUserMetadata } from "@/hooks/use-user-metadata";
 import { StaffFormDialog } from "@/components/hr/StaffFormDialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,6 +19,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
 import { StaffTable } from "@/components/hr/StaffTable";
+import { StaffToolbar } from "@/components/hr/StaffToolbar";
+import { StaffFilters } from "@/components/hr/StaffFilters";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -48,6 +41,7 @@ const SiteStaff = () => {
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [staffToDelete, setStaffToDelete] = useState(null);
+  const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([]);
   const userMetadataString = useUserMetadata();
   const { user } = useAuth();
   const { userType } = useUserAccess();
@@ -107,6 +101,12 @@ const SiteStaff = () => {
     });
   }, [staffList, searchQuery, locationFilter, statusFilter]);
 
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setLocationFilter("all");
+    setStatusFilter("all");
+  };
+
   const handleEditStaff = (staffId) => {
     const staff = staffList.find((s) => s.id === staffId);
     if (staff) {
@@ -133,7 +133,7 @@ const SiteStaff = () => {
 
       if (error) {
         console.error("Error fetching staff details:", error);
-        toast.error({
+        toast({
           title: "Error",
           description: error.message || "Failed to load staff details."
         });
@@ -146,14 +146,14 @@ const SiteStaff = () => {
           state: { staffData: data } 
         });
       } else {
-        toast.error({
+        toast({
           title: "Staff Not Found",
           description: "Unable to find staff details."
         });
       }
     } catch (error) {
       console.error("Error fetching staff details:", error);
-      toast.error({
+      toast({
         title: "Error",
         description: "Failed to load staff details. Please try again."
       });
@@ -186,13 +186,13 @@ const SiteStaff = () => {
       // Update UI after successful deletion
       removeStaffMember(staffToDelete.id);
 
-      toast.success({
+      toast({
         title: "Staff Deleted",
         description: `${staffToDelete.name} has been removed successfully.`
       });
     } catch (error) {
       console.error("Error deleting staff:", error);
-      toast.error({
+      toast({
         title: "Error",
         description: error.message || "Failed to delete staff member. Please try again."
       });
@@ -226,13 +226,13 @@ const SiteStaff = () => {
         status: newStatus,
       });
 
-      toast.success({
+      toast({
         title: "Status Updated",
         description: `${staff.name}'s status has been changed to ${newStatus}.`
       });
     } catch (error) {
       console.error("Error updating staff status:", error);
-      toast.error({
+      toast({
         title: "Error",
         description: error.message || "Failed to update staff status. Please try again."
       });
@@ -343,72 +343,48 @@ const SiteStaff = () => {
     });
   };
 
+  // Handle select all staff
+  const handleSelectAll = (isSelected: boolean) => {
+    if (isSelected) {
+      const allIds = filteredStaff.map(staff => staff.id);
+      setSelectedStaffIds(allIds);
+    } else {
+      setSelectedStaffIds([]);
+    }
+  };
+
+  // Handle select individual staff
+  const handleSelectStaff = (staffId: string, isSelected: boolean) => {
+    if (isSelected) {
+      setSelectedStaffIds(prev => [...prev, staffId]);
+    } else {
+      setSelectedStaffIds(prev => prev.filter(id => id !== staffId));
+    }
+  };
+
+  // Get the selected staff objects for export
+  const getSelectedStaffObjects = () => {
+    return staffList.filter(staff => selectedStaffIds.includes(staff.id));
+  };
+
   return (
     <DashboardLayout>
       <div className="container mx-auto max-w-6xl">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-xl font-bold">Site Staff Management</h1>
-          <Button onClick={handleAddStaff}>
-            <UserPlus className="h-4 w-4 mr-2" />
-            Add Site Staff
-          </Button>
-        </div>
+        <StaffToolbar 
+          selectedStaff={getSelectedStaffObjects()}
+          allStaff={staffList}
+          onAddStaff={handleAddStaff}
+          organizationName={organizationInfo.organization_name}
+        />
 
-        {organizationInfo.organization_name && (
-          <div className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-200">
-            <p className="text-blue-800 flex items-center">
-              <Building className="h-4 w-4 mr-2" />
-              Managing site staff for organization:{" "}
-              <strong className="ml-1">
-                {organizationInfo.organization_name}
-              </strong>
-            </p>
-          </div>
-        )}
-
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search staff by name, email, user type, or location..."
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Select value={locationFilter} onValueChange={setLocationFilter}>
-              <SelectTrigger className="w-[180px]">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
-                {locationOptions.map((location) => (
-                  <SelectItem key={location} value={location}>
-                    {location}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[150px]">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                {statusOptions.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <StaffFilters
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          statusOptions={statusOptions}
+          onResetFilters={handleResetFilters}
+        />
 
         <StaffTable
           isLoading={isLoading}
@@ -419,6 +395,9 @@ const SiteStaff = () => {
           onDelete={handleDeleteStaff}
           onView={handleViewStaff}
           onToggleStatus={handleToggleStatus}
+          selectedStaff={selectedStaffIds}
+          onSelectStaff={handleSelectStaff}
+          onSelectAll={handleSelectAll}
         />
       </div>
 

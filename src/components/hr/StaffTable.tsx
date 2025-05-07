@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, Pencil, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface StaffMember {
   id: string;
@@ -33,6 +34,9 @@ interface StaffTableProps {
   onDelete: (staffId: string) => void;
   onView: (staffId: string) => void;
   onToggleStatus: (staffId: string, currentStatus: string) => void;
+  selectedStaff: string[];
+  onSelectStaff: (staffId: string, isSelected: boolean) => void;
+  onSelectAll: (isSelected: boolean) => void;
 }
 
 export const StaffTable = ({
@@ -44,12 +48,24 @@ export const StaffTable = ({
   onDelete,
   onView,
   onToggleStatus,
+  selectedStaff,
+  onSelectStaff,
+  onSelectAll,
 }: StaffTableProps) => {
+  const allSelected = filteredStaff.length > 0 && selectedStaff.length === filteredStaff.length;
+  
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[50px]">
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={(checked) => onSelectAll(!!checked)}
+                aria-label="Select all staff"
+              />
+            </TableHead>
             <TableHead>Staff Name</TableHead>
             <TableHead>User Type</TableHead>
             <TableHead>Employ Date</TableHead>
@@ -61,7 +77,7 @@ export const StaffTable = ({
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8">
+              <TableCell colSpan={7} className="text-center py-8">
                 <div className="flex justify-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                 </div>
@@ -73,6 +89,13 @@ export const StaffTable = ({
           ) : filteredStaff.length > 0 ? (
             filteredStaff.map((staff) => (
               <TableRow key={staff.id}>
+                <TableCell>
+                  <Checkbox 
+                    checked={selectedStaff.includes(staff.id)}
+                    onCheckedChange={(checked) => onSelectStaff(staff.id, !!checked)}
+                    aria-label={`Select ${staff.name}`}
+                  />
+                </TableCell>
                 <TableCell className="font-medium">{staff.name}</TableCell>
                 <TableCell>
                   {staff.userType?.replace(/_/g, " ") || "Unknown"}
@@ -138,7 +161,7 @@ export const StaffTable = ({
           ) : (
             <TableRow>
               <TableCell
-                colSpan={6}
+                colSpan={7}
                 className="text-center py-4 text-muted-foreground"
               >
                 No staff members found matching your criteria

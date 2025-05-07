@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useUserMetadata } from "@/hooks/use-user-metadata";
@@ -8,9 +9,9 @@ import {
   createStaffMember,
   deleteStaffMember,
 } from "@/lib/staff";
-import { StaffHeader } from "@/components/hr/StaffHeader";
 import { StaffFilters } from "@/components/hr/StaffFilters";
 import { StaffTable } from "@/components/hr/StaffTable";
+import { StaffToolbar } from "@/components/hr/StaffToolbar";
 import { useStaffData } from "@/hooks/hr/use-staff-data";
 import {
   AlertDialog,
@@ -42,6 +43,7 @@ const Employees = () => {
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [staffToDelete, setStaffToDelete] = useState(null);
+  const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([]);
   const userMetadataString = useUserMetadata();
   const { user } = useAuth();
   const { userType } = useUserAccess();
@@ -91,6 +93,11 @@ const Employees = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+  };
+
   const handleEditStaff = (staffId) => {
     const staff = staffList.find((s) => s.id === staffId);
     if (staff) {
@@ -113,7 +120,7 @@ const Employees = () => {
 
       if (error) {
         console.error("Error fetching staff details:", error);
-        toast.error({
+        toast({
           title: "Error",
           description: error.message || "Failed to load staff details."
         });
@@ -126,14 +133,14 @@ const Employees = () => {
           state: { staffData: data } 
         });
       } else {
-        toast.error({
+        toast({
           title: "Staff Not Found",
           description: "Unable to find staff details."
         });
       }
     } catch (error) {
       console.error("Error fetching staff details:", error);
-      toast.error({
+      toast({
         title: "Error",
         description: "Failed to load staff details. Please try again."
       });
@@ -166,13 +173,13 @@ const Employees = () => {
       // Update UI after successful deletion
       removeStaffMember(staffToDelete.id);
 
-      toast.success({
+      toast({
         title: "Staff Deleted",
         description: `${staffToDelete.name} has been removed successfully.`
       });
     } catch (error) {
       console.error("Error deleting staff:", error);
-      toast.error({
+      toast({
         title: "Error",
         description: error.message || "Failed to delete staff member. Please try again."
       });
@@ -206,13 +213,13 @@ const Employees = () => {
         status: newStatus,
       });
 
-      toast.success({
+      toast({
         title: "Status Updated",
         description: `${staff.name}'s status has been changed to ${newStatus}.`
       });
     } catch (error) {
       console.error("Error updating staff status:", error);
-      toast.error({
+      toast({
         title: "Error",
         description: error.message || "Failed to update staff status. Please try again."
       });
@@ -323,12 +330,38 @@ const Employees = () => {
     });
   };
 
+  // Handle select all staff
+  const handleSelectAll = (isSelected: boolean) => {
+    if (isSelected) {
+      const allIds = filteredStaff.map(staff => staff.id);
+      setSelectedStaffIds(allIds);
+    } else {
+      setSelectedStaffIds([]);
+    }
+  };
+
+  // Handle select individual staff
+  const handleSelectStaff = (staffId: string, isSelected: boolean) => {
+    if (isSelected) {
+      setSelectedStaffIds(prev => [...prev, staffId]);
+    } else {
+      setSelectedStaffIds(prev => prev.filter(id => id !== staffId));
+    }
+  };
+
+  // Get the selected staff objects for export
+  const getSelectedStaffObjects = () => {
+    return staffList.filter(staff => selectedStaffIds.includes(staff.id));
+  };
+
   return (
     <DashboardLayout>
       <div className="container mx-auto max-w-6xl">
-        <StaffHeader
-          organizationName={organizationInfo.organization_name}
+        <StaffToolbar 
+          selectedStaff={getSelectedStaffObjects()}
+          allStaff={staffList}
           onAddStaff={handleAddStaff}
+          organizationName={organizationInfo.organization_name}
         />
 
         <StaffFilters
@@ -337,6 +370,7 @@ const Employees = () => {
           statusFilter={statusFilter}
           setStatusFilter={setStatusFilter}
           statusOptions={statusOptions}
+          onResetFilters={handleResetFilters}
         />
 
         <StaffTable
@@ -348,6 +382,9 @@ const Employees = () => {
           onDelete={handleDeleteStaff}
           onView={handleViewStaff}
           onToggleStatus={handleToggleStatus}
+          selectedStaff={selectedStaffIds}
+          onSelectStaff={handleSelectStaff}
+          onSelectAll={handleSelectAll}
         />
       </div>
 
