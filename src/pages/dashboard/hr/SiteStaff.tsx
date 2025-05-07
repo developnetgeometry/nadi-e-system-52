@@ -30,6 +30,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { StaffTable } from "@/components/hr/StaffTable";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 const statusColors = {
   Active: "bg-green-100 text-green-800",
@@ -51,7 +52,6 @@ const SiteStaff = () => {
   const userMetadataString = useUserMetadata();
   const { user } = useAuth();
   const { userType } = useUserAccess();
-import { useToast } from "@/hooks/use-toast";
 
   const [organizationInfo, setOrganizationInfo] = useState<{
     organization_id: string | null;
