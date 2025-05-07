@@ -1,9 +1,11 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { exportTPStaffToCSV, exportSiteStaffToCSV } from "@/utils/export-utils";
+import {
+  exportTPStaffToCSV,
+  exportSiteStaffToCSV,
+} from "@/utils/export-utils-hr";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,18 +27,20 @@ export function StaffToolbar({
   allStaff,
   onAddStaff,
   organizationName = "Your Organization",
-  staffType = "tp"
+  staffType = "tp",
 }: StaffToolbarProps) {
   const handleExportSelected = () => {
     if (staffType === "tp") {
       exportTPStaffToCSV(
         selectedStaff,
-        `${organizationName?.toLowerCase().replace(/\s+/g, '-')}-selected-staff`
+        `${organizationName?.toLowerCase().replace(/\s+/g, "-")}-selected-staff`
       );
     } else {
       exportSiteStaffToCSV(
         selectedStaff,
-        `${organizationName?.toLowerCase().replace(/\s+/g, '-')}-selected-site-staff`
+        `${organizationName
+          ?.toLowerCase()
+          .replace(/\s+/g, "-")}-selected-site-staff`
       );
     }
   };
@@ -45,12 +49,12 @@ export function StaffToolbar({
     if (staffType === "tp") {
       exportTPStaffToCSV(
         allStaff,
-        `${organizationName?.toLowerCase().replace(/\s+/g, '-')}-all-staff`
+        `${organizationName?.toLowerCase().replace(/\s+/g, "-")}-all-staff`
       );
     } else {
       exportSiteStaffToCSV(
         allStaff,
-        `${organizationName?.toLowerCase().replace(/\s+/g, '-')}-all-site-staff`
+        `${organizationName?.toLowerCase().replace(/\s+/g, "-")}-all-site-staff`
       );
     }
   };
@@ -62,10 +66,9 @@ export function StaffToolbar({
           {staffType === "tp" ? "Staff Management" : "Site Staff Management"}
         </h1>
         <p className="text-muted-foreground">
-          {staffType === "tp" 
-            ? `Manage staff for ${organizationName}` 
-            : `Manage site staff for ${organizationName}`
-          }
+          {staffType === "tp"
+            ? `Manage staff for ${organizationName}`
+            : `Manage site staff for ${organizationName}`}
         </p>
       </div>
       <div className="flex items-center gap-2">

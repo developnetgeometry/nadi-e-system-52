@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
@@ -79,22 +78,22 @@ export const useStaffData = (user: any, organizationInfo: OrganizationInfo) => {
         const { data: organizations, error: orgsError } = await supabase
           .from("organizations")
           .select("id, name, type, parent_id");
-          
+
         if (orgsError) throw orgsError;
 
         // Get all tech partner profiles for additional data
-        const { data: techPartnerProfiles, error: tpProfilesError } = await supabase
-          .from("nd_tech_partner_profile")
-          .select("user_id, tech_partner_id")
-          .in("user_id", userIds);
-          
+        const { data: techPartnerProfiles, error: tpProfilesError } =
+          await supabase
+            .from("nd_tech_partner_profile")
+            .select("user_id, tech_partner_id")
+            .in("user_id", userIds);
+
         if (tpProfilesError) throw tpProfilesError;
 
         // Get tech partner names
         const { data: techPartners, error: tpError } = await supabase
           .from("nd_tech_partner")
           .select("id, name");
-          
         if (tpError) throw tpError;
 
         // For TP staff, get the ones directly associated with the organization
@@ -106,20 +105,28 @@ export const useStaffData = (user: any, organizationInfo: OrganizationInfo) => {
         // Map the data to our staffList format
         const formattedStaff = filteredTPStaff.map((profile) => {
           const orgUser = orgUsers?.find((ou) => ou.user_id === profile.id);
-          const techPartnerProfile = techPartnerProfiles?.find(tp => tp.user_id === profile.id);
-          
+          const techPartnerProfile = techPartnerProfiles?.find(
+            (tp) => tp.user_id === profile.id
+          );
+
           // Find the organization
-          const organization = organizations?.find(org => org.id === organizationInfo.organization_id);
-          
+          const organization = organizations?.find(
+            (org) => org.id === organizationInfo.organization_id
+          );
+
           // Find tech partner details
-          const techPartner = techPartnerProfile 
-            ? techPartners?.find(tp => tp.id === techPartnerProfile.tech_partner_id) 
+          const techPartner = techPartnerProfile
+            ? techPartners?.find(
+                (tp) => tp.id === techPartnerProfile.tech_partner_id
+              )
             : null;
 
           // Find DUSP (parent organization)
-          const dusp = organization?.type === "tp" && organization.parent_id 
-            ? organizations?.find(org => org.id === organization.parent_id)?.name 
-            : null;
+          const dusp =
+            organization?.type === "tp" && organization.parent_id
+              ? organizations?.find((org) => org.id === organization.parent_id)
+                  ?.name
+              : null;
 
           return {
             id: profile.id,
@@ -177,7 +184,6 @@ export const useStaffData = (user: any, organizationInfo: OrganizationInfo) => {
 
     setStaffList((prevStaff) => [staffMember, ...prevStaff]);
   };
-  
   const updateStaffMember = (updatedStaff: StaffMember) => {
     setStaffList((prevList) =>
       prevList.map((staff) =>

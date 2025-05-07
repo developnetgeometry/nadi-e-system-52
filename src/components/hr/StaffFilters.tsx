@@ -1,4 +1,3 @@
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, X } from "lucide-react";
@@ -55,7 +54,7 @@ export const StaffFilters = ({
           </SelectContent>
         </Select>
 
-        {(searchQuery || statusFilter !== 'all') && (
+        {(searchQuery || statusFilter !== "all") && (
           <Button
             variant="outline"
             onClick={onResetFilters}

@@ -213,7 +213,7 @@ const SiteDashboard = () => {
   };
 
   const handleViewDetailsClick = (siteId: string) => {
-    navigate(`/site-management/${siteId}`);
+    navigate(`/site-management/site?id=${siteId}`);
   };
 
   const handleEditClick = (site: Site) => {
@@ -1125,6 +1125,7 @@ const SiteDashboard = () => {
                       <TableCell>{getStatusBadge(site?.nd_site_status?.eng)}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
+                          {/* Temporarily hiding the visibility toggle button 
                           {(isTPUser || isSuperAdmin) && (
                             <Button
                               variant="outline"
@@ -1138,6 +1139,7 @@ const SiteDashboard = () => {
                               )}
                             </Button>
                           )}
+                          */}
                           {!isRestrictedUser && (
                             <Button
                               variant="outline"
@@ -1162,7 +1164,7 @@ const SiteDashboard = () => {
                             size="icon"
                             onClick={() => handleViewDetailsClick(site.id)}
                           >
-                            <Search className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>

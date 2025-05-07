@@ -4,10 +4,7 @@ import { useUserMetadata } from "@/hooks/use-user-metadata";
 import { StaffFormDialog } from "@/components/hr/StaffFormDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserAccess } from "@/hooks/use-user-access";
-import {
-  createStaffMember,
-  deleteStaffMember,
-} from "@/lib/staff";
+import { createStaffMember, deleteStaffMember } from "@/lib/staff";
 import { StaffFilters } from "@/components/hr/StaffFilters";
 import { TPStaffTable } from "@/components/hr/TPStaffTable";
 import { StaffToolbar } from "@/components/hr/StaffToolbar";
@@ -109,7 +106,6 @@ const Employees = () => {
     try {
       // Convert staffId to string if it's not already, to avoid type mismatches
       const idToUse = String(staffId);
-      
       // Fetch complete staff profile data from nd_tech_partner_profile
       const { data, error } = await supabase
         .from("nd_tech_partner_profile")
@@ -121,27 +117,27 @@ const Employees = () => {
         console.error("Error fetching staff details:", error);
         toast({
           title: "Error",
-          description: error.message || "Failed to load staff details."
+          description: error.message || "Failed to load staff details.",
         });
         return;
       }
 
       if (data) {
         // Navigate to staff details page with data
-        navigate(`/dashboard/hr/staff/${staffId}`, { 
-          state: { staffData: data } 
+        navigate(`/dashboard/hr/staff/${staffId}`, {
+          state: { staffData: data },
         });
       } else {
         toast({
           title: "Staff Not Found",
-          description: "Unable to find staff details."
+          description: "Unable to find staff details.",
         });
       }
     } catch (error) {
       console.error("Error fetching staff details:", error);
       toast({
         title: "Error",
-        description: "Failed to load staff details. Please try again."
+        description: "Failed to load staff details. Please try again.",
       });
     }
   };
@@ -160,7 +156,6 @@ const Employees = () => {
     try {
       // Convert staffId to string if it's not already
       const idToUse = String(staffToDelete.id);
-      
       // Perform actual deletion from the database
       const { error } = await supabase
         .from("nd_tech_partner_profile")
@@ -174,13 +169,14 @@ const Employees = () => {
 
       toast({
         title: "Staff Deleted",
-        description: `${staffToDelete.name} has been removed successfully.`
+        description: `${staffToDelete.name} has been removed successfully.`,
       });
     } catch (error) {
       console.error("Error deleting staff:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to delete staff member. Please try again."
+        description:
+          error.message || "Failed to delete staff member. Please try again.",
       });
     } finally {
       setIsDeleteDialogOpen(false);
@@ -197,7 +193,6 @@ const Employees = () => {
     try {
       // Convert staffId to string if it's not already
       const idToUse = String(staffId);
-      
       // Update staff status in the database
       const { error } = await supabase
         .from("nd_tech_partner_profile")
@@ -214,13 +209,14 @@ const Employees = () => {
 
       toast({
         title: "Status Updated",
-        description: `${staff.name}'s status has been changed to ${newStatus}.`
+        description: `${staff.name}'s status has been changed to ${newStatus}.`,
       });
     } catch (error) {
       console.error("Error updating staff status:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update staff status. Please try again."
+        description:
+          error.message || "Failed to update staff status. Please try again.",
       });
     }
   };
@@ -332,7 +328,7 @@ const Employees = () => {
   // Handle select all staff
   const handleSelectAll = (isSelected: boolean) => {
     if (isSelected) {
-      const allIds = filteredStaff.map(staff => staff.id);
+      const allIds = filteredStaff.map((staff) => staff.id);
       setSelectedStaffIds(allIds);
     } else {
       setSelectedStaffIds([]);
@@ -342,21 +338,21 @@ const Employees = () => {
   // Handle select individual staff
   const handleSelectStaff = (staffId: string, isSelected: boolean) => {
     if (isSelected) {
-      setSelectedStaffIds(prev => [...prev, staffId]);
+      setSelectedStaffIds((prev) => [...prev, staffId]);
     } else {
-      setSelectedStaffIds(prev => prev.filter(id => id !== staffId));
+      setSelectedStaffIds((prev) => prev.filter((id) => id !== staffId));
     }
   };
 
   // Get the selected staff objects for export
   const getSelectedStaffObjects = () => {
-    return staffList.filter(staff => selectedStaffIds.includes(staff.id));
+    return staffList.filter((staff) => selectedStaffIds.includes(staff.id));
   };
 
   return (
     <DashboardLayout>
       <div className="container mx-auto max-w-6xl">
-        <StaffToolbar 
+        <StaffToolbar
           selectedStaff={getSelectedStaffObjects()}
           allStaff={staffList}
           onAddStaff={handleAddStaff}

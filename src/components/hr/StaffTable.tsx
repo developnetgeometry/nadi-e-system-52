@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -54,8 +53,9 @@ export const StaffTable = ({
   onSelectStaff,
   onSelectAll,
 }: StaffTableProps) => {
-  const allSelected = filteredStaff.length > 0 && selectedStaff.length === filteredStaff.length;
-  
+  const allSelected =
+    filteredStaff.length > 0 && selectedStaff.length === filteredStaff.length;
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -96,9 +96,11 @@ export const StaffTable = ({
             filteredStaff.map((staff) => (
               <TableRow key={staff.id}>
                 <TableCell>
-                  <Checkbox 
+                  <Checkbox
                     checked={selectedStaff.includes(staff.id)}
-                    onCheckedChange={(checked) => onSelectStaff(staff.id, !!checked)}
+                    onCheckedChange={(checked) =>
+                      onSelectStaff(staff.id, !!checked)
+                    }
                     aria-label={`Select ${staff.name}`}
                   />
                 </TableCell>
