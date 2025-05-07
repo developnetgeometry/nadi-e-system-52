@@ -1,4 +1,3 @@
-
 import { UserType } from "@/types/auth";
 
 export interface UserFormData {

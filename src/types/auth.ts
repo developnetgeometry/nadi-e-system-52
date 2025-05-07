@@ -38,7 +38,7 @@ export interface Profile {
   user_group?: string; // Added user_group property
   gender?: string; // Added gender property
   work_email?: string; // Added work_email property
-  nd_user_group?: { 
+  nd_user_group?: {
     group_name: string;
     id: string;
   }; // Added nd_user_group property for the join

@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -40,7 +39,6 @@ export const useWorkHours = (siteId: string | null) => {
     queryKey: ["workHours", siteId],
     queryFn: async () => {
       if (!siteId) return [];
-      
       const { data, error } = await supabase
         .from("nd_work_hour_config")
         .select("*")
@@ -56,15 +54,17 @@ export const useWorkHours = (siteId: string | null) => {
   // Create a new work hour configuration
   const createWorkHour = useMutation({
     mutationFn: async (values: CreateWorkHourInput) => {
-      const { data, error } = await supabase.from("nd_work_hour_config").insert([
-        {
-          site_id: values.siteId,
-          day_of_week: values.dayOfWeek,
-          start_time: values.startTime,
-          end_time: values.endTime,
-          is_active: values.isActive,
-        },
-      ]);
+      const { data, error } = await supabase
+        .from("nd_work_hour_config")
+        .insert([
+          {
+            site_id: values.siteId,
+            day_of_week: values.dayOfWeek,
+            start_time: values.startTime,
+            end_time: values.endTime,
+            is_active: values.isActive,
+          },
+        ]);
 
       if (error) throw error;
       return data;
@@ -112,7 +112,8 @@ export const useWorkHours = (siteId: string | null) => {
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to update work hour configuration: " + error.message,
+        description:
+          "Failed to update work hour configuration: " + error.message,
         variant: "destructive",
       });
     },
@@ -139,18 +140,19 @@ export const useWorkHours = (siteId: string | null) => {
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to delete work hour configuration: " + error.message,
+        description:
+          "Failed to delete work hour configuration: " + error.message,
         variant: "destructive",
       });
     },
   });
 
-  return { 
-    workHours: workHoursQuery.data || [], 
-    isLoading: workHoursQuery.isLoading, 
+  return {
+    workHours: workHoursQuery.data || [],
+    isLoading: workHoursQuery.isLoading,
     error: workHoursQuery.error,
     createWorkHour,
     updateWorkHour,
-    deleteWorkHour
+    deleteWorkHour,
   };
 };

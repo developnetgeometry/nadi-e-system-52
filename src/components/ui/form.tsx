@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import * as LabelPrimitive from "@radix-ui/react-label";
 import { Slot } from "@radix-ui/react-slot";
@@ -92,14 +91,23 @@ const FormLabel = React.forwardRef<
   const { error, formItemId } = useFormField();
 
   // Check if the children string contains an asterisk and apply red color to it
-  const formattedChildren = React.isValidElement(children) || typeof children !== 'string' 
-    ? children 
-    : children.toString().includes('*') 
-      ? children.toString().split('*').map((part, i, arr) => 
-          i < arr.length - 1 
-            ? <React.Fragment key={i}>{part}<span className="text-red-500">*</span></React.Fragment> 
-            : part
-        )
+  const formattedChildren =
+    React.isValidElement(children) || typeof children !== "string"
+      ? children
+      : children.toString().includes("*")
+      ? children
+          .toString()
+          .split("*")
+          .map((part, i, arr) =>
+            i < arr.length - 1 ? (
+              <React.Fragment key={i}>
+                {part}
+                <span className="text-red-500">*</span>
+              </React.Fragment>
+            ) : (
+              part
+            )
+          )
       : children;
 
   return (

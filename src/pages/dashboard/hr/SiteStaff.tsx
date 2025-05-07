@@ -1,9 +1,18 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { UserPlus, Search, Filter, Building, Eye, Pencil, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import {
+  UserPlus,
+  Search,
+  Filter,
+  Building,
+  Eye,
+  Pencil,
+  Trash2,
+  ToggleLeft,
+  ToggleRight,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -19,13 +28,38 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  UserPlus,
+  Search,
+  Filter,
+  Building,
+  Eye,
+  Pencil,
+  Trash2,
+  ToggleLeft,
+  ToggleRight,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useUserMetadata } from "@/hooks/use-user-metadata";
 import { StaffFormDialog } from "@/components/hr/StaffFormDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserAccess } from "@/hooks/use-user-access";
-import { createStaffMember, deleteStaffMember, updateStaffStatus } from "@/lib/staff";
+import {
+  createStaffMember,
+  deleteStaffMember,
+  updateStaffStatus,
+} from "@/lib/staff";
 import { useSiteStaffData } from "@/hooks/hr/use-site-staff-data";
 import {
   AlertDialog,
@@ -56,7 +90,6 @@ const SiteStaff = () => {
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [staffToDelete, setStaffToDelete] = useState(null);
-  
   const userMetadataString = useUserMetadata();
   const { user } = useAuth();
   const { userType } = useUserAccess();
@@ -116,6 +149,79 @@ const SiteStaff = () => {
     });
   }, [staffList, searchQuery, locationFilter, statusFilter]);
 
+  const handleEditStaff = (staffId) => {
+    const staff = staffList.find((s) => s.id === staffId);
+    if (staff) {
+      setSelectedStaff(staff);
+      setIsEditStaffOpen(true);
+    }
+  };
+
+  const handleViewStaff = (staffId) => {
+    navigate(`/dashboard/hr/staff/${staffId}`);
+  };
+
+  const handleDeleteStaff = (staffId) => {
+    const staff = staffList.find((s) => s.id === staffId);
+    if (staff) {
+      setStaffToDelete(staff);
+      setIsDeleteDialogOpen(true);
+    }
+  };
+
+  const confirmDeleteStaff = async () => {
+    if (!staffToDelete) return;
+
+    try {
+      await deleteStaffMember(staffToDelete.id);
+      removeStaffMember(staffToDelete.id);
+
+      toast({
+        title: "Staff Deleted",
+        description: `${staffToDelete.name} has been removed successfully.`,
+      });
+    } catch (error) {
+      console.error("Error deleting staff:", error);
+      toast({
+        title: "Error",
+        description:
+          error.message || "Failed to delete staff member. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setStaffToDelete(null);
+    }
+  };
+
+  const handleToggleStatus = async (staffId, currentStatus) => {
+    const staff = staffList.find((s) => s.id === staffId);
+    if (!staff) return;
+
+    const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+
+    try {
+      await updateStaffStatus(staffId, newStatus);
+      updateStaffMember({
+        ...staff,
+        status: newStatus,
+      });
+
+      toast({
+        title: "Status Updated",
+        description: `${staff.name}'s status has been changed to ${newStatus}.`,
+      });
+    } catch (error) {
+      console.error("Error updating staff status:", error);
+      toast({
+        title: "Error",
+        description:
+          error.message || "Failed to update staff status. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleAddStaff = () => {
     if (!organizationInfo.organization_id) {
       toast({
@@ -167,16 +273,17 @@ const SiteStaff = () => {
     try {
       await deleteStaffMember(staffToDelete.id);
       removeStaffMember(staffToDelete.id);
-      
+
       toast({
         title: "Staff Deleted",
         description: `${staffToDelete.name} has been removed successfully.`,
       });
     } catch (error) {
-      console.error('Error deleting staff:', error);
+      console.error("Error deleting staff:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to delete staff member. Please try again.",
+        description:
+          error.message || "Failed to delete staff member. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -190,23 +297,24 @@ const SiteStaff = () => {
     if (!staff) return;
 
     const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
-    
+
     try {
       await updateStaffStatus(staffId, newStatus);
       updateStaffMember({
         ...staff,
-        status: newStatus
+        status: newStatus,
       });
-      
+
       toast({
         title: "Status Updated",
         description: `${staff.name}'s status has been changed to ${newStatus}.`,
       });
     } catch (error) {
-      console.error('Error updating staff status:', error);
+      console.error("Error updating staff status:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update staff status. Please try again.",
+        description:
+          error.message || "Failed to update staff status. Please try again.",
         variant: "destructive",
       });
     }
@@ -248,7 +356,7 @@ const SiteStaff = () => {
           )} at ${newStaff.siteLocationName || "Unknown site"}.`,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding staff:", error);
       toast({
         title: "Error",
@@ -263,16 +371,16 @@ const SiteStaff = () => {
     try {
       // Update staff on the server would go here
       updateStaffMember(updatedStaff);
-      
       toast({
         title: "Staff Updated",
         description: `${updatedStaff.name}'s information has been updated successfully.`,
       });
     } catch (error) {
-      console.error('Error updating staff:', error);
+      console.error("Error updating staff:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update staff member. Please try again.",
+        description:
+          error.message || "Failed to update staff member. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -378,7 +486,7 @@ const SiteStaff = () => {
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                     </div>
                     <p className="mt-2 text-muted-foreground">
-                      Loading staff data...
+                      Loading Site staff data...
                     </p>
                   </TableCell>
                 </TableRow>
@@ -403,16 +511,46 @@ const SiteStaff = () => {
                     <TableCell>{staff.siteLocation}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleViewStaff(staff.id)} title="View Profile">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleViewStaff(staff.id)}
+                          title="View Profile"
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleEditStaff(staff.id)} title="Edit Staff">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditStaff(staff.id)}
+                          title="Edit Staff"
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleToggleStatus(staff.id, staff.status)} title={staff.status === 'Active' ? 'Set Inactive' : 'Set Active'}>
-                          {staff.status === 'Active' ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            handleToggleStatus(staff.id, staff.status)
+                          }
+                          title={
+                            staff.status === "Active"
+                              ? "Set Inactive"
+                              : "Set Active"
+                          }
+                        >
+                          {staff.status === "Active" ? (
+                            <ToggleRight className="h-4 w-4" />
+                          ) : (
+                            <ToggleLeft className="h-4 w-4" />
+                          )}
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteStaff(staff.id)} title="Delete Staff">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteStaff(staff.id)}
+                          title="Delete Staff"
+                        >
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       </div>
@@ -425,7 +563,7 @@ const SiteStaff = () => {
                     colSpan={6}
                     className="text-center py-4 text-muted-foreground"
                   >
-                    No staff members found matching your criteria
+                    No site staff members found matching your criteria
                   </TableCell>
                 </TableRow>
               )}
@@ -435,45 +573,35 @@ const SiteStaff = () => {
       </div>
 
       {organizationInfo.organization_id && (
-        <>
-          <StaffFormDialog
-            open={isAddStaffOpen}
-            onOpenChange={setIsAddStaffOpen}
-            organizationId={organizationInfo.organization_id}
-            organizationName={
-              organizationInfo.organization_name || "Your Organization"
-            }
-            onStaffAdded={handleStaffAdded}
-            siteLocations={locationOptions}
-          />
-          
-          {selectedStaff && (
-            <StaffFormDialog
-              open={isEditStaffOpen}
-              onOpenChange={setIsEditStaffOpen}
-              organizationId={organizationInfo.organization_id}
-              organizationName={organizationInfo.organization_name || "Your Organization"}
-              onStaffAdded={handleStaffEdited}
-              staff={selectedStaff}
-              isEdit={true}
-              siteLocations={locationOptions}
-            />
-          )}
-        </>
+        <StaffFormDialog
+          open={isAddStaffOpen}
+          onOpenChange={setIsAddStaffOpen}
+          organizationId={organizationInfo.organization_id}
+          organizationName={
+            organizationInfo.organization_name || "Your Organization"
+          }
+          onStaffAdded={handleStaffAdded}
+          siteLocations={locationOptions}
+        />
       )}
-
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {staffToDelete?.name}'s record from the system.
-              This action cannot be undone.
+              This will permanently delete {staffToDelete?.name}'s record from
+              the system. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteStaff} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction
+              onClick={confirmDeleteStaff}
+              className="bg-red-600 hover:bg-red-700"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
