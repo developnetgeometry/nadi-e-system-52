@@ -1,6 +1,6 @@
+
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { toast } from "@/components/ui/use-toast";
 import { useUserMetadata } from "@/hooks/use-user-metadata";
 import { StaffFormDialog } from "@/components/hr/StaffFormDialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,7 +8,6 @@ import { useUserAccess } from "@/hooks/use-user-access";
 import {
   createStaffMember,
   deleteStaffMember,
-  updateStaffStatus,
 } from "@/lib/staff";
 import { StaffHeader } from "@/components/hr/StaffHeader";
 import { StaffFilters } from "@/components/hr/StaffFilters";
@@ -103,14 +102,20 @@ const Employees = () => {
 
   const handleViewStaff = async (staffId) => {
     try {
+      // Convert staffId to string if it's not already, to avoid type mismatches
+      const idToUse = String(staffId);
+      
       // Fetch complete staff profile data from nd_tech_partner_profile
       const { data, error } = await supabase
         .from("nd_tech_partner_profile")
         .select("*, tech_partner_id(name)")
-        .eq("id", staffId)
+        .eq("id", idToUse)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching staff details:", error);
+        throw error;
+      }
 
       if (data) {
         // Navigate to staff details page with data
@@ -146,11 +151,14 @@ const Employees = () => {
     if (!staffToDelete) return;
 
     try {
+      // Convert staffId to string if it's not already
+      const idToUse = String(staffToDelete.id);
+      
       // Perform actual deletion from the database
       const { error } = await supabase
         .from("nd_tech_partner_profile")
         .delete()
-        .eq("id", staffToDelete.id);
+        .eq("id", idToUse);
 
       if (error) throw error;
 
@@ -181,11 +189,14 @@ const Employees = () => {
     const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
 
     try {
+      // Convert staffId to string if it's not already
+      const idToUse = String(staffId);
+      
       // Update staff status in the database
       const { error } = await supabase
         .from("nd_tech_partner_profile")
         .update({ is_active: newStatus === "Active" })
-        .eq("id", staffId);
+        .eq("id", idToUse);
 
       if (error) throw error;
 
@@ -304,6 +315,7 @@ const Employees = () => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return "-";
     const date = new Date(dateString);
     return date.toLocaleDateString("en-MY", {
       year: "numeric",

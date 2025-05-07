@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "@/components/ui/use-toast";
 import { useUserMetadata } from "@/hooks/use-user-metadata";
 import { StaffFormDialog } from "@/components/hr/StaffFormDialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -118,18 +118,24 @@ const SiteStaff = () => {
 
   const handleViewStaff = async (staffId) => {
     try {
+      // Convert staffId to string if it's not already, to avoid type mismatches
+      const idToUse = String(staffId);
+      
       // Fetch complete staff profile data from nd_staff_profile
       const { data, error } = await supabase
         .from("nd_staff_profile")
         .select(`
           *,
-          nd_staff_job:job_id(*),
+          nd_staff_job:id(site_id, position_id, join_date),
           nd_staff_address:id(address1, address2, postcode, city, state_id)
         `)
-        .eq("id", staffId)
+        .eq("id", idToUse)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching staff details:", error);
+        throw error;
+      }
 
       if (data) {
         // Navigate to staff details page with data
@@ -165,11 +171,14 @@ const SiteStaff = () => {
     if (!staffToDelete) return;
 
     try {
+      // Convert staffId to string if it's not already
+      const idToUse = String(staffToDelete.id);
+      
       // Delete staff profile from nd_staff_profile
       const { error } = await supabase
         .from("nd_staff_profile")
         .delete()
-        .eq("id", staffToDelete.id);
+        .eq("id", idToUse);
 
       if (error) throw error;
 
@@ -200,11 +209,14 @@ const SiteStaff = () => {
     const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
 
     try {
+      // Convert staffId to string if it's not already
+      const idToUse = String(staffId);
+      
       // Update staff status in the database
       const { error } = await supabase
         .from("nd_staff_profile")
         .update({ is_active: newStatus === "Active" })
-        .eq("id", staffId);
+        .eq("id", idToUse);
 
       if (error) throw error;
 

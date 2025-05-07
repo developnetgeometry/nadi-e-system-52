@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import {
@@ -27,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 const staffFormSchema = z.object({
   fullname: z.string().min(1, "Full name is required"),
@@ -41,12 +41,14 @@ type StaffFormValues = z.infer<typeof staffFormSchema>;
 
 const StaffEdit = () => {
   const { id } = useParams();
+  const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const [staff, setStaff] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [positions, setPositions] = useState([]);
+  const [profileType, setProfileType] = useState<'tech_partner' | 'staff' | null>(null);
 
   const form = useForm<StaffFormValues>({
     resolver: zodResolver(staffFormSchema),
@@ -82,35 +84,26 @@ const StaffEdit = () => {
     };
     
     fetchPositions();
-  }, []);
+  }, [toast]);
   
   useEffect(() => {
     const fetchStaffData = async () => {
       try {
         // Try to fetch from nd_staff_profile first
+        // Convert id to string to avoid type mismatches
+        const idToUse = typeof id === 'string' ? id : String(id);
+        
         let { data: staffData, error: staffError } = await supabase
           .from("nd_staff_profile")
           .select("*")
-          .eq("id", id)
+          .eq("id", idToUse)
           .maybeSingle();
           
-        // If not found in staff profile, try tech partner profile
-        if (!staffData && !staffError) {
-          const { data: techPartnerData, error: techPartnerError } = await supabase
-            .from("nd_tech_partner_profile")
-            .select("*")
-            .eq("id", id)
-            .maybeSingle();
-            
-          if (techPartnerError) throw techPartnerError;
-          
-          staffData = techPartnerData;
-        } else if (staffError) {
-          throw staffError;
-        }
-        
+        // If found in staff profile
         if (staffData) {
+          console.log("Found staff profile:", staffData);
           setStaff(staffData);
+          setProfileType('staff');
           
           // Set form values
           form.reset({
@@ -120,6 +113,32 @@ const StaffEdit = () => {
             work_email: staffData.work_email || "",
             personal_email: staffData.personal_email || "",
             is_active: staffData.is_active || false,
+          });
+          return;
+        }
+        
+        // If not found in staff profile, try tech partner profile
+        const { data: techPartnerData, error: techPartnerError } = await supabase
+          .from("nd_tech_partner_profile")
+          .select("*")
+          .eq("id", idToUse)
+          .maybeSingle();
+          
+        if (techPartnerError) throw techPartnerError;
+        
+        if (techPartnerData) {
+          console.log("Found tech partner profile:", techPartnerData);
+          setStaff(techPartnerData);
+          setProfileType('tech_partner');
+          
+          // Set form values
+          form.reset({
+            fullname: techPartnerData.fullname || "",
+            position_id: techPartnerData.position_id ? String(techPartnerData.position_id) : "",
+            mobile_no: techPartnerData.mobile_no || "",
+            work_email: techPartnerData.work_email || "",
+            personal_email: techPartnerData.personal_email || "",
+            is_active: techPartnerData.is_active || false,
           });
         } else {
           toast({
@@ -142,14 +161,26 @@ const StaffEdit = () => {
     };
     
     fetchStaffData();
-  }, [id, navigate, form]);
+  }, [id, navigate, form, toast]);
 
   const onSubmit = async (values: StaffFormValues) => {
+    if (!profileType) {
+      toast({
+        title: "Error",
+        description: "Unable to determine staff profile type.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSubmitting(true);
     try {
-      // Determine which table to update based on staff data
-      const tableName = staff.hasOwnProperty('tech_partner_id') ? 
+      // Determine which table to update based on profile type
+      const tableName = profileType === 'tech_partner' ? 
         'nd_tech_partner_profile' : 'nd_staff_profile';
+      
+      // Convert id to string to avoid type mismatches
+      const idToUse = typeof id === 'string' ? id : String(id);
       
       // Update the staff record
       const { error } = await supabase
@@ -163,7 +194,7 @@ const StaffEdit = () => {
           is_active: values.is_active,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", id);
+        .eq("id", idToUse);
       
       if (error) throw error;
       
