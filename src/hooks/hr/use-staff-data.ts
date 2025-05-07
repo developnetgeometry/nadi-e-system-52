@@ -1,8 +1,7 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { useToast } from "@/components/ui/use-toast";
+import { useState, useEffect } from 'react';
 
+// Interface for staff members data
 interface StaffMember {
   id: string;
   name: string;
@@ -15,113 +14,99 @@ interface StaffMember {
   role: string;
 }
 
-interface OrganizationInfo {
-  organization_id: string | null;
-  organization_name: string | null;
-}
-
-export const useStaffData = (
-  user: any,
-  organizationInfo: OrganizationInfo
-) => {
-  const { toast } = useToast();
+// Hook to fetch and manage staff data
+export const useStaffData = (user: any, organizationInfo: any) => {
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [statusOptions, setStatusOptions] = useState<string[]>([]);
+  const [statusOptions, setStatusOptions] = useState<string[]>(['Active', 'On Leave', 'Inactive']);
 
   useEffect(() => {
     const fetchStaffData = async () => {
+      if (!user || !organizationInfo.organization_id) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        if (!organizationInfo.organization_id) return;
+        // In a real app, fetch data from API or Supabase
+        // For now, use mock data
+        const mockData = [
+          {
+            id: '1',
+            name: 'John Doe',
+            email: 'john.doe@example.com',
+            userType: 'staff_admin',
+            employDate: '2023-03-15',
+            status: 'Active',
+            phone_number: '+60123456789',
+            ic_number: '901234-56-7890',
+            role: 'Site Manager'
+          },
+          {
+            id: '2',
+            name: 'Jane Smith',
+            email: 'jane.smith@example.com',
+            userType: 'staff_regular',
+            employDate: '2023-05-20',
+            status: 'Active',
+            phone_number: '+60123456788',
+            ic_number: '911234-56-7890',
+            role: 'Technical Support'
+          },
+          {
+            id: '3',
+            name: 'Ahmad Abdullah',
+            email: 'ahmad@example.com',
+            userType: 'staff_supervisor',
+            employDate: '2022-11-10',
+            status: 'On Leave',
+            phone_number: '+60123456787',
+            ic_number: '921234-56-7890',
+            role: 'Operations Supervisor'
+          },
+          {
+            id: '4',
+            name: 'Sarah Lee',
+            email: 'sarah@example.com',
+            userType: 'staff_regular',
+            employDate: '2023-01-05',
+            status: 'Inactive',
+            phone_number: '+60123456786',
+            ic_number: '931234-56-7890',
+            role: 'Customer Service'
+          }
+        ];
+
+        setStaffList(mockData);
         
-        setIsLoading(true);
-        
-        // Fetch users with user_group=3 (TP users) under the same organization_id
-        const { data: staffProfiles, error: staffProfilesError } = await supabase
-          .from('profiles')
-          .select('id, full_name, email, phone_number, ic_number, user_type, created_at, user_group')
-          .eq('user_group', 3)
-          .neq('id', user?.id); // Exclude current user
-          
-        if (staffProfilesError) throw staffProfilesError;
-        
-        // Get the user IDs from all staff profiles
-        const userIds = staffProfiles?.map(profile => profile.id) || [];
-        
-        if (userIds.length === 0) {
-          setStaffList([]);
-          setIsLoading(false);
-          return;
-        }
-        
-        // For TP staff (user_group=3), check organization_users table
-        const { data: orgUsers, error: orgUsersError } = await supabase
-          .from('organization_users')
-          .select('user_id, role')
-          .eq('organization_id', organizationInfo.organization_id)
-          .in('user_id', userIds);
-          
-        if (orgUsersError) throw orgUsersError;
-        
-        // For TP staff, get the ones directly associated with the organization
-        const orgUserIds = orgUsers?.map(ou => ou.user_id) || [];
-        const filteredTPStaff = staffProfiles?.filter(
-          profile => orgUserIds.includes(profile.id)
-        ) || [];
-        
-        // Map the data to our staffList format
-        const formattedStaff = filteredTPStaff.map(profile => {
-          const orgUser = orgUsers?.find(ou => ou.user_id === profile.id);
-          
-          return {
-            id: profile.id,
-            name: profile.full_name || 'Unknown',
-            email: profile.email || '',
-            userType: profile.user_type || 'Unknown',
-            employDate: profile.created_at,
-            status: 'Active', // Default status
-            phone_number: profile.phone_number || '',
-            ic_number: profile.ic_number || '',
-            role: orgUser?.role || 'Member',
-          };
-        });
-        
-        setStaffList(formattedStaff);
-        
-        // Extract status options
-        const statuses = [...new Set(formattedStaff.map(staff => staff.status))];
-        setStatusOptions(statuses);
+        // Extract all unique status values
+        const uniqueStatuses = [...new Set(mockData.map(staff => staff.status))];
+        setStatusOptions(uniqueStatuses);
+
       } catch (error) {
         console.error('Error fetching staff data:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load staff data. Please try again.",
-          variant: "destructive",
-        });
       } finally {
         setIsLoading(false);
       }
     };
-    
-    fetchStaffData();
-  }, [organizationInfo.organization_id, toast, user?.id]);
 
-  // Add method to update staff list
-  const addStaffMember = (newStaff: any) => {
-    // Create a staff member object in the expected format
-    const staffMember: StaffMember = {
-      id: newStaff.id,
-      name: newStaff.name || newStaff.fullname,
-      email: newStaff.work_email || newStaff.email,
-      userType: newStaff.userType,
-      employDate: newStaff.join_date || new Date().toISOString().split("T")[0],
-      status: newStaff.is_active ? "Active" : "Inactive",
-      phone_number: newStaff.mobile_no || newStaff.phone_number,
-      ic_number: newStaff.ic_no || newStaff.ic_number,
-      role: newStaff.role || "Member",
-    };
-    
-    setStaffList(prevStaff => [staffMember, ...prevStaff]);
+    fetchStaffData();
+  }, [user, organizationInfo.organization_id]);
+
+  const addStaffMember = (newStaff: StaffMember) => {
+    setStaffList(prevList => [...prevList, newStaff]);
+  };
+
+  const updateStaffMember = (updatedStaff: StaffMember) => {
+    setStaffList(prevList => 
+      prevList.map(staff => 
+        staff.id === updatedStaff.id ? updatedStaff : staff
+      )
+    );
+  };
+
+  const removeStaffMember = (staffId: string) => {
+    setStaffList(prevList => prevList.filter(staff => staff.id !== staffId));
   };
 
   return {
@@ -129,5 +114,7 @@ export const useStaffData = (
     isLoading,
     statusOptions,
     addStaffMember,
+    updateStaffMember,
+    removeStaffMember
   };
 };

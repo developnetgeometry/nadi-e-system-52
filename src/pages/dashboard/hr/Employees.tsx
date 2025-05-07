@@ -6,11 +6,22 @@ import { useUserMetadata } from "@/hooks/use-user-metadata";
 import { StaffFormDialog } from "@/components/hr/StaffFormDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserAccess } from "@/hooks/use-user-access";
-import { createStaffMember } from "@/lib/staff";
+import { createStaffMember, deleteStaffMember, updateStaffStatus } from "@/lib/staff";
 import { StaffHeader } from "@/components/hr/StaffHeader";
 import { StaffFilters } from "@/components/hr/StaffFilters";
 import { StaffTable } from "@/components/hr/StaffTable";
 import { useStaffData } from "@/hooks/hr/use-staff-data";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useNavigate } from "react-router-dom";
 
 const statusColors = {
   Active: "bg-green-100 text-green-800",
@@ -20,9 +31,15 @@ const statusColors = {
 
 const Employees = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
+  const [isEditStaffOpen, setIsEditStaffOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [staffToDelete, setStaffToDelete] = useState(null);
+  
   const userMetadataString = useUserMetadata();
   const { user } = useAuth();
   const { userType } = useUserAccess();
@@ -49,7 +66,7 @@ const Employees = () => {
     }
   }, [userMetadataString]);
 
-  const { staffList, isLoading, statusOptions, addStaffMember } = useStaffData(user, organizationInfo);
+  const { staffList, isLoading, statusOptions, addStaffMember, updateStaffMember, removeStaffMember } = useStaffData(user, organizationInfo);
 
   const filteredStaff = staffList.filter((staff) => {
     const matchesSearch =
@@ -85,7 +102,78 @@ const Employees = () => {
     setIsAddStaffOpen(true);
   };
 
-  const handleStaffAdded = async (newStaff: any) => {
+  const handleEditStaff = (staffId) => {
+    const staff = staffList.find((s) => s.id === staffId);
+    if (staff) {
+      setSelectedStaff(staff);
+      setIsEditStaffOpen(true);
+    }
+  };
+
+  const handleViewStaff = (staffId) => {
+    navigate(`/dashboard/hr/staff/${staffId}`);
+  };
+
+  const handleDeleteStaff = (staffId) => {
+    const staff = staffList.find((s) => s.id === staffId);
+    if (staff) {
+      setStaffToDelete(staff);
+      setIsDeleteDialogOpen(true);
+    }
+  };
+
+  const confirmDeleteStaff = async () => {
+    if (!staffToDelete) return;
+
+    try {
+      await deleteStaffMember(staffToDelete.id);
+      removeStaffMember(staffToDelete.id);
+      
+      toast({
+        title: "Staff Deleted",
+        description: `${staffToDelete.name} has been removed successfully.`,
+      });
+    } catch (error) {
+      console.error('Error deleting staff:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete staff member. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setStaffToDelete(null);
+    }
+  };
+
+  const handleToggleStatus = async (staffId, currentStatus) => {
+    const staff = staffList.find((s) => s.id === staffId);
+    if (!staff) return;
+
+    const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+    
+    try {
+      await updateStaffStatus(staffId, newStatus);
+      updateStaffMember({
+        ...staff,
+        status: newStatus
+      });
+      
+      toast({
+        title: "Status Updated",
+        description: `${staff.name}'s status has been changed to ${newStatus}.`,
+      });
+    } catch (error) {
+      console.error('Error updating staff status:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update staff status. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleStaffAdded = async (newStaff) => {
     try {
       console.log("Adding new staff member with data:", newStaff);
       
@@ -111,13 +199,35 @@ const Employees = () => {
           description: `${newStaff.name} has been added successfully as ${newStaff.userType.replace(/_/g, ' ')}.`,
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error adding staff:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to add staff member. Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleStaffEdited = async (updatedStaff) => {
+    try {
+      // Update staff on the server would go here
+      updateStaffMember(updatedStaff);
+      
+      toast({
+        title: "Staff Updated",
+        description: `${updatedStaff.name}'s information has been updated successfully.`,
+      });
+    } catch (error) {
+      console.error('Error updating staff:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update staff member. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEditStaffOpen(false);
+      setSelectedStaff(null);
     }
   };
 
@@ -151,19 +261,56 @@ const Employees = () => {
           filteredStaff={filteredStaff}
           formatDate={formatDate}
           statusColors={statusColors}
+          onEdit={handleEditStaff}
+          onDelete={handleDeleteStaff}
+          onView={handleViewStaff}
+          onToggleStatus={handleToggleStatus}
         />
       </div>
 
       {organizationInfo.organization_id && (
-        <StaffFormDialog
-          open={isAddStaffOpen}
-          onOpenChange={setIsAddStaffOpen}
-          organizationId={organizationInfo.organization_id}
-          organizationName={organizationInfo.organization_name || "Your Organization"}
-          onStaffAdded={handleStaffAdded}
-          siteLocations={[]}
-        />
+        <>
+          <StaffFormDialog
+            open={isAddStaffOpen}
+            onOpenChange={setIsAddStaffOpen}
+            organizationId={organizationInfo.organization_id}
+            organizationName={organizationInfo.organization_name || "Your Organization"}
+            onStaffAdded={handleStaffAdded}
+            siteLocations={[]}
+          />
+          
+          {selectedStaff && (
+            <StaffFormDialog
+              open={isEditStaffOpen}
+              onOpenChange={setIsEditStaffOpen}
+              organizationId={organizationInfo.organization_id}
+              organizationName={organizationInfo.organization_name || "Your Organization"}
+              onStaffAdded={handleStaffEdited}
+              staff={selectedStaff}
+              isEdit={true}
+              siteLocations={[]}
+            />
+          )}
+        </>
       )}
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {staffToDelete?.name}'s record from the system.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteStaff} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };

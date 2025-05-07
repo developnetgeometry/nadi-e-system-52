@@ -1,8 +1,7 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { useToast } from "@/components/ui/use-toast";
+import { useState, useEffect } from 'react';
 
+// Interface for staff members data
 interface SiteStaffMember {
   id: string;
   name: string;
@@ -10,146 +9,118 @@ interface SiteStaffMember {
   userType: string;
   employDate: string;
   status: string;
-  siteLocation: string;
   phone_number: string;
   ic_number: string;
+  siteLocation: string;
 }
 
-interface OrganizationInfo {
-  organization_id: string | null;
-  organization_name: string | null;
-}
-
-export const useSiteStaffData = (
-  user: any,
-  organizationInfo: OrganizationInfo
-) => {
-  const { toast } = useToast();
+// Hook to fetch and manage site staff data
+export const useSiteStaffData = (user: any, organizationInfo: any) => {
   const [staffList, setStaffList] = useState<SiteStaffMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [locationOptions, setLocationOptions] = useState<string[]>([]);
-  const [statusOptions, setStatusOptions] = useState<string[]>([]);
+  const [statusOptions, setStatusOptions] = useState<string[]>(['Active', 'On Leave', 'Inactive']);
 
   useEffect(() => {
-    const fetchStaffData = async () => {
+    const fetchSiteStaffData = async () => {
+      if (!user || !organizationInfo.organization_id) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        if (!organizationInfo.organization_id) return;
+        // In a real app, fetch data from API or Supabase
+        // For now, use mock data
+        const mockData = [
+          {
+            id: '1',
+            name: 'John Doe',
+            email: 'john.doe@example.com',
+            userType: 'site_staff',
+            employDate: '2023-03-15',
+            status: 'Active',
+            phone_number: '+60123456789',
+            ic_number: '901234-56-7890',
+            siteLocation: 'Kuala Lumpur Center'
+          },
+          {
+            id: '2',
+            name: 'Jane Smith',
+            email: 'jane.smith@example.com',
+            userType: 'site_manager',
+            employDate: '2023-05-20',
+            status: 'Active',
+            phone_number: '+60123456788',
+            ic_number: '911234-56-7890',
+            siteLocation: 'Shah Alam Hub'
+          },
+          {
+            id: '3',
+            name: 'Ahmad Abdullah',
+            email: 'ahmad@example.com',
+            userType: 'site_technician',
+            employDate: '2022-11-10',
+            status: 'On Leave',
+            phone_number: '+60123456787',
+            ic_number: '921234-56-7890',
+            siteLocation: 'Petaling Jaya Office'
+          },
+          {
+            id: '4',
+            name: 'Sarah Lee',
+            email: 'sarah@example.com',
+            userType: 'site_staff',
+            employDate: '2023-01-05',
+            status: 'Inactive',
+            phone_number: '+60123456786',
+            ic_number: '931234-56-7890',
+            siteLocation: 'Kuala Lumpur Center'
+          }
+        ];
+
+        setStaffList(mockData);
         
-        setIsLoading(true);
+        // Extract all unique locations
+        const uniqueLocations = [...new Set(mockData.map(staff => staff.siteLocation))];
+        setLocationOptions(uniqueLocations);
         
-        // Fetch profiles with user_group = 6 (center staff)
-        const { data: centerStaffProfiles, error: centerStaffError } = await supabase
-          .from('profiles')
-          .select('id, full_name, email, phone_number, ic_number, user_type, created_at, user_group')
-          .eq('user_group', 6)
-          .neq('id', user?.id); // Exclude current user
-          
-        if (centerStaffError) throw centerStaffError;
-        
-        if (!centerStaffProfiles || centerStaffProfiles.length === 0) {
-          setStaffList([]);
-          setIsLoading(false);
-          return;
-        }
-        
-        console.log("Found center staff profiles:", centerStaffProfiles.length);
-        
-        // Get the user IDs from staff profiles
-        const userIds = centerStaffProfiles.map(profile => profile.id);
-        
-        // Get sites associated with organization
-        const { data: sites, error: sitesError } = await supabase
-          .from('nd_site_profile')
-          .select('id, sitename')
-          .eq('dusp_tp_id', organizationInfo.organization_id);
-          
-        if (sitesError) throw sitesError;
-        
-        if (!sites || sites.length === 0) {
-          console.log("No sites found for organization");
-          setStaffList([]);
-          setIsLoading(false);
-          return;
-        }
-        
-        const siteIds = sites.map(site => site.id);
-        
-        // Get staff contracts to link staff to sites
-        const { data: staffContracts, error: contractsError } = await supabase
-          .from('nd_staff_contract')
-          .select('user_id, site_id, contract_start, is_active')
-          .in('user_id', userIds)
-          .in('site_id', siteIds);
-          
-        if (contractsError) throw contractsError;
-        
-        // Map the data to our staffList format
-        const formattedStaff = centerStaffProfiles
-          .filter(profile => {
-            // Only include profiles that have contracts with sites in this organization
-            const hasContract = staffContracts?.some(
-              contract => contract.user_id === profile.id && 
-                          siteIds.includes(contract.site_id)
-            );
-            return hasContract;
-          })
-          .map(profile => {
-            const contract = staffContracts?.find(c => c.user_id === profile.id);
-            const site = sites?.find(s => s.id === contract?.site_id);
-            
-            return {
-              id: profile.id,
-              name: profile.full_name || 'Unknown',
-              email: profile.email || '',
-              userType: profile.user_type || 'Unknown',
-              employDate: contract?.contract_start || null,
-              status: contract?.is_active ? 'Active' : 'Inactive',
-              siteLocation: site?.sitename || 'Unassigned',
-              phone_number: profile.phone_number || '',
-              ic_number: profile.ic_number || '',
-            };
-          });
-        
-        setStaffList(formattedStaff);
-        
-        // Extract location and status options
-        const locations = [...new Set(formattedStaff.map(staff => staff.siteLocation).filter(Boolean))];
-        const statuses = [...new Set(formattedStaff.map(staff => staff.status).filter(Boolean))];
-        
-        setLocationOptions(locations);
-        setStatusOptions(statuses);
-        
-      } catch (error: any) {
+        // Extract all unique status values
+        const uniqueStatuses = [...new Set(mockData.map(staff => staff.status))];
+        setStatusOptions(uniqueStatuses);
+      } catch (error) {
         console.error('Error fetching site staff data:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load site staff data. Please try again.",
-          variant: "destructive",
-        });
       } finally {
         setIsLoading(false);
       }
     };
-    
-    fetchStaffData();
-  }, [organizationInfo.organization_id, toast, user?.id]);
 
-  // Add method to update staff list
-  const addStaffMember = (newStaff: any) => {
-    // Create a staff member object in the expected format
-    const staffMember: SiteStaffMember = {
-      id: newStaff.id,
-      name: newStaff.name || newStaff.fullname,
-      email: newStaff.work_email || newStaff.email,
-      userType: newStaff.userType,
-      employDate: newStaff.join_date || newStaff.contract_start || new Date().toISOString().split("T")[0],
-      status: newStaff.is_active ? "Active" : "Inactive",
-      phone_number: newStaff.mobile_no || newStaff.phone_number,
-      ic_number: newStaff.ic_no || newStaff.ic_number,
-      siteLocation: newStaff.siteLocationName || "Unknown site",
-    };
+    fetchSiteStaffData();
+  }, [user, organizationInfo.organization_id]);
+
+  const addStaffMember = (newStaff: SiteStaffMember) => {
+    setStaffList(prevList => [...prevList, newStaff]);
     
-    setStaffList(prevStaff => [staffMember, ...prevStaff]);
+    // If this staff has a new location, add it to the options
+    if (newStaff.siteLocation && !locationOptions.includes(newStaff.siteLocation)) {
+      setLocationOptions(prev => [...prev, newStaff.siteLocation]);
+    }
+  };
+
+  const updateStaffMember = (updatedStaff: SiteStaffMember) => {
+    setStaffList(prevList => 
+      prevList.map(staff => 
+        staff.id === updatedStaff.id ? updatedStaff : staff
+      )
+    );
+    
+    // If this staff has a new location, add it to the options
+    if (updatedStaff.siteLocation && !locationOptions.includes(updatedStaff.siteLocation)) {
+      setLocationOptions(prev => [...prev, updatedStaff.siteLocation]);
+    }
+  };
+
+  const removeStaffMember = (staffId: string) => {
+    setStaffList(prevList => prevList.filter(staff => staff.id !== staffId));
   };
 
   return {
@@ -158,5 +129,7 @@ export const useSiteStaffData = (
     locationOptions,
     statusOptions,
     addStaffMember,
+    updateStaffMember,
+    removeStaffMember
   };
 };
