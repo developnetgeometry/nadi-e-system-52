@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { StaffTable } from "@/components/hr/StaffTable";
 import { supabase } from "@/lib/supabase";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 const statusColors = {
   Active: "bg-green-100 text-green-800",
@@ -112,7 +111,7 @@ const SiteStaff = () => {
     const staff = staffList.find((s) => s.id === staffId);
     if (staff) {
       setSelectedStaff(staff);
-      setIsEditStaffOpen(true);
+      navigate(`/dashboard/hr/staff/edit/${staffId}`);
     }
   };
 
@@ -126,7 +125,7 @@ const SiteStaff = () => {
         .from("nd_staff_profile")
         .select(`
           *,
-          nd_staff_job:id(site_id, position_id, join_date),
+          nd_staff_job:job_id(site_id, position_id, join_date),
           nd_staff_address:id(address1, address2, postcode, city, state_id)
         `)
         .eq("id", idToUse)
@@ -134,7 +133,11 @@ const SiteStaff = () => {
 
       if (error) {
         console.error("Error fetching staff details:", error);
-        throw error;
+        toast.error({
+          title: "Error",
+          description: error.message || "Failed to load staff details."
+        });
+        return;
       }
 
       if (data) {
@@ -143,18 +146,16 @@ const SiteStaff = () => {
           state: { staffData: data } 
         });
       } else {
-        toast({
+        toast.error({
           title: "Staff Not Found",
-          description: "Unable to find staff details.",
-          variant: "destructive",
+          description: "Unable to find staff details."
         });
       }
     } catch (error) {
       console.error("Error fetching staff details:", error);
-      toast({
+      toast.error({
         title: "Error",
-        description: "Failed to load staff details. Please try again.",
-        variant: "destructive",
+        description: "Failed to load staff details. Please try again."
       });
     }
   };
@@ -185,16 +186,15 @@ const SiteStaff = () => {
       // Update UI after successful deletion
       removeStaffMember(staffToDelete.id);
 
-      toast({
+      toast.success({
         title: "Staff Deleted",
-        description: `${staffToDelete.name} has been removed successfully.`,
+        description: `${staffToDelete.name} has been removed successfully.`
       });
     } catch (error) {
       console.error("Error deleting staff:", error);
-      toast({
+      toast.error({
         title: "Error",
-        description: error.message || "Failed to delete staff member. Please try again.",
-        variant: "destructive",
+        description: error.message || "Failed to delete staff member. Please try again."
       });
     } finally {
       setIsDeleteDialogOpen(false);
@@ -226,16 +226,15 @@ const SiteStaff = () => {
         status: newStatus,
       });
 
-      toast({
+      toast.success({
         title: "Status Updated",
-        description: `${staff.name}'s status has been changed to ${newStatus}.`,
+        description: `${staff.name}'s status has been changed to ${newStatus}.`
       });
     } catch (error) {
       console.error("Error updating staff status:", error);
-      toast({
+      toast.error({
         title: "Error",
-        description: error.message || "Failed to update staff status. Please try again.",
-        variant: "destructive",
+        description: error.message || "Failed to update staff status. Please try again."
       });
     }
   };

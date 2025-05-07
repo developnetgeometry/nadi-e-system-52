@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -26,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 const staffFormSchema = z.object({
   fullname: z.string().min(1, "Full name is required"),
@@ -75,10 +74,9 @@ const StaffEdit = () => {
         setPositions(data || []);
       } catch (error) {
         console.error("Error fetching positions:", error);
-        toast({
+        toast.error({
           title: "Error",
-          description: "Failed to load position data.",
-          variant: "destructive",
+          description: "Failed to load position data."
         });
       }
     };
@@ -141,19 +139,17 @@ const StaffEdit = () => {
             is_active: techPartnerData.is_active || false,
           });
         } else {
-          toast({
+          toast.error({
             title: "Staff Not Found",
-            description: "Unable to find the requested staff member.",
-            variant: "destructive",
+            description: "Unable to find the requested staff member."
           });
           navigate("/dashboard/hr/employees");
         }
       } catch (error) {
         console.error("Error fetching staff data:", error);
-        toast({
+        toast.error({
           title: "Error",
-          description: "Failed to load staff details. Please try again.",
-          variant: "destructive",
+          description: "Failed to load staff details. Please try again."
         });
       } finally {
         setLoading(false);
@@ -165,10 +161,9 @@ const StaffEdit = () => {
 
   const onSubmit = async (values: StaffFormValues) => {
     if (!profileType) {
-      toast({
+      toast.error({
         title: "Error",
-        description: "Unable to determine staff profile type.",
-        variant: "destructive",
+        description: "Unable to determine staff profile type."
       });
       return;
     }
@@ -198,18 +193,17 @@ const StaffEdit = () => {
       
       if (error) throw error;
       
-      toast({
+      toast.success({
         title: "Success",
-        description: "Staff information has been updated successfully.",
+        description: "Staff information has been updated successfully."
       });
       
       navigate(-1);
     } catch (error) {
       console.error("Error updating staff:", error);
-      toast({
+      toast.error({
         title: "Error",
-        description: "Failed to update staff information. Please try again.",
-        variant: "destructive",
+        description: "Failed to update staff information. Please try again."
       });
     } finally {
       setSubmitting(false);

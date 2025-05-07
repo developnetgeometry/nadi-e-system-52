@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useUserMetadata } from "@/hooks/use-user-metadata";
@@ -25,7 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 const statusColors = {
   Active: "bg-green-100 text-green-800",
@@ -114,7 +113,11 @@ const Employees = () => {
 
       if (error) {
         console.error("Error fetching staff details:", error);
-        throw error;
+        toast.error({
+          title: "Error",
+          description: error.message || "Failed to load staff details."
+        });
+        return;
       }
 
       if (data) {
@@ -123,18 +126,16 @@ const Employees = () => {
           state: { staffData: data } 
         });
       } else {
-        toast({
+        toast.error({
           title: "Staff Not Found",
-          description: "Unable to find staff details.",
-          variant: "destructive",
+          description: "Unable to find staff details."
         });
       }
     } catch (error) {
       console.error("Error fetching staff details:", error);
-      toast({
+      toast.error({
         title: "Error",
-        description: "Failed to load staff details. Please try again.",
-        variant: "destructive",
+        description: "Failed to load staff details. Please try again."
       });
     }
   };
@@ -165,16 +166,15 @@ const Employees = () => {
       // Update UI after successful deletion
       removeStaffMember(staffToDelete.id);
 
-      toast({
+      toast.success({
         title: "Staff Deleted",
-        description: `${staffToDelete.name} has been removed successfully.`,
+        description: `${staffToDelete.name} has been removed successfully.`
       });
     } catch (error) {
       console.error("Error deleting staff:", error);
-      toast({
+      toast.error({
         title: "Error",
-        description: error.message || "Failed to delete staff member. Please try again.",
-        variant: "destructive",
+        description: error.message || "Failed to delete staff member. Please try again."
       });
     } finally {
       setIsDeleteDialogOpen(false);
@@ -206,16 +206,15 @@ const Employees = () => {
         status: newStatus,
       });
 
-      toast({
+      toast.success({
         title: "Status Updated",
-        description: `${staff.name}'s status has been changed to ${newStatus}.`,
+        description: `${staff.name}'s status has been changed to ${newStatus}.`
       });
     } catch (error) {
       console.error("Error updating staff status:", error);
-      toast({
+      toast.error({
         title: "Error",
-        description: error.message || "Failed to update staff status. Please try again.",
-        variant: "destructive",
+        description: error.message || "Failed to update staff status. Please try again."
       });
     }
   };
