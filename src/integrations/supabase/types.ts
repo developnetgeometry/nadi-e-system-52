@@ -4607,6 +4607,13 @@ export type Database = {
             referencedRelation: "nd_type_sector"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "nd_member_profile_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       nd_mukims: {
