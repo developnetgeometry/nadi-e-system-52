@@ -48,6 +48,8 @@ export const prepareStaffDataForExport = (staffList: any[]) => {
     Role: staff.role || '',
     'Employment Date': staff.employDate || '',
     'IC Number': staff.ic_number || '',
+    DUSP: staff.dusp || '',
+    TP: staff.tp || '',
     Location: staff.siteLocation || ''
   }));
 };

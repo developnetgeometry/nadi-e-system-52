@@ -23,6 +23,8 @@ interface StaffMember {
   ic_number: string;
   role?: string;
   siteLocation?: string;
+  dusp?: string;
+  tp?: string;
 }
 
 interface StaffTableProps {
@@ -67,17 +69,20 @@ export const StaffTable = ({
               />
             </TableHead>
             <TableHead>Staff Name</TableHead>
+            <TableHead>Email</TableHead>
             <TableHead>User Type</TableHead>
             <TableHead>Employ Date</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Role</TableHead>
+            <TableHead>DUSP</TableHead>
+            <TableHead>TP</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center py-8">
+              <TableCell colSpan={10} className="text-center py-8">
                 <div className="flex justify-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                 </div>
@@ -97,6 +102,7 @@ export const StaffTable = ({
                   />
                 </TableCell>
                 <TableCell className="font-medium">{staff.name}</TableCell>
+                <TableCell>{staff.email || "-"}</TableCell>
                 <TableCell>
                   {staff.userType?.replace(/_/g, " ") || "Unknown"}
                 </TableCell>
@@ -112,6 +118,8 @@ export const StaffTable = ({
                   </Badge>
                 </TableCell>
                 <TableCell>{staff.role || "Staff"}</TableCell>
+                <TableCell>{staff.dusp || "-"}</TableCell>
+                <TableCell>{staff.tp || "-"}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end space-x-2">
                     <Button
@@ -161,7 +169,7 @@ export const StaffTable = ({
           ) : (
             <TableRow>
               <TableCell
-                colSpan={7}
+                colSpan={10}
                 className="text-center py-4 text-muted-foreground"
               >
                 No staff members found matching your criteria
