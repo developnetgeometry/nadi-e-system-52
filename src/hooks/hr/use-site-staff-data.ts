@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 // Interface for staff members data
 interface SiteStaffMember {
@@ -26,7 +26,6 @@ export const useSiteStaffData = (user: any, organizationInfo: any) => {
     "On Leave",
     "Inactive",
   ]);
-  const { toast } = useToast();
 
   useEffect(() => {
     const fetchSiteStaffData = async () => {
@@ -148,7 +147,7 @@ export const useSiteStaffData = (user: any, organizationInfo: any) => {
     };
 
     fetchSiteStaffData();
-  }, [organizationInfo.organization_id, toast, user?.id]);
+  }, [organizationInfo.organization_id, user?.id]);
 
   // Add method to update staff list
   const addStaffMember = (newStaff: any) => {

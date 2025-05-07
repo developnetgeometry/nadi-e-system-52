@@ -20,7 +20,7 @@ interface StaffMember {
   status: string;
   phone_number: string;
   ic_number: string;
-  role: string;
+  role?: string;
   siteLocation?: string;
 }
 
@@ -88,7 +88,7 @@ export const StaffTable = ({
                     {staff.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{staff.role}</TableCell>
+                <TableCell>{staff.role || "Staff"}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end space-x-2">
                     <Button

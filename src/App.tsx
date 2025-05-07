@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import Landing from "@/pages/Landing";
@@ -24,8 +25,13 @@ import Announcements from "@/pages/dashboard/Announcements";
 import AnnouncementSettings from "@/pages/dashboard/AnnouncementSettings";
 import CreateAnnouncement from "@/pages/demo/CreateAnnouncement";
 import Takwim from "@/pages/dashboard/Takwim";
-// import NotificationManagement from "@/pages/dashboard/NotificationManagement";
 import Notifications from "@/pages/dashboard/Notifications";
+
+// Import HR pages
+import Employees from "@/pages/dashboard/hr/Employees";
+import SiteStaff from "@/pages/dashboard/hr/SiteStaff";
+import StaffDetail from "@/pages/dashboard/hr/StaffDetail";
+import StaffEdit from "@/pages/dashboard/hr/StaffEdit";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +57,12 @@ function App() {
               <Route path="/examples/home" element={<HomeExample />} />
               <Route path="/examples/detail" element={<DetailExample />} />
               <Route path="/examples/settings" element={<SettingsExample />} />
+
+              {/* HR Routes */}
+              <Route path="/dashboard/hr/employees" element={<Employees />} />
+              <Route path="/dashboard/hr/site-staff" element={<SiteStaff />} />
+              <Route path="/dashboard/hr/staff/:id" element={<StaffDetail />} />
+              <Route path="/dashboard/hr/staff/:id/edit" element={<StaffEdit />} />
 
               {/* Dashboard Routes */}
               {dashboardRoutes.map((route, index) => (

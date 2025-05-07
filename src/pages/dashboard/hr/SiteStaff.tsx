@@ -1,14 +1,8 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  UserPlus,
-  Search,
-  Filter,
-  Building,
-} from "lucide-react";
+import { UserPlus, Search, Filter, Building } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -16,17 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { useUserMetadata } from "@/hooks/use-user-metadata";
 import { StaffFormDialog } from "@/components/hr/StaffFormDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserAccess } from "@/hooks/use-user-access";
-import {
-  createStaffMember,
-  deleteStaffMember,
-  updateStaffStatus,
-} from "@/lib/staff";
+import { createStaffMember, deleteStaffMember } from "@/lib/staff";
 import { useSiteStaffData } from "@/hooks/hr/use-site-staff-data";
 import {
   AlertDialog,
@@ -40,6 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
 import { StaffTable } from "@/components/hr/StaffTable";
+import { supabase } from "@/lib/supabase";
 
 const statusColors = {
   Active: "bg-green-100 text-green-800",
@@ -125,8 +115,41 @@ const SiteStaff = () => {
     }
   };
 
-  const handleViewStaff = (staffId) => {
-    navigate(`/dashboard/hr/staff/${staffId}`);
+  const handleViewStaff = async (staffId) => {
+    try {
+      // Fetch complete staff profile data from nd_staff_profile
+      const { data, error } = await supabase
+        .from("nd_staff_profile")
+        .select(`
+          *,
+          nd_staff_job:job_id(*),
+          nd_staff_address:id(address1, address2, postcode, city, state_id)
+        `)
+        .eq("id", staffId)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        // Navigate to staff details page with data
+        navigate(`/dashboard/hr/staff/${staffId}`, { 
+          state: { staffData: data } 
+        });
+      } else {
+        toast({
+          title: "Staff Not Found",
+          description: "Unable to find staff details.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching staff details:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load staff details. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteStaff = (staffId) => {
@@ -141,7 +164,15 @@ const SiteStaff = () => {
     if (!staffToDelete) return;
 
     try {
-      await deleteStaffMember(staffToDelete.id);
+      // Delete staff profile from nd_staff_profile
+      const { error } = await supabase
+        .from("nd_staff_profile")
+        .delete()
+        .eq("id", staffToDelete.id);
+
+      if (error) throw error;
+
+      // Update UI after successful deletion
       removeStaffMember(staffToDelete.id);
 
       toast({
@@ -152,8 +183,7 @@ const SiteStaff = () => {
       console.error("Error deleting staff:", error);
       toast({
         title: "Error",
-        description:
-          error.message || "Failed to delete staff member. Please try again.",
+        description: error.message || "Failed to delete staff member. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -169,7 +199,15 @@ const SiteStaff = () => {
     const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
 
     try {
-      await updateStaffStatus(staffId, newStatus);
+      // Update staff status in the database
+      const { error } = await supabase
+        .from("nd_staff_profile")
+        .update({ is_active: newStatus === "Active" })
+        .eq("id", staffId);
+
+      if (error) throw error;
+
+      // Update UI
       updateStaffMember({
         ...staff,
         status: newStatus,
@@ -183,8 +221,7 @@ const SiteStaff = () => {
       console.error("Error updating staff status:", error);
       toast({
         title: "Error",
-        description:
-          error.message || "Failed to update staff status. Please try again.",
+        description: error.message || "Failed to update staff status. Please try again.",
         variant: "destructive",
       });
     }
