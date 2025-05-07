@@ -12,9 +12,13 @@ import { exportToCSV } from "@/utils/export-utils";
 interface ExportButtonProps {
   data: any[];
   filename?: string;
+  title?: string; // Added for backward compatibility
 }
 
-export function ExportButton({ data, filename = "members-data" }: ExportButtonProps) {
+const ExportButton = ({ data, filename = "members-data", title }: ExportButtonProps) => {
+  // Use title for filename if provided (for backward compatibility)
+  const actualFilename = title || filename;
+  
   const handleCSVExport = () => {
     // Format the data for CSV export
     const formattedData = data.map(member => ({
@@ -25,7 +29,7 @@ export function ExportButton({ data, filename = "members-data" }: ExportButtonPr
       'Status': member.status || ''
     }));
     
-    exportToCSV(formattedData, filename);
+    exportToCSV(formattedData, actualFilename);
   };
 
   return (
@@ -44,4 +48,6 @@ export function ExportButton({ data, filename = "members-data" }: ExportButtonPr
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+};
+
+export default ExportButton;
