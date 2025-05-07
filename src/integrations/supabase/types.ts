@@ -6191,6 +6191,51 @@ export type Database = {
         }
         Relationships: []
       }
+      nd_site_image: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          file_path: string[] | null
+          id: number
+          site_profile_id: number | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          file_path?: string[] | null
+          id?: number
+          site_profile_id?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          file_path?: string[] | null
+          id?: number
+          site_profile_id?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nd_site_image_site_profile_id_fkey"
+            columns: ["site_profile_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_site_image_site_profile_id_fkey"
+            columns: ["site_profile_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile_name"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nd_site_operation: {
         Row: {
           close_time: string | null
