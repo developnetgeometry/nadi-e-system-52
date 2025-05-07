@@ -8,11 +8,6 @@ import {
   Search,
   Filter,
   Building,
-  Eye,
-  Pencil,
-  Trash2,
-  ToggleLeft,
-  ToggleRight,
 } from "lucide-react";
 import {
   Select,
@@ -21,17 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
-import { useToast } from "@/components/ui/use-toast";
-import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { useUserMetadata } from "@/hooks/use-user-metadata";
 import { StaffFormDialog } from "@/components/hr/StaffFormDialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,6 +39,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
+import { StaffTable } from "@/components/hr/StaffTable";
 
 const statusColors = {
   Active: "bg-green-100 text-green-800",
@@ -374,110 +361,16 @@ const SiteStaff = () => {
           </div>
         </div>
 
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Staff Name</TableHead>
-                <TableHead>User Type</TableHead>
-                <TableHead>Employ Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Site Location</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
-                    <div className="flex justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                    </div>
-                    <p className="mt-2 text-muted-foreground">
-                      Loading Site staff data...
-                    </p>
-                  </TableCell>
-                </TableRow>
-              ) : filteredStaff.length > 0 ? (
-                filteredStaff.map((staff) => (
-                  <TableRow key={staff.id}>
-                    <TableCell className="font-medium">{staff.name}</TableCell>
-                    <TableCell>
-                      {staff.userType?.replace(/_/g, " ") || "Unknown"}
-                    </TableCell>
-                    <TableCell>
-                      {staff.employDate ? formatDate(staff.employDate) : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={statusColors[staff.status]}
-                      >
-                        {staff.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{staff.siteLocation}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleViewStaff(staff.id)}
-                          title="View Profile"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditStaff(staff.id)}
-                          title="Edit Staff"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            handleToggleStatus(staff.id, staff.status)
-                          }
-                          title={
-                            staff.status === "Active"
-                              ? "Set Inactive"
-                              : "Set Active"
-                          }
-                        >
-                          {staff.status === "Active" ? (
-                            <ToggleRight className="h-4 w-4" />
-                          ) : (
-                            <ToggleLeft className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteStaff(staff.id)}
-                          title="Delete Staff"
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="text-center py-4 text-muted-foreground"
-                  >
-                    No site staff members found matching your criteria
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        <StaffTable
+          isLoading={isLoading}
+          filteredStaff={filteredStaff}
+          formatDate={formatDate}
+          statusColors={statusColors}
+          onEdit={handleEditStaff}
+          onDelete={handleDeleteStaff}
+          onView={handleViewStaff}
+          onToggleStatus={handleToggleStatus}
+        />
       </div>
 
       {organizationInfo.organization_id && (

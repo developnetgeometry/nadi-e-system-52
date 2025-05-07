@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useUserMetadata } from "@/hooks/use-user-metadata";
 import { StaffFormDialog } from "@/components/hr/StaffFormDialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -187,79 +188,6 @@ const Employees = () => {
     }
 
     setIsAddStaffOpen(true);
-  };
-
-  const handleEditStaff = (staffId) => {
-    const staff = staffList.find((s) => s.id === staffId);
-    if (staff) {
-      setSelectedStaff(staff);
-      setIsEditStaffOpen(true);
-    }
-  };
-
-  const handleViewStaff = (staffId) => {
-    navigate(`/dashboard/hr/staff/${staffId}`);
-  };
-
-  const handleDeleteStaff = (staffId) => {
-    const staff = staffList.find((s) => s.id === staffId);
-    if (staff) {
-      setStaffToDelete(staff);
-      setIsDeleteDialogOpen(true);
-    }
-  };
-
-  const confirmDeleteStaff = async () => {
-    if (!staffToDelete) return;
-
-    try {
-      await deleteStaffMember(staffToDelete.id);
-      removeStaffMember(staffToDelete.id);
-
-      toast({
-        title: "Staff Deleted",
-        description: `${staffToDelete.name} has been removed successfully.`,
-      });
-    } catch (error) {
-      console.error("Error deleting staff:", error);
-      toast({
-        title: "Error",
-        description:
-          error.message || "Failed to delete staff member. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleteDialogOpen(false);
-      setStaffToDelete(null);
-    }
-  };
-
-  const handleToggleStatus = async (staffId, currentStatus) => {
-    const staff = staffList.find((s) => s.id === staffId);
-    if (!staff) return;
-
-    const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
-
-    try {
-      await updateStaffStatus(staffId, newStatus);
-      updateStaffMember({
-        ...staff,
-        status: newStatus,
-      });
-
-      toast({
-        title: "Status Updated",
-        description: `${staff.name}'s status has been changed to ${newStatus}.`,
-      });
-    } catch (error) {
-      console.error("Error updating staff status:", error);
-      toast({
-        title: "Error",
-        description:
-          error.message || "Failed to update staff status. Please try again.",
-        variant: "destructive",
-      });
-    }
   };
 
   const handleStaffAdded = async (newStaff) => {

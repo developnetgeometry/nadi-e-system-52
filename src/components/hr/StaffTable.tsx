@@ -21,6 +21,7 @@ interface StaffMember {
   phone_number: string;
   ic_number: string;
   role: string;
+  siteLocation?: string;
 }
 
 interface StaffTableProps {
