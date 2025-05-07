@@ -57,3 +57,34 @@ export const exportStaffToCSV = (staffList: any[], filename = 'staff-data') => {
   const formattedData = prepareStaffDataForExport(staffList);
   exportToCSV(formattedData, filename);
 };
+
+// Function to export site data to CSV
+export const exportSitesToCSV = (siteList: any[], states: any[], filename = 'site-data') => {
+  if (!siteList || !siteList.length) {
+    console.error("No site data to export");
+    return;
+  }
+
+  // Prepare sites data for export with proper formatting
+  const formattedData = siteList.map(site => {
+    // Get state name from states array
+    const stateName = site.nd_site_address && site.nd_site_address.length > 0 
+      ? states.find(s => s.id === site.nd_site_address[0]?.state_id)?.name || '' 
+      : '';
+
+    return {
+      'Site Name': site.sitename || '',
+      'Site Code': site.nd_site && site.nd_site[0] ? site.nd_site[0].standard_code || '' : '',
+      'Phase': site.nd_phases?.name || '',
+      'Region': site.nd_region?.eng || '',
+      'State': stateName,
+      'DUSP': site.dusp_tp?.parent?.name || '',
+      'TP': site.dusp_tp?.name || '',
+      'Status': site.nd_site_status?.eng || '',
+      'Visibility': site.is_active ? 'Active' : 'Hidden'
+    };
+  });
+
+  // Export the formatted data
+  exportToCSV(formattedData, filename);
+};
