@@ -5,9 +5,11 @@ import { useUserAccess } from "@/hooks/use-user-access";
 import { StaffLeaveManagement } from "@/components/hr/leave/StaffLeaveManagement";
 import { AdminLeaveManagement } from "@/components/hr/leave/AdminLeaveManagement";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import { useUserGroup } from "@/hooks/use-user-group";
 
 export default function LeaveManagement() {
   const { userType, accessChecked } = useUserAccess();
+  const { groupName } = useUserGroup();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -16,7 +18,11 @@ export default function LeaveManagement() {
     }
   }, [accessChecked]);
 
-  const isStaffView = userType === "staff_manager" || userType === "staff_assistant_manager";
+  // Update to include tp_site user type and site user group
+  const isStaffView = userType === "staff_manager" || 
+                     userType === "staff_assistant_manager" ||
+                     userType === "tp_site" || 
+                     groupName === "site";
 
   if (isLoading) {
     return (
