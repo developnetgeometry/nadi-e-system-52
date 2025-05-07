@@ -74,6 +74,7 @@ export const StaffTable = ({
             <TableHead>Employ Date</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Role</TableHead>
+            <TableHead>Site Location</TableHead>
             <TableHead>DUSP</TableHead>
             <TableHead>TP</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -82,7 +83,7 @@ export const StaffTable = ({
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={10} className="text-center py-8">
+              <TableCell colSpan={11} className="text-center py-8">
                 <div className="flex justify-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                 </div>
@@ -118,6 +119,7 @@ export const StaffTable = ({
                   </Badge>
                 </TableCell>
                 <TableCell>{staff.role || "Staff"}</TableCell>
+                <TableCell>{staff.siteLocation || "-"}</TableCell>
                 <TableCell>{staff.dusp || "-"}</TableCell>
                 <TableCell>{staff.tp || "-"}</TableCell>
                 <TableCell className="text-right">
@@ -169,7 +171,7 @@ export const StaffTable = ({
           ) : (
             <TableRow>
               <TableCell
-                colSpan={10}
+                colSpan={11}
                 className="text-center py-4 text-muted-foreground"
               >
                 No staff members found matching your criteria
