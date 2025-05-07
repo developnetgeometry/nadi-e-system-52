@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useUserMetadata } from "@/hooks/use-user-metadata";
@@ -18,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
-import { StaffTable } from "@/components/hr/StaffTable";
+import { SiteStaffTable } from "@/components/hr/SiteStaffTable";
 import { StaffToolbar } from "@/components/hr/StaffToolbar";
 import { StaffFilters } from "@/components/hr/StaffFilters";
 import { supabase } from "@/lib/supabase";
@@ -375,6 +374,7 @@ const SiteStaff = () => {
           allStaff={staffList}
           onAddStaff={handleAddStaff}
           organizationName={organizationInfo.organization_name}
+          staffType="site"
         />
 
         <StaffFilters
@@ -386,7 +386,7 @@ const SiteStaff = () => {
           onResetFilters={handleResetFilters}
         />
 
-        <StaffTable
+        <SiteStaffTable
           isLoading={isLoading}
           filteredStaff={filteredStaff}
           formatDate={formatDate}

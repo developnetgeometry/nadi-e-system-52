@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useUserMetadata } from "@/hooks/use-user-metadata";
@@ -10,7 +9,7 @@ import {
   deleteStaffMember,
 } from "@/lib/staff";
 import { StaffFilters } from "@/components/hr/StaffFilters";
-import { StaffTable } from "@/components/hr/StaffTable";
+import { TPStaffTable } from "@/components/hr/TPStaffTable";
 import { StaffToolbar } from "@/components/hr/StaffToolbar";
 import { useStaffData } from "@/hooks/hr/use-staff-data";
 import {
@@ -362,6 +361,7 @@ const Employees = () => {
           allStaff={staffList}
           onAddStaff={handleAddStaff}
           organizationName={organizationInfo.organization_name}
+          staffType="tp"
         />
 
         <StaffFilters
@@ -373,7 +373,7 @@ const Employees = () => {
           onResetFilters={handleResetFilters}
         />
 
-        <StaffTable
+        <TPStaffTable
           isLoading={isLoading}
           filteredStaff={filteredStaff}
           formatDate={formatDate}

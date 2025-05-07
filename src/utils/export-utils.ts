@@ -37,8 +37,8 @@ export const exportToCSV = (data: any[], filename: string) => {
   saveAs(blob, `${filename}.csv`);
 };
 
-// Prepare staff data for export by flattening and formatting
-export const prepareStaffDataForExport = (staffList: any[]) => {
+// Prepare TP staff data for export by flattening and formatting
+export const prepareTPStaffDataForExport = (staffList: any[]) => {
   return staffList.map(staff => ({
     Name: staff.name || '',
     Email: staff.email || '',
@@ -48,15 +48,34 @@ export const prepareStaffDataForExport = (staffList: any[]) => {
     Role: staff.role || '',
     'Employment Date': staff.employDate || '',
     'IC Number': staff.ic_number || '',
-    'Site Location': staff.siteLocation || '',
     DUSP: staff.dusp || '',
     TP: staff.tp || '',
   }));
 };
 
-// Function to export staff data to CSV
-export const exportStaffToCSV = (staffList: any[], filename = 'staff-data') => {
-  const formattedData = prepareStaffDataForExport(staffList);
+// Prepare Site staff data for export by flattening and formatting
+export const prepareSiteStaffDataForExport = (staffList: any[]) => {
+  return staffList.map(staff => ({
+    Name: staff.name || '',
+    Email: staff.email || '',
+    'Phone Number': staff.phone_number || '',
+    'User Type': staff.userType?.replace(/_/g, " ") || '',
+    Status: staff.status || '',
+    'Employment Date': staff.employDate || '',
+    'IC Number': staff.ic_number || '',
+    'Site Location': staff.siteLocation || '',
+  }));
+};
+
+// Function to export TP staff data to CSV
+export const exportTPStaffToCSV = (staffList: any[], filename = 'tp-staff-data') => {
+  const formattedData = prepareTPStaffDataForExport(staffList);
+  exportToCSV(formattedData, filename);
+};
+
+// Function to export Site staff data to CSV
+export const exportSiteStaffToCSV = (staffList: any[], filename = 'site-staff-data') => {
+  const formattedData = prepareSiteStaffDataForExport(staffList);
   exportToCSV(formattedData, filename);
 };
 
