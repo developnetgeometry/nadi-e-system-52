@@ -7,6 +7,7 @@ import { format, differenceInCalendarDays, addDays, isWeekend } from "date-fns";
 import { Calendar as CalendarIcon, FileUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useLeaveType } from "@/hooks/lookup/use-leave-type";
 
 import {
   Dialog,
@@ -84,19 +85,13 @@ const leaveSchema = z.object({
   path: ["attachment"],
 });
 
-const LEAVE_TYPES = [
-  { value: "annual", label: "Annual Leave" },
-  { value: "medical", label: "Medical Leave" },
-  { value: "replacement", label: "Replacement Leave" },
-  { value: "emergency", label: "Emergency Leave" },
-];
-
 export function LeaveApplicationDialog({
   open,
   onOpenChange,
 }: LeaveApplicationDialogProps) {
   const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { leaveTypes, isLoading: isLoadingLeaveTypes } = useLeaveType();
   
   const form = useForm<z.infer<typeof leaveSchema>>({
     resolver: zodResolver(leaveSchema),
@@ -216,11 +211,15 @@ export function LeaveApplicationDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {LEAVE_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
+                      {isLoadingLeaveTypes ? (
+                        <SelectItem value="loading" disabled>Loading...</SelectItem>
+                      ) : (
+                        leaveTypes.map((type) => (
+                          <SelectItem key={type.id} value={type.id.toString()}>
+                            {type.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -241,7 +240,7 @@ export function LeaveApplicationDialog({
                           variant={"outline"}
                           className={cn(
                             "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
+                            !field.value?.from && "text-muted-foreground"
                           )}
                         >
                           {field.value?.from ? (
@@ -263,11 +262,13 @@ export function LeaveApplicationDialog({
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="range"
-                        selected={field.value}
+                        selected={{
+                          from: field.value?.from,
+                          to: field.value?.to
+                        }}
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date()}
                         initialFocus
-                        className={cn("p-3 pointer-events-auto")}
                       />
                     </PopoverContent>
                   </Popover>
@@ -359,6 +360,7 @@ export function LeaveApplicationDialog({
                   <FormControl>
                     <div className="flex items-center gap-2">
                       <Input
+                        id="file-upload"
                         type="file"
                         accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                         onChange={handleFileChange}
