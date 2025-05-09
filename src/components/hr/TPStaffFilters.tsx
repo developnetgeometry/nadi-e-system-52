@@ -1,7 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter, X, UserRound } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -16,6 +16,12 @@ interface TPStaffFiltersProps {
   statusFilter: string;
   setStatusFilter: (status: string) => void;
   statusOptions: string[];
+  userTypeFilter?: string;
+  setUserTypeFilter?: (userType: string) => void;
+  userTypeOptions?: string[];
+  roleFilter?: string;
+  setRoleFilter?: (role: string) => void;
+  roleOptions?: string[];
   onResetFilters?: () => void;
 }
 
@@ -25,9 +31,22 @@ export const TPStaffFilters = ({
   statusFilter,
   setStatusFilter,
   statusOptions,
+  userTypeFilter = "all",
+  setUserTypeFilter,
+  userTypeOptions = [],
+  roleFilter = "all",
+  setRoleFilter,
+  roleOptions = [],
   onResetFilters,
 }: TPStaffFiltersProps) => {
-  const hasFilters = searchQuery || statusFilter !== "all";
+  const hasFilters = 
+    searchQuery || 
+    statusFilter !== "all" || 
+    (userTypeFilter && userTypeFilter !== "all") ||
+    (roleFilter && roleFilter !== "all");
+  
+  const hasUserTypeFilter = userTypeFilter !== undefined && setUserTypeFilter !== undefined && userTypeOptions.length > 0;
+  const hasRoleFilter = roleFilter !== undefined && setRoleFilter !== undefined && roleOptions.length > 0;
   
   return (
     <div className="mb-6 space-y-4">
@@ -56,6 +75,40 @@ export const TPStaffFilters = ({
             ))}
           </SelectContent>
         </Select>
+
+        {hasUserTypeFilter && setUserTypeFilter && (
+          <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+            <SelectTrigger className="w-[200px] h-12 flex items-center">
+              <UserRound className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Filter by User Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All User Types</SelectItem>
+              {userTypeOptions.map((userType) => (
+                <SelectItem key={userType} value={userType}>
+                  {userType.replace(/_/g, " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {hasRoleFilter && setRoleFilter && (
+          <Select value={roleFilter} onValueChange={setRoleFilter}>
+            <SelectTrigger className="w-[200px] h-12 flex items-center">
+              <UserRound className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Filter by Role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Roles</SelectItem>
+              {roleOptions.map((role) => (
+                <SelectItem key={role} value={role}>
+                  {role}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
         {hasFilters && (
           <Button

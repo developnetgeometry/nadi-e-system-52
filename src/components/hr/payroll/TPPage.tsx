@@ -1,8 +1,9 @@
+
 import { StatCard } from "@/components/hr/payroll/StatCard";
 import { PayrollTable } from "@/components/hr/payroll/PayrollTable";
 import { Button } from "@/components/ui/button";
 import { FileText, Upload } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock data
 const teamData = [
@@ -69,31 +70,40 @@ const columns = [
 ];
 
 export function TPPage() {
+  const { toast } = useToast();
+  
   const handleSubmitPayrollClaim = () => {
-    toast.info("Preparing payroll claim submission", {
+    toast({
+      title: "Preparing payroll claim submission",
       description: "Please review your team's information before submitting.",
     });
 
     // Simulate form opening delay
     setTimeout(() => {
-      toast.success("Payroll claim form ready", {
+      toast({
+        title: "Payroll claim form ready",
         action: {
           label: "Submit",
-          onClick: () => toast.success("Claim submitted successfully"),
+          onClick: () => toast({
+            title: "Claim submitted successfully"
+          }),
         },
       });
     }, 1500);
   };
 
   const handleUploadProof = () => {
-    toast.info("Upload payment proof documentation", {
+    toast({
+      title: "Upload payment proof documentation",
       description: "Accepted formats: PDF, JPEG, PNG (max 10MB)",
       action: {
         label: "Select File",
         onClick: () => {
           // In a real app, this would open a file picker
           setTimeout(() => {
-            toast.success("Document uploaded successfully");
+            toast({
+              title: "Document uploaded successfully"
+            });
           }, 1000);
         },
       },
