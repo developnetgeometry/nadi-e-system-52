@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -20,7 +21,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
-import { FileText, Download, Printer, FileSpreadsheet } from "lucide-react";
+import { FileText, Download, Printer, FileSpreadsheet, Eye, Check, Flag } from "lucide-react";
 
 interface PayrollTableProps {
   data: any[];
@@ -249,44 +250,46 @@ export function PayrollTable({
                     <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon"
                         onClick={() => handleViewRecord(record)}
+                        title="View"
                       >
-                        View
+                        <Eye size={16} />
                       </Button>
                       {!staffView && isEditable && (
                         <>
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
                             className={
                               record.status === "Pending"
                                 ? "text-nadi-purple"
                                 : "text-muted-foreground"
                             }
                             onClick={() => handleApproveRecord(record)}
+                            title={record.status === "Pending" ? "Approve" : "Approved"}
                           >
-                            {record.status === "Pending" ? "Approve" : "Approved"}
+                            <Check size={16} />
                           </Button>
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
                             className="text-nadi-alert"
                             onClick={() => handleFlagRecord(record)}
+                            title="Flag"
                           >
-                            Flag
+                            <Flag size={16} />
                           </Button>
                         </>
                       )}
                       {staffView && (
                         <Button
                           variant="ghost"
-                          size="sm"
-                          className="gap-2"
+                          size="icon"
                           onClick={() => handleDownloadRecord()}
+                          title="Download"
                         >
                           <Download size={16} />
-                          Download
                         </Button>
                       )}
                     </div>
