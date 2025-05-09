@@ -21,7 +21,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
-import { FileText, Download, Printer, FileSpreadsheet, Eye, Check, Flag } from "lucide-react";
+import { FileText, Download, Printer, FileSpreadsheet, Eye, Check, Flag, Minus } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface PayrollTableProps {
   data: any[];
@@ -248,49 +254,82 @@ export function PayrollTable({
                   ))}
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleViewRecord(record)}
-                        title="View"
-                      >
-                        <Eye size={16} />
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleViewRecord(record)}
+                            >
+                              <Eye size={16} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>View details</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
                       {!staffView && isEditable && (
                         <>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className={
-                              record.status === "Pending"
-                                ? "text-nadi-purple"
-                                : "text-muted-foreground"
-                            }
-                            onClick={() => handleApproveRecord(record)}
-                            title={record.status === "Pending" ? "Approve" : "Approved"}
-                          >
-                            <Check size={16} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-nadi-alert"
-                            onClick={() => handleFlagRecord(record)}
-                            title="Flag"
-                          >
-                            <Flag size={16} />
-                          </Button>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className={
+                                    record.status === "Pending"
+                                      ? "text-nadi-purple"
+                                      : "text-muted-foreground"
+                                  }
+                                  onClick={() => handleApproveRecord(record)}
+                                  disabled={record.status === "Paid"}
+                                >
+                                  {record.status === "Paid" ? (
+                                    <Minus size={16} />
+                                  ) : (
+                                    <Check size={16} />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {record.status === "Paid" ? "Paid" : "Approve payment"}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-nadi-alert"
+                                  onClick={() => handleFlagRecord(record)}
+                                >
+                                  <Flag size={16} />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Flag for review</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </>
                       )}
                       {staffView && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDownloadRecord()}
-                          title="Download"
-                        >
-                          <Download size={16} />
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDownloadRecord()}
+                              >
+                                <Download size={16} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Download payslip</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       )}
                     </div>
                   </TableCell>
