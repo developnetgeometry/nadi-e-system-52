@@ -35,6 +35,7 @@ const SiteStaff = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationFilter, setLocationFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [userTypeFilter, setUserTypeFilter] = useState("all");
   const [isAddStaffOpen, setIsAddStaffOpen] = useState(false);
   const [isEditStaffOpen, setIsEditStaffOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
@@ -77,6 +78,13 @@ const SiteStaff = () => {
     removeStaffMember,
   } = useSiteStaffData(user, organizationInfo);
 
+  // Extract unique user types from staff list
+  const userTypeOptions = useMemo(() => {
+    if (!staffList?.length) return [];
+    const uniqueTypes = [...new Set(staffList.map(staff => staff.userType).filter(Boolean))];
+    return uniqueTypes.sort();
+  }, [staffList]);
+
   const filteredStaff = useMemo(() => {
     return staffList.filter((staff) => {
       const matchesSearch =
@@ -95,15 +103,19 @@ const SiteStaff = () => {
 
       const matchesStatus =
         statusFilter === "all" || staff.status === statusFilter;
+        
+      const matchesUserType =
+        userTypeFilter === "all" || staff.userType === userTypeFilter;
 
-      return matchesSearch && matchesLocation && matchesStatus;
+      return matchesSearch && matchesLocation && matchesStatus && matchesUserType;
     });
-  }, [staffList, searchQuery, locationFilter, statusFilter]);
+  }, [staffList, searchQuery, locationFilter, statusFilter, userTypeFilter]);
 
   const handleResetFilters = () => {
     setSearchQuery("");
     setLocationFilter("all");
     setStatusFilter("all");
+    setUserTypeFilter("all");
   };
 
   const handleEditStaff = (staffId) => {
@@ -385,6 +397,12 @@ const SiteStaff = () => {
           statusFilter={statusFilter}
           setStatusFilter={setStatusFilter}
           statusOptions={statusOptions}
+          userTypeFilter={userTypeFilter}
+          setUserTypeFilter={setUserTypeFilter}
+          userTypeOptions={userTypeOptions}
+          locationFilter={locationFilter}
+          setLocationFilter={setLocationFilter}
+          locationOptions={locationOptions}
           onResetFilters={handleResetFilters}
         />
 

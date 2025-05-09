@@ -1,6 +1,7 @@
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter, X, UserRound, MapPin } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -15,6 +16,12 @@ interface StaffFiltersProps {
   statusFilter: string;
   setStatusFilter: (status: string) => void;
   statusOptions: string[];
+  userTypeFilter: string;
+  setUserTypeFilter: (userType: string) => void;
+  userTypeOptions: string[];
+  locationFilter: string;
+  setLocationFilter: (location: string) => void;
+  locationOptions: string[];
   onResetFilters?: () => void;
 }
 
@@ -24,8 +31,16 @@ export const StaffFilters = ({
   statusFilter,
   setStatusFilter,
   statusOptions,
+  userTypeFilter,
+  setUserTypeFilter,
+  userTypeOptions,
+  locationFilter,
+  setLocationFilter,
+  locationOptions,
   onResetFilters,
 }: StaffFiltersProps) => {
+  const hasFilters = searchQuery || statusFilter !== "all" || userTypeFilter !== "all" || locationFilter !== "all";
+  
   return (
     <div className="mb-6 space-y-4">
       <div className="relative">
@@ -38,7 +53,7 @@ export const StaffFilters = ({
         />
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[200px] h-12 flex items-center">
             <Filter className="h-4 w-4 mr-2" />
@@ -54,7 +69,37 @@ export const StaffFilters = ({
           </SelectContent>
         </Select>
 
-        {(searchQuery || statusFilter !== "all") && (
+        <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+          <SelectTrigger className="w-[200px] h-12 flex items-center">
+            <UserRound className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Filter by User Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All User Types</SelectItem>
+            {userTypeOptions.map((userType) => (
+              <SelectItem key={userType} value={userType}>
+                {userType.replace(/_/g, " ")}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={locationFilter} onValueChange={setLocationFilter}>
+          <SelectTrigger className="w-[200px] h-12 flex items-center">
+            <MapPin className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Filter by Location" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Locations</SelectItem>
+            {locationOptions.map((location) => (
+              <SelectItem key={location} value={location}>
+                {location}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {hasFilters && (
           <Button
             variant="outline"
             onClick={onResetFilters}
