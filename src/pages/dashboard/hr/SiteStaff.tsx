@@ -19,7 +19,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { SiteStaffTable } from "@/components/hr/SiteStaffTable";
 import { StaffToolbar } from "@/components/hr/StaffToolbar";
-import { StaffFilters } from "@/components/hr/StaffFilters";
+import { SiteStaffFilters } from "@/components/hr/SiteStaffFilters";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -391,7 +391,7 @@ const SiteStaff = () => {
           staffType="site"
         />
 
-        <StaffFilters
+        <SiteStaffFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           statusFilter={statusFilter}

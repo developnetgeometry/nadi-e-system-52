@@ -5,7 +5,7 @@ import { StaffFormDialog } from "@/components/hr/StaffFormDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserAccess } from "@/hooks/use-user-access";
 import { createStaffMember, deleteStaffMember } from "@/lib/staff";
-import { StaffFilters } from "@/components/hr/StaffFilters";
+import { TPStaffFilters } from "@/components/hr/TPStaffFilters";
 import { TPStaffTable } from "@/components/hr/TPStaffTable";
 import { StaffToolbar } from "@/components/hr/StaffToolbar";
 import { useStaffData } from "@/hooks/hr/use-staff-data";
@@ -360,7 +360,7 @@ const Employees = () => {
           staffType="tp"
         />
 
-        <StaffFilters
+        <TPStaffFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           statusFilter={statusFilter}

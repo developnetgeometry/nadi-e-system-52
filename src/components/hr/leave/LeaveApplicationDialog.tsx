@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -213,11 +214,11 @@ export function LeaveApplicationDialog({
                       {isLoadingLeaveTypes ? (
                         <SelectItem value="loading" disabled>Loading...</SelectItem>
                       ) : (
-                        leaveTypes.map((type) => (
+                        leaveTypes?.map((type) => (
                           <SelectItem key={type.id} value={type.id.toString()}>
                             {type.name || "Unknown"}
                           </SelectItem>
-                        ))
+                        )) || []
                       )}
                     </SelectContent>
                   </Select>

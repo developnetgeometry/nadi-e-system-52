@@ -16,30 +16,38 @@ interface StaffFiltersProps {
   statusFilter: string;
   setStatusFilter: (status: string) => void;
   statusOptions: string[];
-  userTypeFilter: string;
-  setUserTypeFilter: (userType: string) => void;
-  userTypeOptions: string[];
-  locationFilter: string;
-  setLocationFilter: (location: string) => void;
-  locationOptions: string[];
+  userTypeFilter?: string;
+  setUserTypeFilter?: (userType: string) => void;
+  userTypeOptions?: string[];
+  locationFilter?: string;
+  setLocationFilter?: (location: string) => void;
+  locationOptions?: string[];
   onResetFilters?: () => void;
 }
 
+/**
+ * @deprecated - Use SiteStaffFilters or TPStaffFilters instead
+ */
 export const StaffFilters = ({
   searchQuery,
   setSearchQuery,
   statusFilter,
   setStatusFilter,
   statusOptions,
-  userTypeFilter,
+  userTypeFilter = "all",
   setUserTypeFilter,
-  userTypeOptions,
-  locationFilter,
+  userTypeOptions = [],
+  locationFilter = "all",
   setLocationFilter,
-  locationOptions,
+  locationOptions = [],
   onResetFilters,
 }: StaffFiltersProps) => {
-  const hasFilters = searchQuery || statusFilter !== "all" || userTypeFilter !== "all" || locationFilter !== "all";
+  const hasFilters = searchQuery || statusFilter !== "all" || 
+    (userTypeFilter && userTypeFilter !== "all") || 
+    (locationFilter && locationFilter !== "all");
+  
+  const hasUserTypeFilter = userTypeFilter !== undefined && setUserTypeFilter !== undefined && userTypeOptions.length > 0;
+  const hasLocationFilter = locationFilter !== undefined && setLocationFilter !== undefined && locationOptions.length > 0;
   
   return (
     <div className="mb-6 space-y-4">
@@ -69,37 +77,41 @@ export const StaffFilters = ({
           </SelectContent>
         </Select>
 
-        <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
-          <SelectTrigger className="w-[200px] h-12 flex items-center">
-            <UserRound className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Filter by User Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All User Types</SelectItem>
-            {userTypeOptions.map((userType) => (
-              <SelectItem key={userType} value={userType}>
-                {userType.replace(/_/g, " ")}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {hasUserTypeFilter && setUserTypeFilter && (
+          <Select value={userTypeFilter} onValueChange={setUserTypeFilter}>
+            <SelectTrigger className="w-[200px] h-12 flex items-center">
+              <UserRound className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Filter by User Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All User Types</SelectItem>
+              {userTypeOptions.map((userType) => (
+                <SelectItem key={userType} value={userType}>
+                  {userType.replace(/_/g, " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
-        <Select value={locationFilter} onValueChange={setLocationFilter}>
-          <SelectTrigger className="w-[200px] h-12 flex items-center">
-            <MapPin className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Filter by Location" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Locations</SelectItem>
-            {locationOptions.map((location) => (
-              <SelectItem key={location} value={location}>
-                {location}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {hasLocationFilter && setLocationFilter && (
+          <Select value={locationFilter} onValueChange={setLocationFilter}>
+            <SelectTrigger className="w-[200px] h-12 flex items-center">
+              <MapPin className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Filter by Location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
+              {locationOptions.map((location) => (
+                <SelectItem key={location} value={location}>
+                  {location}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
-        {hasFilters && (
+        {hasFilters && onResetFilters && (
           <Button
             variant="outline"
             onClick={onResetFilters}
