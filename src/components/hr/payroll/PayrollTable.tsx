@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -44,7 +43,8 @@ export function PayrollTable({
 }: PayrollTableProps) {
   const { toast } = useToast();
   const { useUsersQuery } = useUsers();
-  const user_type = useUsersQuery()?.data?[0]?.user_type || "Guest";
+  const userData = useUsersQuery();
+  const user_type = userData?.data?.[0]?.user_type || "Guest";
   const isEditable = user_type === "Super Admin" || user_type === "staff_manager";
   
   const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
@@ -283,7 +283,7 @@ export function PayrollTable({
                           variant="ghost"
                           size="sm"
                           className="gap-2"
-                          onClick={() => handleDownloadRecord}
+                          onClick={() => handleDownloadRecord()}
                         >
                           <Download size={16} />
                           Download
