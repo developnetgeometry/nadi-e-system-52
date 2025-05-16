@@ -155,10 +155,12 @@ const columns = [
 
 export function StaffPage() {
   const { toast } = useToast();
+
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [monthFilter, setMonthFilter] = useState("all");
   const [yearFilter, setYearFilter] = useState("all");
+
   // Filter data based on filters
   const filteredData = useMemo(() => {
     return filterStaffPayrollByDate(
@@ -175,12 +177,6 @@ export function StaffPage() {
       description: `Payslip for ${record.month} ${record.year} is being prepared.`,
     });
 
-  const handleDownloadPayslip = (record: any) => {
-    toast({
-      title: "Downloading payslip",
-      description: `Payslip for ${record.month} ${record.year} is being prepared.`
-    });
-    
     // Simulate download delay
     setTimeout(() => {
       toast({
@@ -213,17 +209,10 @@ export function StaffPage() {
     Paid: "bg-green-100 text-green-800 border-green-200",
     Rejected: "bg-red-100 text-red-800 border-red-200",
   };
-  
-  // Calculate totals for current year
-  const currentYear = new Date().getFullYear();
-  const currentYearData = payrollHistory.filter(item => new Date(item.date).getFullYear() === currentYear);
-  const totalAmount = currentYearData.reduce((sum, item) => sum + (item.amount || 0), 0);
-  const totalAllowances = currentYearData.reduce((sum, item) => sum + (item.allowance || 0), 0);
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
-        <StatCard title="Monthly Salary" value={`RM ${payrollHistory[0]?.amount.toLocaleString() || '0'}`} />
         <StatCard
           title="Monthly Salary"
           value={`RM ${payrollHistory[0]?.amount.toLocaleString() || "0"}`}

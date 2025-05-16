@@ -91,30 +91,6 @@ export function PayrollTable({
     setSelectedRows([]);
   }, [data]);
 
-  const [selectedRows, setSelectedRows] = useState<any[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [paginatedData, setPaginatedData] = useState<any[]>([]);
-
-  // Calculate total pages
-  const totalPages = Math.ceil(data.length / pageSize);
-
-  // Update paginated data when page or data changes
-  useEffect(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    setPaginatedData(data.slice(startIndex, endIndex));
-  }, [data, currentPage, pageSize]);
-
-  // Reset pagination when data changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [data.length]);
-
-  // Reset selected rows when paginated data changes
-  useEffect(() => {
-    setSelectedRows([]);
-  }, [data]);
-
   const handleViewRecord = (record: any) => {
     setSelectedRecord(record);
     setViewDialogOpen(true);
