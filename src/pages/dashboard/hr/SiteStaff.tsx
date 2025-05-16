@@ -81,7 +81,9 @@ const SiteStaff = () => {
   // Extract unique user types from staff list
   const userTypeOptions = useMemo(() => {
     if (!staffList?.length) return [];
-    const uniqueTypes = [...new Set(staffList.map(staff => staff.userType).filter(Boolean))];
+    const uniqueTypes = [
+      ...new Set(staffList.map((staff) => staff.userType).filter(Boolean)),
+    ];
     return uniqueTypes.sort();
   }, [staffList]);
 
@@ -103,11 +105,13 @@ const SiteStaff = () => {
 
       const matchesStatus =
         statusFilter === "all" || staff.status === statusFilter;
-        
+
       const matchesUserType =
         userTypeFilter === "all" || staff.userType === userTypeFilter;
 
-      return matchesSearch && matchesLocation && matchesStatus && matchesUserType;
+      return (
+        matchesSearch && matchesLocation && matchesStatus && matchesUserType
+      );
     });
   }, [staffList, searchQuery, locationFilter, statusFilter, userTypeFilter]);
 
@@ -382,7 +386,7 @@ const SiteStaff = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto max-w-6xl">
+      <div>
         <StaffToolbar
           selectedStaff={getSelectedStaffObjects()}
           allStaff={staffList}

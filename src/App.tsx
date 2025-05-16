@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import Landing from "@/pages/Landing";
@@ -8,8 +7,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import MemberLogin from "@/pages/auth/MemberLogin";
-import { dashboardRoutes } from "@/routes/dashboard.routes";
-import { memberRoutes } from "@/routes/member.routes";
+import { dashboardRoutes, DashboardRoutes } from "@/routes/dashboard.routes";
+import { memberRoutes } from "@/routes/module.member.routes";
 import { moduleRoutes } from "@/routes/module.routes";
 import UIComponents from "@/pages/UIComponents";
 import OrganizationDetails from "@/pages/dashboard/OrganizationDetails";
@@ -62,7 +61,10 @@ function App() {
               <Route path="/dashboard/hr/employees" element={<Employees />} />
               <Route path="/dashboard/hr/site-staff" element={<SiteStaff />} />
               <Route path="/dashboard/hr/staff/:id" element={<StaffDetail />} />
-              <Route path="/dashboard/hr/staff/:id/edit" element={<StaffEdit />} />
+              <Route
+                path="/dashboard/hr/staff/:id/edit"
+                element={<StaffEdit />}
+              />
 
               {/* Dashboard Routes */}
               {dashboardRoutes.map((route, index) => (

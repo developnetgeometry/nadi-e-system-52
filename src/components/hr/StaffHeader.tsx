@@ -18,6 +18,9 @@ export const StaffHeader = ({
           <UserPlus className="h-4 w-4 mr-2" />
           Add Staff
         </Button>
+        <Button onClick={() => (window.location.href = "/hr/site-staff")}>
+          Go to Site Staff
+        </Button>
       </div>
 
       {organizationName && (

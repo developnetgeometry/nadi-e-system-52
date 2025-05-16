@@ -1,12 +1,12 @@
-
 import { useState, useMemo } from "react";
 import { StatCard } from "@/components/hr/payroll/StatCard";
 import { PayrollTable } from "@/components/hr/payroll/PayrollTable";
 import { StaffPayrollFilters } from "@/components/hr/payroll/StaffPayrollFilters";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { filterStaffPayrollByDate } from "@/utils/export-payroll-utils";
-import { Download } from "lucide-react";
+import { Download, Banknote, CircleDollarSign, HandCoins } from "lucide-react";
 
 // Mock staff payroll data
 const payrollHistory = [
@@ -17,8 +17,15 @@ const payrollHistory = [
     year: 2025,
     details: "Monthly Salary",
     amount: 5500,
-    allowance: 800,
-    status: "Paid",
+    incentive: 800,
+    status: (
+      <Badge
+        variant="outline"
+        className="bg-green-100 text-green-800 border-green-200"
+      >
+        Paid
+      </Badge>
+    ),
     reference: "PAY/2025/04/001",
   },
   {
@@ -28,8 +35,15 @@ const payrollHistory = [
     year: 2025,
     details: "Monthly Salary",
     amount: 5500,
-    allowance: 800,
-    status: "Paid",
+    incentive: 800,
+    status: (
+      <Badge
+        variant="outline"
+        className="bg-green-100 text-green-800 border-green-200"
+      >
+        Paid
+      </Badge>
+    ),
     reference: "PAY/2025/03/001",
   },
   {
@@ -39,8 +53,15 @@ const payrollHistory = [
     year: 2025,
     details: "Monthly Salary",
     amount: 5500,
-    allowance: 800,
-    status: "Paid",
+    incentive: 800,
+    status: (
+      <Badge
+        variant="outline"
+        className="bg-green-100 text-green-800 border-green-200"
+      >
+        Paid
+      </Badge>
+    ),
     reference: "PAY/2025/02/001",
   },
   {
@@ -50,8 +71,15 @@ const payrollHistory = [
     year: 2025,
     details: "Monthly Salary",
     amount: 5500,
-    allowance: 800,
-    status: "Paid",
+    incentive: 800,
+    status: (
+      <Badge
+        variant="outline"
+        className="bg-green-100 text-green-800 border-green-200"
+      >
+        Paid
+      </Badge>
+    ),
     reference: "PAY/2025/01/001",
   },
   {
@@ -61,8 +89,15 @@ const payrollHistory = [
     year: 2024,
     details: "Monthly Salary",
     amount: 5300,
-    allowance: 750,
-    status: "Paid",
+    incentive: 750,
+    status: (
+      <Badge
+        variant="outline"
+        className="bg-green-100 text-green-800 border-green-200"
+      >
+        Paid
+      </Badge>
+    ),
     reference: "PAY/2024/12/001",
   },
   {
@@ -72,8 +107,15 @@ const payrollHistory = [
     year: 2024,
     details: "Monthly Salary",
     amount: 5300,
-    allowance: 750,
-    status: "Paid",
+    incentive: 750,
+    status: (
+      <Badge
+        variant="outline"
+        className="bg-green-100 text-green-800 border-green-200"
+      >
+        Paid
+      </Badge>
+    ),
     reference: "PAY/2024/11/001",
   },
 ];
@@ -113,12 +155,10 @@ const columns = [
 
 export function StaffPage() {
   const { toast } = useToast();
-  
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
   const [monthFilter, setMonthFilter] = useState("all");
   const [yearFilter, setYearFilter] = useState("all");
-  
   // Filter data based on filters
   const filteredData = useMemo(() => {
     return filterStaffPayrollByDate(
@@ -132,21 +172,46 @@ export function StaffPage() {
   const handleDownloadPayslip = (record: any) => {
     toast({
       title: "Downloading payslip",
+      description: `Payslip for ${record.month} ${record.year} is being prepared.`,
+    });
+
+  const handleDownloadPayslip = (record: any) => {
+    toast({
+      title: "Downloading payslip",
       description: `Payslip for ${record.month} ${record.year} is being prepared.`
     });
     
     // Simulate download delay
     setTimeout(() => {
       toast({
-        title: "Payslip downloaded successfully"
+        title: "Payslip downloaded successfully",
       });
     }, 1000);
   };
-  
+
   const resetFilters = () => {
     setSearchQuery("");
     setMonthFilter("all");
     setYearFilter("all");
+  };
+
+  // Calculate totals for current year
+  const currentYear = new Date().getFullYear();
+  const currentYearData = payrollHistory.filter(
+    (item) => new Date(item.date).getFullYear() === currentYear
+  );
+  const totalAmount = currentYearData.reduce(
+    (sum, item) => sum + (item.amount || 0),
+    0
+  );
+  const totalIncentives = currentYearData.reduce(
+    (sum, item) => sum + (item.incentive || 0),
+    0
+  );
+  const statusColors: Record<string, string> = {
+    Pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    Paid: "bg-green-100 text-green-800 border-green-200",
+    Rejected: "bg-red-100 text-red-800 border-red-200",
   };
   
   // Calculate totals for current year
@@ -160,14 +225,28 @@ export function StaffPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard title="Monthly Salary" value={`RM ${payrollHistory[0]?.amount.toLocaleString() || '0'}`} />
         <StatCard
-          title="Monthly Allowances"
-          value={`RM ${payrollHistory[0]?.allowance.toLocaleString() || '0'}`}
+          title="Monthly Salary"
+          value={`RM ${payrollHistory[0]?.amount.toLocaleString() || "0"}`}
+          icon={<CircleDollarSign size={24} className="text-blue-500" />}
+          colorVariant="primary"
+          backgroundColor="bg-blue-50"
+          textColor="text-blue-700"
+        />
+        <StatCard
+          title="Monthly Incentives"
+          value={`RM ${payrollHistory[0]?.incentive.toLocaleString() || "0"}`}
+          icon={<HandCoins size={24} className="text-green-500" />}
           colorVariant="success"
+          backgroundColor="bg-green-50"
+          textColor="text-green-700"
         />
         <StatCard
           title="Year-to-Date Income"
-          value={`RM ${(totalAmount + totalAllowances).toLocaleString()}`}
+          value={`RM ${(totalAmount + totalIncentives).toLocaleString()}`}
+          icon={<Banknote size={24} className="text-gray-500" />}
           colorVariant="default"
+          backgroundColor="bg-gray-50"
+          textColor="text-gray-700"
         />
       </div>
 
@@ -179,12 +258,12 @@ export function StaffPage() {
           onClick={() => {
             toast({
               title: "Downloading annual income statement",
-              description: `Your annual income statement for ${currentYear} is being prepared.`
+              description: `Your annual income statement for ${currentYear} is being prepared.`,
             });
-            
+
             setTimeout(() => {
               toast({
-                title: "Annual income statement downloaded"
+                title: "Annual income statement downloaded",
               });
             }, 1500);
           }}
@@ -204,8 +283,8 @@ export function StaffPage() {
         onResetFilters={resetFilters}
       />
 
-      <PayrollTable 
-        data={filteredData} 
+      <PayrollTable
+        data={filteredData}
         columns={columns}
         staffView={true}
         pageSize={5}
@@ -213,7 +292,9 @@ export function StaffPage() {
 
       <div className="bg-blue-50 p-4 rounded-md border border-blue-200 text-sm text-blue-700">
         <p>
-          <strong>Note:</strong> Payslips are typically processed by the 15th of each month. If you have any questions about your payroll, please contact HR.
+          <strong>Note:</strong> Payslips are typically processed by the 15th of
+          each month. If you have any questions about your payroll, please
+          contact HR.
         </p>
       </div>
     </div>

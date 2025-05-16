@@ -1,4 +1,3 @@
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, X, UserRound, MapPin } from "lucide-react";
@@ -42,19 +41,27 @@ export const StaffFilters = ({
   locationOptions = [],
   onResetFilters,
 }: StaffFiltersProps) => {
-  const hasFilters = searchQuery || statusFilter !== "all" || 
-    (userTypeFilter && userTypeFilter !== "all") || 
+  const hasFilters =
+    searchQuery ||
+    statusFilter !== "all" ||
+    (userTypeFilter && userTypeFilter !== "all") ||
     (locationFilter && locationFilter !== "all");
-  
-  const hasUserTypeFilter = userTypeFilter !== undefined && setUserTypeFilter !== undefined && userTypeOptions.length > 0;
-  const hasLocationFilter = locationFilter !== undefined && setLocationFilter !== undefined && locationOptions.length > 0;
-  
+
+  const hasUserTypeFilter =
+    userTypeFilter !== undefined &&
+    setUserTypeFilter !== undefined &&
+    userTypeOptions.length > 0;
+  const hasLocationFilter =
+    locationFilter !== undefined &&
+    setLocationFilter !== undefined &&
+    locationOptions.length > 0;
+
   return (
     <div className="mb-6 space-y-4">
       <div className="relative">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search staff by name, email, user type..."
+          placeholder="Search staff by name, email..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9 pr-4 h-12 w-full bg-white"

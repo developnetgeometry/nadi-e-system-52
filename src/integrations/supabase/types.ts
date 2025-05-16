@@ -17,11 +17,17 @@ export type Database = {
           viewed_at: string | null
         }
         Insert: {
-          announcement_id?: string | null
-          id?: string
-          user_id?: string | null
-          viewed_at?: string | null
-        }
+          created_at?: string;
+          id?: string;
+          key: string;
+          updated_at?: string;
+          value: string;
+        };
+          announcement_id?: string | null;
+          id?: string;
+          user_id?: string | null;
+          viewed_at?: string | null;
+        };
         Update: {
           announcement_id?: string | null
           id?: string
@@ -719,80 +725,80 @@ export type Database = {
       }
       nd_asset: {
         Row: {
-          asset_group: string | null
-          asset_mobility: string | null
-          asset_subtype_id: number | null
-          brand_id: number | null
-          created_at: string | null
-          created_by: string | null
-          date_expired: string | null
-          date_install: string | null
-          date_waranty_supplier: string | null
-          date_waranty_tp: string | null
-          deleted_at: string | null
-          id: number
-          is_active: boolean | null
-          location_id: number | null
-          name: string | null
-          qty_unit: number | null
-          remark: string | null
-          retail_type: number | null
-          serial_number: string | null
-          site_id: number | null
-          type_id: number | null
-          updated_at: string | null
-          updated_by: string | null
-        }
+          asset_group: string | null;
+          asset_mobility: string | null;
+          asset_subtype_id: number | null;
+          brand_id: number | null;
+          created_at: string | null;
+          created_by: string | null;
+          date_expired: string | null;
+          date_install: string | null;
+          date_waranty_supplier: string | null;
+          date_waranty_tp: string | null;
+          deleted_at: string | null;
+          id: number;
+          is_active: boolean | null;
+          location_id: number | null;
+          name: string | null;
+          qty_unit: number | null;
+          remark: string | null;
+          retail_type: number | null;
+          serial_number: string | null;
+          site_id: number | null;
+          type_id: number | null;
+          updated_at: string | null;
+          updated_by: string | null;
+        };
         Insert: {
-          asset_group?: string | null
-          asset_mobility?: string | null
-          asset_subtype_id?: number | null
-          brand_id?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          date_expired?: string | null
-          date_install?: string | null
-          date_waranty_supplier?: string | null
-          date_waranty_tp?: string | null
-          deleted_at?: string | null
-          id?: number
-          is_active?: boolean | null
-          location_id?: number | null
-          name?: string | null
-          qty_unit?: number | null
-          remark?: string | null
-          retail_type?: number | null
-          serial_number?: string | null
-          site_id?: number | null
-          type_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          asset_group?: string | null;
+          asset_mobility?: string | null;
+          asset_subtype_id?: number | null;
+          brand_id?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          date_expired?: string | null;
+          date_install?: string | null;
+          date_waranty_supplier?: string | null;
+          date_waranty_tp?: string | null;
+          deleted_at?: string | null;
+          id?: number;
+          is_active?: boolean | null;
+          location_id?: number | null;
+          name?: string | null;
+          qty_unit?: number | null;
+          remark?: string | null;
+          retail_type?: number | null;
+          serial_number?: string | null;
+          site_id?: number | null;
+          type_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Update: {
-          asset_group?: string | null
-          asset_mobility?: string | null
-          asset_subtype_id?: number | null
-          brand_id?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          date_expired?: string | null
-          date_install?: string | null
-          date_waranty_supplier?: string | null
-          date_waranty_tp?: string | null
-          deleted_at?: string | null
-          id?: number
-          is_active?: boolean | null
-          location_id?: number | null
-          name?: string | null
-          qty_unit?: number | null
-          remark?: string | null
-          retail_type?: number | null
-          serial_number?: string | null
-          site_id?: number | null
-          type_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          asset_group?: string | null;
+          asset_mobility?: string | null;
+          asset_subtype_id?: number | null;
+          brand_id?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          date_expired?: string | null;
+          date_install?: string | null;
+          date_waranty_supplier?: string | null;
+          date_waranty_tp?: string | null;
+          deleted_at?: string | null;
+          id?: number;
+          is_active?: boolean | null;
+          location_id?: number | null;
+          name?: string | null;
+          qty_unit?: number | null;
+          remark?: string | null;
+          retail_type?: number | null;
+          serial_number?: string | null;
+          site_id?: number | null;
+          type_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Relationships: [
           {
             foreignKeyName: "fk_asset_type"
@@ -802,35 +808,35 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_site"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "nd_site"
-            referencedColumns: ["id"]
+            foreignKeyName: "fk_site";
+            columns: ["site_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_site";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "nd_asset_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "nd_space"
-            referencedColumns: ["id"]
+            foreignKeyName: "nd_asset_location_id_fkey";
+            columns: ["location_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_space";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "nd_asset_nd_asset_subtype_fk"
-            columns: ["asset_subtype_id"]
-            isOneToOne: false
-            referencedRelation: "nd_asset_subtype"
-            referencedColumns: ["id"]
+            foreignKeyName: "nd_asset_nd_asset_subtype_fk";
+            columns: ["asset_subtype_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_asset_subtype";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "nd_asset_nd_brand_fk"
-            columns: ["brand_id"]
-            isOneToOne: false
-            referencedRelation: "nd_brand"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+            foreignKeyName: "nd_asset_nd_brand_fk";
+            columns: ["brand_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_brand";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       nd_asset_attachment: {
         Row: {
           asset_id: number | null
@@ -893,42 +899,52 @@ export type Database = {
       }
       nd_asset_subtype: {
         Row: {
-          asset_type_id: number | null
-          created_at: string | null
-          created_by: string | null
-          id: number
-          name: string | null
-          updated_at: string | null
-          updated_by: string | null
-        }
+          asset_type_id: number | null;
+          created_at: string | null;
+          created_by: string | null;
+          id: number;
+          name: string | null;
+          updated_at: string | null;
+          updated_by: string | null;
+        };
         Insert: {
-          asset_type_id?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          id: number
-          name?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          asset_type_id?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          id: number;
+          name?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Update: {
-          asset_type_id?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          id?: number
-          name?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          created_at?: string | null;
+          created_by?: string | null;
+          id?: number;
+          name?: string | null;
+          type_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+          asset_type_id?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          id?: number;
+          name?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "nd_asset_subtype_nd_asset_type_fk"
-            columns: ["asset_type_id"]
-            isOneToOne: false
-            referencedRelation: "nd_asset_type"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+            foreignKeyName: "nd_asset_subtype_nd_asset_type_fk";
+            columns: ["asset_type_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_asset_type";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       nd_asset_type: {
         Row: {
           category_id: number | null
@@ -959,11 +975,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_category"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "nd_asset_categories"
-            referencedColumns: ["id"]
+            foreignKeyName: "fk_category";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_asset_categories";
+            referencedColumns: ["id"];
           },
         ]
       }
@@ -1330,10 +1346,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nd_city_nd_state_fk"
-            columns: ["state_id"]
-            isOneToOne: false
-            referencedRelation: "nd_state"
+            foreignKeyName: "nd_city_nd_state_fk",
+            columns: ["state_id"],
+            isOneToOne: false,
+            referencedRelation: "nd_state",
             referencedColumns: ["id"]
           },
         ]
@@ -1505,40 +1521,46 @@ export type Database = {
       }
       nd_claim_items: {
         Row: {
-          category_id: number | null
-          created_at: string | null
-          created_by: string | null
-          description: string | null
-          id: number
-          is_active: boolean | null
-          name: string | null
-          updated_at: string | null
-          updated_by: string | null
-        }
+          category_id: number | null;
+          created_at: string | null;
+          created_by: string | null;
+          description: string | null;
+          id: number;
+          is_active: boolean | null;
+          name: string | null;
+          updated_at: string | null;
+          updated_by: string | null;
+          need_support_doc: boolean | null;
+          need_summary_report: boolean | null;
+        };
         Insert: {
-          category_id?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          id: number
-          is_active?: boolean | null
-          name?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          category_id?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          id: number;
+          is_active?: boolean | null;
+          name?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          need_support_doc?: boolean | null;
+          need_summary_report?: boolean | null;
+        };
         Update: {
-          category_id?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          id?: number
-          is_active?: boolean | null
-          name?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Relationships: []
-      }
+          category_id?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          id?: number;
+          is_active?: boolean | null;
+          name?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          need_support_doc?: boolean | null;
+          need_summary_report?: boolean | null;
+        };
+        Relationships: [];
+      };
       nd_claim_location: {
         Row: {
           created_at: string | null
@@ -1956,13 +1978,13 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          id?: number
-          name?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          created_at?: string | null;
+          created_by?: string | null;
+          id?: number;
+          name?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Update: {
           created_at?: string | null
           created_by?: string | null
@@ -2840,34 +2862,34 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
-          bm?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          eng?: string | null
-          id?: number
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Relationships: []
-      }
+          bm?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          eng?: string | null;
+          id?: number;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       nd_identity_no_type: {
         Row: {
-          bm: string | null
-          eng: string | null
-          id: number
-        }
+          bm: string | null;
+          eng: string | null;
+          id: number;
+        };
         Insert: {
-          bm?: string | null
-          eng?: string | null
-          id?: number
-        }
+          bm?: string | null;
+          eng?: string | null;
+          id?: number;
+        };
         Update: {
-          bm?: string | null
-          eng?: string | null
-          id?: number
-        }
-        Relationships: []
-      }
+          bm?: string | null;
+          eng?: string | null;
+          id?: number;
+        };
+        Relationships: [];
+      };
       nd_incident_type: {
         Row: {
           created_at: string | null
@@ -2954,41 +2976,41 @@ export type Database = {
       }
       nd_insurance_report: {
         Row: {
-          created_at: string | null
-          created_by: string | null
-          end_date: string | null
-          id: number
-          insurance_type_id: number | null
-          report_detail: string | null
-          site_remark_id: number | null
-          start_date: string | null
-          updated_at: string | null
-          updated_by: string | null
-        }
+          created_at: string | null;
+          created_by: string | null;
+          end_date: string | null;
+          id: number;
+          insurance_type_id: number | null;
+          report_detail: string | null;
+          site_remark_id: number | null;
+          start_date: string | null;
+          updated_at: string | null;
+          updated_by: string | null;
+        };
         Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          end_date?: string | null
-          id?: number
-          insurance_type_id?: number | null
-          report_detail?: string | null
-          site_remark_id?: number | null
-          start_date?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          created_at?: string | null;
+          created_by?: string | null;
+          end_date?: string | null;
+          id?: number;
+          insurance_type_id?: number | null;
+          report_detail?: string | null;
+          site_remark_id?: number | null;
+          start_date?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Update: {
-          created_at?: string | null
-          created_by?: string | null
-          end_date?: string | null
-          id?: number
-          insurance_type_id?: number | null
-          report_detail?: string | null
-          site_remark_id?: number | null
-          start_date?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          created_at?: string | null;
+          created_by?: string | null;
+          end_date?: string | null;
+          id?: number;
+          insurance_type_id?: number | null;
+          report_detail?: string | null;
+          site_remark_id?: number | null;
+          start_date?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Relationships: [
           {
             foreignKeyName: "nd_insurance_report_insurance_type_id_fkey"
@@ -4052,71 +4074,48 @@ export type Database = {
       }
       nd_maintenance_request: {
         Row: {
-          asset_id: number | null
-          attachment: string | null
-          created_at: string | null
-          created_by: string | null
-          description: string | null
-          id: number
-          requester_by: string | null
-          sla_id: number | null
-          status: Database["public"]["Enums"]["maintenance_status"] | null
-          type_id: number | null
-          updated_at: string | null
-          updated_by: string | null
-        }
+          id: number;
+          no_docket: string | null;
+          asset_id: number | null;
+          description: string | null;
+          type_id?: number | null;
+          requester_by: string | null;
+          attachment: string | null;
+          sla_id: number | null;
+          status?: Database["public"]["Enums"]["maintenance_status"] | null;
+          created_at: string | null;
+          created_by: string | null;
+          updated_at: string | null;
+          updated_by: string | null;
+        };
         Insert: {
-          asset_id?: number | null
-          attachment?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          id?: number
-          requester_by?: string | null
-          sla_id?: number | null
-          status?: Database["public"]["Enums"]["maintenance_status"] | null
-          type_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          no_docket: string | null;
+          asset_id?: number | null;
+          description?: string | null;
+          type_id?: number | null;
+          requester_by?: string | null;
+          status?: string | null;
+          attachment?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Update: {
-          asset_id?: number | null
-          attachment?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          id?: number
-          requester_by?: string | null
-          sla_id?: number | null
-          status?: Database["public"]["Enums"]["maintenance_status"] | null
-          type_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "nd_maintenance_request_asset_id_fkey"
-            columns: ["asset_id"]
-            isOneToOne: false
-            referencedRelation: "nd_asset"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nd_maintenance_request_sla_id_fkey"
-            columns: ["sla_id"]
-            isOneToOne: false
-            referencedRelation: "nd_sla_categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nd_maintenance_request_type_id_fkey"
-            columns: ["type_id"]
-            isOneToOne: false
-            referencedRelation: "nd_type_maintenance"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+          id?: number;
+          asset_id?: number | null;
+          description?: string | null;
+          requester_by?: string | null;
+          status?: Database["public"]["Enums"]["maintenance_status"] | null;
+          attachment?: string | null;
+          sla_id?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       nd_marital_status: {
         Row: {
           bm: string | null
@@ -4273,19 +4272,34 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
-          address1?: string | null
-          address2?: string | null
-          city?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          district_id?: number | null
-          id?: number
-          member_id?: number | null
-          postcode?: string | null
-          state_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          address1?: string | null;
+          address2?: string | null;
+          city?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          district_id?: number | null;
+          id?: number;
+          member_id?: number | null;
+          postcode?: string | null;
+          state_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+          address1?: string | null;
+          address2?: string | null;
+          city?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          district_id?: number | null;
+          id?: number;
+          member_id?: number | null;
+          postcode?: string | null;
+          state_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Relationships: [
           {
             foreignKeyName: "nd_member_address_district_id_fkey"
@@ -4381,54 +4395,98 @@ export type Database = {
       }
       nd_member_photo: {
         Row: {
-          created_at: string | null
-          created_by: string | null
-          ext: string | null
-          id: number
-          is_active: boolean | null
-          member_id: number | null
-          photo: string | null
-          photo_thumb: string | null
-          size: string | null
-          updated_at: string | null
-          updated_by: string | null
-          user_id: string | null
-        }
+          created_at: string;
+          created_by: string | null;
+          ext: string | null;
+          id: number;
+          is_active: boolean | null;
+          member_id: number | null;
+          photo: string | null;
+          photo_thumb: string | null;
+          size: string | null;
+          updated_at: string;
+          updated_by: string | null;
+          user_id: string | null;
+        };
+          created_at: string | null;
+          created_by: string | null;
+          ext: string | null;
+          id: number;
+          is_active: boolean | null;
+          member_id: number | null;
+          photo: string | null;
+          photo_thumb: string | null;
+          size: string | null;
+          updated_at: string | null;
+          updated_by: string | null;
+          user_id: string | null;
+        };
         Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          ext?: string | null
-          id?: number
-          is_active?: boolean | null
-          member_id?: number | null
-          photo?: string | null
-          photo_thumb?: string | null
-          size?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-          user_id?: string | null
-        }
+          created_at: string;
+          created_by?: string | null;
+          ext?: string | null;
+          id?: number;
+          is_active?: boolean | null;
+          member_id?: number | null;
+          photo?: string | null;
+          photo_thumb?: string | null;
+          size?: string | null;
+          updated_at: string;
+          updated_by?: string | null;
+          user_id?: string | null;
+        };
+          created_at?: string | null;
+          created_by?: string | null;
+          ext?: string | null;
+          id?: number;
+          is_active?: boolean | null;
+          member_id?: number | null;
+          photo?: string | null;
+          photo_thumb?: string | null;
+          size?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          user_id?: string | null;
+        };
         Update: {
-          created_at?: string | null
-          created_by?: string | null
-          ext?: string | null
-          id?: number
-          is_active?: boolean | null
-          member_id?: number | null
-          photo?: string | null
-          photo_thumb?: string | null
-          size?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-          user_id?: string | null
-        }
+          created_at?: string;
+          created_by?: string | null;
+          ext?: string | null;
+          id?: number;
+          is_active?: boolean | null;
+          member_id?: number | null;
+          photo?: string | null;
+          photo_thumb?: string | null;
+          size?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+          user_id?: string | null;
+        };
+          created_at?: string | null;
+          created_by?: string | null;
+          ext?: string | null;
+          id?: number;
+          is_active?: boolean | null;
+          member_id?: number | null;
+          photo?: string | null;
+          photo_thumb?: string | null;
+          size?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          user_id?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "nd_member_photo_member_id_fkey"
-            columns: ["member_id"]
-            isOneToOne: true
-            referencedRelation: "nd_member_profile"
-            referencedColumns: ["id"]
+            foreignKeyName: "nd_member_photo_member_id_fkey";
+            columns: ["member_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_member_profile";
+            referencedColumns: ["id"];
+            foreignKeyName: "nd_member_photo_member_id_fkey";
+            columns: ["member_id"];
+            isOneToOne: true;
+            referencedRelation: "nd_member_profile";
+            referencedColumns: ["id"];
           },
           {
             foreignKeyName: "nd_member_photo_user_id_fkey"
@@ -4441,113 +4499,218 @@ export type Database = {
       }
       nd_member_profile: {
         Row: {
-          age: number | null
-          agree_declare: boolean | null
-          community_status: boolean | null
-          created_at: string | null
-          created_by: string | null
-          distance: number | null
-          dob: string | null
-          education_level: number | null
-          email: string | null
-          ethnic_id: number | null
-          fullname: string | null
-          gender: number | null
-          ict_knowledge: number | null
-          id: number
-          identity_no: string | null
-          income_range: number | null
-          join_date: string | null
-          mobile_no: string | null
-          nationality_id: number | null
-          occupation_id: number | null
-          oku_status: boolean | null
-          pdpa_declare: boolean | null
-          race_id: number | null
-          ref_id: number | null
-          register_method: string | null
-          registration_status: boolean | null
-          socio_id: number | null
-          status_entrepreneur: boolean | null
-          status_membership: number | null
-          supervision: string | null
-          type_sector: number | null
-          updated_at: string | null
-          updated_by: string | null
-          user_id: string | null
-        }
+          age: number | null;
+          agree_declare: boolean | null;
+          community_status: boolean;
+          created_at: string | null;
+          created_by: string | null;
+          distance: number | null;
+          dob: string | null;
+          education_level: number | null;
+          email: string | null;
+          ethnic_id: number | null;
+          fullname: string | null;
+          gender: number;
+          ict_knowledge: number | null;
+          id: number;
+          identity_no: string | null;
+          income_range: number | null;
+          join_date: string | null;
+          mobile_no: string | null;
+          occupation_id: number | null;
+          oku_status: boolean | null;
+          pdpa_declare: boolean | null;
+          race_id: number | null;
+          ref_id: number;
+          register_method: string | null;
+          registration_status: boolean | null;
+          socio_id: number | null;
+          status_entrepreneur: boolean | null;
+          status_membership: number | null;
+          supervision: string | null;
+          type_membership: number;
+          type_sector: number | null;
+          updated_at: string | null;
+          updated_by: string | null;
+          user_id: string | null;
+        };
+          age: number | null;
+          agree_declare: boolean | null;
+          community_status: boolean | null;
+          created_at: string | null;
+          created_by: string | null;
+          distance: number | null;
+          dob: string | null;
+          education_level: number | null;
+          email: string | null;
+          ethnic_id: number | null;
+          fullname: string | null;
+          gender: number | null;
+          ict_knowledge: number | null;
+          id: number;
+          identity_no: string | null;
+          income_range: number | null;
+          join_date: string | null;
+          mobile_no: string | null;
+          nationality_id: number | null;
+          occupation_id: number | null;
+          oku_status: boolean | null;
+          pdpa_declare: boolean | null;
+          race_id: number | null;
+          ref_id: number | null;
+          register_method: string | null;
+          registration_status: boolean | null;
+          socio_id: number | null;
+          status_entrepreneur: boolean | null;
+          status_membership: number | null;
+          supervision: string | null;
+          type_sector: number | null;
+          updated_at: string | null;
+          updated_by: string | null;
+          user_id: string | null;
+        };
         Insert: {
-          age?: number | null
-          agree_declare?: boolean | null
-          community_status?: boolean | null
-          created_at?: string | null
-          created_by?: string | null
-          distance?: number | null
-          dob?: string | null
-          education_level?: number | null
-          email?: string | null
-          ethnic_id?: number | null
-          fullname?: string | null
-          gender?: number | null
-          ict_knowledge?: number | null
-          id?: number
-          identity_no?: string | null
-          income_range?: number | null
-          join_date?: string | null
-          mobile_no?: string | null
-          nationality_id?: number | null
-          occupation_id?: number | null
-          oku_status?: boolean | null
-          pdpa_declare?: boolean | null
-          race_id?: number | null
-          ref_id?: number | null
-          register_method?: string | null
-          registration_status?: boolean | null
-          socio_id?: number | null
-          status_entrepreneur?: boolean | null
-          status_membership?: number | null
-          supervision?: string | null
-          type_sector?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-          user_id?: string | null
-        }
+          age?: number | null;
+          agree_declare?: boolean | null;
+          community_status: boolean;
+          created_at?: string | null;
+          created_by?: string | null;
+          distance?: number | null;
+          dob?: string | null;
+          education_level?: number | null;
+          email?: string | null;
+          ethnic_id?: number | null;
+          fullname?: string | null;
+          gender: number;
+          ict_knowledge?: number | null;
+          id?: number;
+          identity_no?: string | null;
+          income_range?: number | null;
+          join_date?: string | null;
+          mobile_no?: string | null;
+          occupation_id?: number | null;
+          oku_status?: boolean | null;
+          pdpa_declare?: boolean | null;
+          race_id?: number | null;
+          ref_id: number;
+          register_method?: string | null;
+          registration_status?: boolean | null;
+          socio_id?: number | null;
+          status_entrepreneur?: boolean | null;
+          status_membership?: number | null;
+          supervision?: string | null;
+          type_membership: number;
+          type_sector?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          user_id?: string | null;
+        };
+          age?: number | null;
+          agree_declare?: boolean | null;
+          community_status?: boolean | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          distance?: number | null;
+          dob?: string | null;
+          education_level?: number | null;
+          email?: string | null;
+          ethnic_id?: number | null;
+          fullname?: string | null;
+          gender?: number | null;
+          ict_knowledge?: number | null;
+          id?: number;
+          identity_no?: string | null;
+          income_range?: number | null;
+          join_date?: string | null;
+          mobile_no?: string | null;
+          nationality_id?: number | null;
+          occupation_id?: number | null;
+          oku_status?: boolean | null;
+          pdpa_declare?: boolean | null;
+          race_id?: number | null;
+          ref_id?: number | null;
+          register_method?: string | null;
+          registration_status?: boolean | null;
+          socio_id?: number | null;
+          status_entrepreneur?: boolean | null;
+          status_membership?: number | null;
+          supervision?: string | null;
+          type_sector?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          user_id?: string | null;
+        };
         Update: {
-          age?: number | null
-          agree_declare?: boolean | null
-          community_status?: boolean | null
-          created_at?: string | null
-          created_by?: string | null
-          distance?: number | null
-          dob?: string | null
-          education_level?: number | null
-          email?: string | null
-          ethnic_id?: number | null
-          fullname?: string | null
-          gender?: number | null
-          ict_knowledge?: number | null
-          id?: number
-          identity_no?: string | null
-          income_range?: number | null
-          join_date?: string | null
-          mobile_no?: string | null
-          nationality_id?: number | null
-          occupation_id?: number | null
-          oku_status?: boolean | null
-          pdpa_declare?: boolean | null
-          race_id?: number | null
-          ref_id?: number | null
-          register_method?: string | null
-          registration_status?: boolean | null
-          socio_id?: number | null
-          status_entrepreneur?: boolean | null
-          status_membership?: number | null
-          supervision?: string | null
-          type_sector?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-          user_id?: string | null
-        }
+          age?: number | null;
+          agree_declare?: boolean | null;
+          community_status?: boolean;
+          created_at?: string | null;
+          created_by?: string | null;
+          distance?: number | null;
+          dob?: string | null;
+          education_level?: number | null;
+          email?: string | null;
+          ethnic_id?: number | null;
+          fullname?: string | null;
+          gender?: number;
+          ict_knowledge?: number | null;
+          id?: number;
+          identity_no?: string | null;
+          income_range?: number | null;
+          join_date?: string | null;
+          mobile_no?: string | null;
+          occupation_id?: number | null;
+          oku_status?: boolean | null;
+          pdpa_declare?: boolean | null;
+          race_id?: number | null;
+          ref_id?: number;
+          register_method?: string | null;
+          registration_status?: boolean | null;
+          socio_id?: number | null;
+          status_entrepreneur?: boolean | null;
+          status_membership?: number | null;
+          supervision?: string | null;
+          type_membership?: number;
+          type_sector?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          user_id?: string | null;
+        };
+          age?: number | null;
+          agree_declare?: boolean | null;
+          community_status?: boolean | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          distance?: number | null;
+          dob?: string | null;
+          education_level?: number | null;
+          email?: string | null;
+          ethnic_id?: number | null;
+          fullname?: string | null;
+          gender?: number | null;
+          ict_knowledge?: number | null;
+          id?: number;
+          identity_no?: string | null;
+          income_range?: number | null;
+          join_date?: string | null;
+          mobile_no?: string | null;
+          nationality_id?: number | null;
+          occupation_id?: number | null;
+          oku_status?: boolean | null;
+          pdpa_declare?: boolean | null;
+          race_id?: number | null;
+          ref_id?: number | null;
+          register_method?: string | null;
+          registration_status?: boolean | null;
+          socio_id?: number | null;
+          status_entrepreneur?: boolean | null;
+          status_membership?: number | null;
+          supervision?: string | null;
+          type_sector?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          user_id?: string | null;
+        };
         Relationships: [
           {
             foreignKeyName: "nd_member_profile_education_level_fkey"
@@ -4585,11 +4748,16 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "nd_member_profile_nationality_id_fkey"
-            columns: ["nationality_id"]
-            isOneToOne: false
-            referencedRelation: "nd_nationalities"
-            referencedColumns: ["id"]
+            foreignKeyName: "nd_member_profile_occupation_id_fkey";
+            columns: ["occupation_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_occupation";
+            referencedColumns: ["id"];
+            foreignKeyName: "nd_member_profile_nationality_id_fkey";
+            columns: ["nationality_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_nationalities";
+            referencedColumns: ["id"];
           },
           {
             foreignKeyName: "nd_member_profile_occupation_id_fkey"
@@ -4613,11 +4781,16 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "nd_member_profile_ref_id_fkey"
-            columns: ["ref_id"]
-            isOneToOne: false
-            referencedRelation: "nd_site_profile_name"
-            referencedColumns: ["id"]
+            foreignKeyName: "nd_member_profile_socio_id_fkey";
+            columns: ["socio_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_socioeconomics";
+            referencedColumns: ["id"];
+            foreignKeyName: "nd_member_profile_ref_id_fkey";
+            columns: ["ref_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_site_profile_name";
+            referencedColumns: ["id"];
           },
           {
             foreignKeyName: "nd_member_profile_socio_id_fkey"
@@ -4627,28 +4800,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "nd_member_profile_status_membership_fkey"
-            columns: ["status_membership"]
-            isOneToOne: false
-            referencedRelation: "nd_status_membership"
-            referencedColumns: ["id"]
+            foreignKeyName: "nd_member_profile_type_sector_fkey";
+            columns: ["type_sector"];
+            isOneToOne: false;
+            referencedRelation: "nd_type_sector";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+            foreignKeyName: "nd_member_profile_status_membership_fkey";
+            columns: ["status_membership"];
+            isOneToOne: false;
+            referencedRelation: "nd_status_membership";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "nd_member_profile_type_sector_fkey"
-            columns: ["type_sector"]
-            isOneToOne: false
-            referencedRelation: "nd_type_sector"
-            referencedColumns: ["id"]
+            foreignKeyName: "nd_member_profile_type_sector_fkey";
+            columns: ["type_sector"];
+            isOneToOne: false;
+            referencedRelation: "nd_type_sector";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "nd_member_profile_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+            foreignKeyName: "nd_member_profile_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       nd_mukims: {
         Row: {
           code: string | null
@@ -4795,16 +4976,26 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
-          bm?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          eng?: string | null
-          id?: never
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Relationships: []
-      }
+          bm?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          eng?: string | null;
+          id?: never;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+          bm?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          eng?: string | null;
+          id?: never;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       nd_off_days: {
         Row: {
           created_at: string | null
@@ -5563,16 +5754,34 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
-          created_at?: string | null
-          created_by?: string | null
-          id?: number
-          status_name?: string | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Relationships: []
-      }
-      nd_region: {
+          created_at?: string | null;
+          created_by?: string | null;
+          id?: number;
+          status_name?: string | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
+      nd_registration_method: {
+        Row: {
+          bm: string | null;
+          eng: string | null;
+          id: number;
+        };
+        Insert: {
+          bm?: string | null;
+          eng?: string | null;
+          id?: number;
+        };
+        Update: {
+          bm?: string | null;
+          eng?: string | null;
+          id?: number;
+        };
+        Relationships: [];
+      };
+            nd_region: {
         Row: {
           bm: string | null
           eng: string | null
@@ -5781,16 +5990,26 @@ export type Database = {
       }
       nd_site: {
         Row: {
-          created_at: string | null
-          created_by: string | null
-          id: number
-          refid_mcmc: string | null
-          refid_tp: string | null
-          site_profile_id: number | null
-          standard_code: string | null
-          updated_at: string | null
-          updated_by: string | null
-        }
+          created_at: string | null;
+          created_by: string | null;
+          id: number;
+          refid_mcmc: number | null;
+          refid_tp: number | null;
+          site_profile_id: number | null;
+          standard_code: string | null;
+          updated_at: string | null;
+          updated_by: string | null;
+        };
+          created_at: string | null;
+          created_by: string | null;
+          id: number;
+          refid_mcmc: string | null;
+          refid_tp: string | null;
+          site_profile_id: number | null;
+          standard_code: string | null;
+          updated_at: string | null;
+          updated_by: string | null;
+        };
         Insert: {
           created_at?: string | null
           created_by?: string | null
@@ -5995,26 +6214,42 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
-          affected_areas_id?: number | null
-          category_id?: number | null
-          close_end?: string | null
-          close_start?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          duration?: number | null
-          end_time?: string | null
-          id?: number
-          remark?: string | null
-          request_datetime?: string | null
-          requester_id?: string | null
-          session?: number | null
-          site_id?: number | null
-          start_time?: string | null
-          status?: number | null
-          subcategory_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          affected_areas_id?: number | null;
+          category_id?: number | null;
+          close_end?: string | null;
+          close_start?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          duration?: number | null;
+          id?: number;
+          remark?: string | null;
+          session?: string | null;
+          site_id?: number | null;
+          status?: number | null;
+          subcategory_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
+          affected_areas_id?: number | null;
+          category_id?: number | null;
+          close_end?: string | null;
+          close_start?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          duration?: number | null;
+          end_time?: string | null;
+          id?: number;
+          remark?: string | null;
+          request_datetime?: string | null;
+          requester_id?: string | null;
+          session?: number | null;
+          site_id?: number | null;
+          start_time?: string | null;
+          status?: number | null;
+          subcategory_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Relationships: [
           {
             foreignKeyName: "nd_site_closure_affected_areas_id_fkey"
@@ -6218,64 +6453,64 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
-          contract_end?: string | null
-          contract_start?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          id?: number
-          is_active?: boolean | null
-          remark?: string | null
-          site_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Relationships: []
-      }
+          contract_end?: string | null;
+          contract_start?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          id?: number;
+          is_active?: boolean | null;
+          remark?: string | null;
+          site_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       nd_site_image: {
         Row: {
-          created_at: string
-          created_by: string | null
-          file_path: string[] | null
-          id: number
-          site_profile_id: number | null
-          updated_at: string | null
-          updated_by: string | null
-        }
+          created_at: string;
+          created_by: string | null;
+          file_path: string[] | null;
+          id: number;
+          site_profile_id: number | null;
+          updated_at: string | null;
+          updated_by: string | null;
+        };
         Insert: {
-          created_at?: string
-          created_by?: string | null
-          file_path?: string[] | null
-          id?: number
-          site_profile_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          created_at?: string;
+          created_by?: string | null;
+          file_path?: string[] | null;
+          id?: number;
+          site_profile_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Update: {
-          created_at?: string
-          created_by?: string | null
-          file_path?: string[] | null
-          id?: number
-          site_profile_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          created_at?: string;
+          created_by?: string | null;
+          file_path?: string[] | null;
+          id?: number;
+          site_profile_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "nd_site_image_site_profile_id_fkey"
-            columns: ["site_profile_id"]
-            isOneToOne: false
-            referencedRelation: "nd_site_profile"
-            referencedColumns: ["id"]
+            foreignKeyName: "nd_site_image_site_profile_id_fkey";
+            columns: ["site_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_site_profile";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "nd_site_image_site_profile_id_fkey"
-            columns: ["site_profile_id"]
-            isOneToOne: false
-            referencedRelation: "nd_site_profile_name"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+            foreignKeyName: "nd_site_image_site_profile_id_fkey";
+            columns: ["site_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_site_profile_name";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       nd_site_operation: {
         Row: {
           close_time: string | null
@@ -6558,15 +6793,24 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          id?: number
-          site_id?: number | null
-          type_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-        }
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          id: number;
+          site_id?: number | null;
+          type_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          id?: number;
+          site_id?: number | null;
+          type_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
         Update: {
           created_at?: string | null
           created_by?: string | null
@@ -6704,21 +6948,14 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "nd_site_space_space_id_fkey"
-            columns: ["space_id"]
-            isOneToOne: false
-            referencedRelation: "nd_space"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nd_site_space_updated_by_fkey"
-            columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+            foreignKeyName: "nd_site_space_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       nd_site_status: {
         Row: {
           bm: string | null
@@ -6739,126 +6976,126 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
-          bm?: string | null
-          created_at?: string | null
-          created_by?: string | null
-          eng?: string | null
-          id?: number
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Relationships: []
-      }
+          bm?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          eng?: string | null;
+          id?: number;
+          updated_at?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [];
+      };
       nd_site_user: {
         Row: {
-          created_at: string | null
-          created_by: string | null
-          dob: string | null
-          fullname: string | null
-          ic_no: string | null
-          id: number
-          is_active: boolean | null
-          join_date: string | null
-          marital_status: number | null
-          mobile_no: string | null
-          nationality_id: number | null
-          personal_email: string | null
-          place_of_birth: string | null
-          position_id: number | null
-          qualification: string | null
-          race_id: number | null
-          religion_id: number | null
-          resign_date: string | null
-          site_profile_id: number | null
-          tech_partner_id: number | null
-          updated_at: string | null
-          updated_by: string | null
-          user_id: string | null
-          work_email: string | null
-        }
+          created_at: string | null;
+          created_by: string | null;
+          dob: string | null;
+          fullname: string | null;
+          ic_no: string | null;
+          id: number;
+          is_active: boolean | null;
+          join_date: string | null;
+          marital_status: number | null;
+          mobile_no: string | null;
+          nationality_id: number | null;
+          personal_email: string | null;
+          place_of_birth: string | null;
+          position_id: number | null;
+          qualification: string | null;
+          race_id: number | null;
+          religion_id: number | null;
+          resign_date: string | null;
+          site_profile_id: number | null;
+          tech_partner_id: number | null;
+          updated_at: string | null;
+          updated_by: string | null;
+          user_id: string | null;
+          work_email: string | null;
+        };
         Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          dob?: string | null
-          fullname?: string | null
-          ic_no?: string | null
-          id?: number
-          is_active?: boolean | null
-          join_date?: string | null
-          marital_status?: number | null
-          mobile_no?: string | null
-          nationality_id?: number | null
-          personal_email?: string | null
-          place_of_birth?: string | null
-          position_id?: number | null
-          qualification?: string | null
-          race_id?: number | null
-          religion_id?: number | null
-          resign_date?: string | null
-          site_profile_id?: number | null
-          tech_partner_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-          user_id?: string | null
-          work_email?: string | null
-        }
+          created_at?: string | null;
+          created_by?: string | null;
+          dob?: string | null;
+          fullname?: string | null;
+          ic_no?: string | null;
+          id?: number;
+          is_active?: boolean | null;
+          join_date?: string | null;
+          marital_status?: number | null;
+          mobile_no?: string | null;
+          nationality_id?: number | null;
+          personal_email?: string | null;
+          place_of_birth?: string | null;
+          position_id?: number | null;
+          qualification?: string | null;
+          race_id?: number | null;
+          religion_id?: number | null;
+          resign_date?: string | null;
+          site_profile_id?: number | null;
+          tech_partner_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          user_id?: string | null;
+          work_email?: string | null;
+        };
         Update: {
-          created_at?: string | null
-          created_by?: string | null
-          dob?: string | null
-          fullname?: string | null
-          ic_no?: string | null
-          id?: number
-          is_active?: boolean | null
-          join_date?: string | null
-          marital_status?: number | null
-          mobile_no?: string | null
-          nationality_id?: number | null
-          personal_email?: string | null
-          place_of_birth?: string | null
-          position_id?: number | null
-          qualification?: string | null
-          race_id?: number | null
-          religion_id?: number | null
-          resign_date?: string | null
-          site_profile_id?: number | null
-          tech_partner_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-          user_id?: string | null
-          work_email?: string | null
-        }
+          created_at?: string | null;
+          created_by?: string | null;
+          dob?: string | null;
+          fullname?: string | null;
+          ic_no?: string | null;
+          id?: number;
+          is_active?: boolean | null;
+          join_date?: string | null;
+          marital_status?: number | null;
+          mobile_no?: string | null;
+          nationality_id?: number | null;
+          personal_email?: string | null;
+          place_of_birth?: string | null;
+          position_id?: number | null;
+          qualification?: string | null;
+          race_id?: number | null;
+          religion_id?: number | null;
+          resign_date?: string | null;
+          site_profile_id?: number | null;
+          tech_partner_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          user_id?: string | null;
+          work_email?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "nd_site_user_nd_position_fk"
-            columns: ["position_id"]
-            isOneToOne: false
-            referencedRelation: "nd_position"
-            referencedColumns: ["id"]
+            foreignKeyName: "nd_site_user_nd_position_fk";
+            columns: ["position_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_position";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "nd_site_user_nd_site_profile_fk"
-            columns: ["site_profile_id"]
-            isOneToOne: false
-            referencedRelation: "nd_site_profile"
-            referencedColumns: ["id"]
+            foreignKeyName: "nd_site_user_nd_site_profile_fk";
+            columns: ["site_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_site_profile";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "nd_site_user_nd_site_profile_fk"
-            columns: ["site_profile_id"]
-            isOneToOne: false
-            referencedRelation: "nd_site_profile_name"
-            referencedColumns: ["id"]
+            foreignKeyName: "nd_site_user_nd_site_profile_fk";
+            columns: ["site_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_site_profile_name";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "nd_site_user_nd_tech_partner_fk"
-            columns: ["tech_partner_id"]
-            isOneToOne: false
-            referencedRelation: "nd_tech_partner"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+            foreignKeyName: "nd_site_user_nd_tech_partner_fk";
+            columns: ["tech_partner_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_tech_partner";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       nd_sla_categories: {
         Row: {
           created_at: string | null
@@ -7250,66 +7487,80 @@ export type Database = {
       }
       nd_staff_contract: {
         Row: {
-          contract_end: string | null
-          contract_start: string | null
-          contract_type: number | null
-          created_at: string | null
-          created_by: string | null
-          duration: number | null
-          id: number
-          is_active: boolean | null
-          phase_id: number | null
-          remark: string | null
-          site_id: number | null
-          site_profile_id: number | null
-          staff_id: number | null
-          updated_at: string | null
-          updated_by: string | null
-          user_id: string | null
-        }
+          contract_end: string | null;
+          contract_start: string | null;
+          contract_type: number | null;
+          created_at: string | null;
+          created_by: string | null;
+          duration: number | null;
+          id: number;
+          is_active: boolean | null;
+          phase_id: number | null;
+          remark: string | null;
+          site_id: number | null;
+          site_profile_id: number | null;
+          staff_id: number | null;
+          updated_at: string | null;
+          updated_by: string | null;
+          user_id: string | null;
+        };
         Insert: {
-          contract_end?: string | null
-          contract_start?: string | null
-          contract_type?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          duration?: number | null
-          id?: number
-          is_active?: boolean | null
-          phase_id?: number | null
-          remark?: string | null
-          site_id?: number | null
-          site_profile_id?: number | null
-          staff_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-          user_id?: string | null
-        }
+          contract_end?: string | null;
+          contract_start?: string | null;
+          contract_type?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          duration?: number | null;
+          id?: number;
+          is_active?: boolean | null;
+          phase_id?: number | null;
+          remark?: string | null;
+          site_id?: number | null;
+          site_profile_id?: number | null;
+          staff_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          user_id?: string | null;
+        };
         Update: {
-          contract_end?: string | null
-          contract_start?: string | null
-          contract_type?: number | null
-          created_at?: string | null
-          created_by?: string | null
-          duration?: number | null
-          id?: number
-          is_active?: boolean | null
-          phase_id?: number | null
-          remark?: string | null
-          site_id?: number | null
-          site_profile_id?: number | null
-          staff_id?: number | null
-          updated_at?: string | null
-          updated_by?: string | null
-          user_id?: string | null
-        }
+          contract_end?: string | null;
+          contract_start?: string | null;
+          contract_type?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          duration?: number | null;
+          id?: number;
+          is_active?: boolean | null;
+          phase_id?: number | null;
+          remark?: string | null;
+          site_id?: number | null;
+          site_profile_id?: number | null;
+          staff_id?: number | null;
+          updated_at?: string | null;
+          updated_by?: string | null;
+          user_id?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "nd_staff_contract_contract_type_fkey"
-            columns: ["contract_type"]
-            isOneToOne: false
-            referencedRelation: "nd_contract_type"
-            referencedColumns: ["id"]
+            foreignKeyName: "nd_staff_contract_contract_type_fkey";
+            columns: ["contract_type"];
+            isOneToOne: false;
+            referencedRelation: "nd_contract_type";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "nd_staff_contract_phase_id_fkey";
+            columns: ["phase_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_phases";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "nd_staff_contract_site_id_fkey";
+            columns: ["site_id"];
+            isOneToOne: false;
+            referencedRelation: "nd_site";
+            referencedColumns: ["id"];
           },
           {
             foreignKeyName: "nd_staff_contract_phase_id_fkey"
@@ -10019,112 +10270,112 @@ export type Database = {
       }
       testing_real_site: {
         Row: {
-          address1: string | null
-          address2: string | null
-          address3: string | null
-          building_status: string | null
-          buildingtypeid: number | null
-          cluster: string | null
-          commence_date: number | null
-          dusp: string | null
-          economyid1: number | null
-          economyid2: number | null
-          google_map: string | null
-          id: number | null
-          jenis_ekonomi1: string | null
-          jenis_ekonomy2: string | null
-          mukim: string | null
-          mukim_id: number | null
-          nadicategory: string | null
-          population_3km: string | null
-          population_5km: string | null
-          postcode: string | null
-          priority_nadi: string | null
-          refid_mcmc: string | null
-          refid_tp: string | null
-          sector_economy1: string | null
-          sektor_economy2: string | null
-          semak: string | null
-          sitename: string | null
-          speed_mbps: string | null
-          standard_code: string | null
-          technology: string | null
-          technology_partner: string | null
-          type_of_building: string | null
-          url_nadi: string | null
-        }
+          address1: string | null;
+          address2: string | null;
+          address3: string | null;
+          building_status: string | null;
+          buildingtypeid: number | null;
+          cluster: string | null;
+          commence_date: number | null;
+          dusp: string | null;
+          economyid1: number | null;
+          economyid2: number | null;
+          google_map: string | null;
+          id: number | null;
+          jenis_ekonomi1: string | null;
+          jenis_ekonomy2: string | null;
+          mukim: string | null;
+          mukim_id: number | null;
+          nadicategory: string | null;
+          population_3km: string | null;
+          population_5km: string | null;
+          postcode: string | null;
+          priority_nadi: string | null;
+          refid_mcmc: string | null;
+          refid_tp: string | null;
+          sector_economy1: string | null;
+          sektor_economy2: string | null;
+          semak: string | null;
+          sitename: string | null;
+          speed_mbps: string | null;
+          standard_code: string | null;
+          technology: string | null;
+          technology_partner: string | null;
+          type_of_building: string | null;
+          url_nadi: string | null;
+        };
         Insert: {
-          address1?: string | null
-          address2?: string | null
-          address3?: string | null
-          building_status?: string | null
-          buildingtypeid?: number | null
-          cluster?: string | null
-          commence_date?: number | null
-          dusp?: string | null
-          economyid1?: number | null
-          economyid2?: number | null
-          google_map?: string | null
-          id?: number | null
-          jenis_ekonomi1?: string | null
-          jenis_ekonomy2?: string | null
-          mukim?: string | null
-          mukim_id?: number | null
-          nadicategory?: string | null
-          population_3km?: string | null
-          population_5km?: string | null
-          postcode?: string | null
-          priority_nadi?: string | null
-          refid_mcmc?: string | null
-          refid_tp?: string | null
-          sector_economy1?: string | null
-          sektor_economy2?: string | null
-          semak?: string | null
-          sitename?: string | null
-          speed_mbps?: string | null
-          standard_code?: string | null
-          technology?: string | null
-          technology_partner?: string | null
-          type_of_building?: string | null
-          url_nadi?: string | null
-        }
+          address1?: string | null;
+          address2?: string | null;
+          address3?: string | null;
+          building_status?: string | null;
+          buildingtypeid?: number | null;
+          cluster?: string | null;
+          commence_date?: number | null;
+          dusp?: string | null;
+          economyid1?: number | null;
+          economyid2?: number | null;
+          google_map?: string | null;
+          id?: number | null;
+          jenis_ekonomi1?: string | null;
+          jenis_ekonomy2?: string | null;
+          mukim?: string | null;
+          mukim_id?: number | null;
+          nadicategory?: string | null;
+          population_3km?: string | null;
+          population_5km?: string | null;
+          postcode?: string | null;
+          priority_nadi?: string | null;
+          refid_mcmc?: string | null;
+          refid_tp?: string | null;
+          sector_economy1?: string | null;
+          sektor_economy2?: string | null;
+          semak?: string | null;
+          sitename?: string | null;
+          speed_mbps?: string | null;
+          standard_code?: string | null;
+          technology?: string | null;
+          technology_partner?: string | null;
+          type_of_building?: string | null;
+          url_nadi?: string | null;
+        };
         Update: {
-          address1?: string | null
-          address2?: string | null
-          address3?: string | null
-          building_status?: string | null
-          buildingtypeid?: number | null
-          cluster?: string | null
-          commence_date?: number | null
-          dusp?: string | null
-          economyid1?: number | null
-          economyid2?: number | null
-          google_map?: string | null
-          id?: number | null
-          jenis_ekonomi1?: string | null
-          jenis_ekonomy2?: string | null
-          mukim?: string | null
-          mukim_id?: number | null
-          nadicategory?: string | null
-          population_3km?: string | null
-          population_5km?: string | null
-          postcode?: string | null
-          priority_nadi?: string | null
-          refid_mcmc?: string | null
-          refid_tp?: string | null
-          sector_economy1?: string | null
-          sektor_economy2?: string | null
-          semak?: string | null
-          sitename?: string | null
-          speed_mbps?: string | null
-          standard_code?: string | null
-          technology?: string | null
-          technology_partner?: string | null
-          type_of_building?: string | null
-          url_nadi?: string | null
-        }
-        Relationships: []
-      }
+          address1?: string | null;
+          address2?: string | null;
+          address3?: string | null;
+          building_status?: string | null;
+          buildingtypeid?: number | null;
+          cluster?: string | null;
+          commence_date?: number | null;
+          dusp?: string | null;
+          economyid1?: number | null;
+          economyid2?: number | null;
+          google_map?: string | null;
+          id?: number | null;
+          jenis_ekonomi1?: string | null;
+          jenis_ekonomy2?: string | null;
+          mukim?: string | null;
+          mukim_id?: number | null;
+          nadicategory?: string | null;
+          population_3km?: string | null;
+          population_5km?: string | null;
+          postcode?: string | null;
+          priority_nadi?: string | null;
+          refid_mcmc?: string | null;
+          refid_tp?: string | null;
+          sector_economy1?: string | null;
+          sektor_economy2?: string | null;
+          semak?: string | null;
+          sitename?: string | null;
+          speed_mbps?: string | null;
+          standard_code?: string | null;
+          technology?: string | null;
+          technology_partner?: string | null;
+          type_of_building?: string | null;
+          url_nadi?: string | null;
+        };
+        Relationships: [];
+      };
       usage_sessions: {
         Row: {
           actions_performed: Json | null
@@ -10546,14 +10797,17 @@ export type Database = {
     Views: {
       nd_site_profile_name: {
         Row: {
-          fullname: string | null
-          id: number | null
-          sitename: string | null
-          standard_code: string | null
-        }
-        Relationships: []
-      }
-    }
+          fullname: string | null;
+          id: number | null;
+          sitename: string | null;
+          standard_code: string | null;
+          dusp_tp_id: string | null;
+          refid_tp: string | null;
+          refid_mcmc: string | null;
+        };
+        Relationships: [];
+      };
+    };
     Functions: {
       create_notification_from_template: {
         Args: { p_template_id: string; p_user_id: string; p_params: Json }
@@ -10622,24 +10876,24 @@ export type Database = {
         | "vehicle"
         | "electronics"
         | "software"
-        | "other"
-      asset_status: "active" | "in_maintenance" | "retired" | "disposed"
-      claim_status: "pending" | "approved" | "rejected"
-      claim_type: "damage" | "reimbursement" | "medical" | "travel" | "other"
-      email_provider_type: "smtp" | "resend" | "sendgrid"
-      invoice_status: "draft" | "sent" | "paid" | "overdue" | "cancelled"
+        | "other";
+      asset_status: "active" | "in_maintenance" | "retired" | "disposed";
+      claim_status: "pending" | "approved" | "rejected";
+      claim_type: "damage" | "reimbursement" | "medical" | "travel" | "other";
+      email_provider_type: "smtp" | "resend" | "sendgrid";
+      invoice_status: "draft" | "sent" | "paid" | "overdue" | "cancelled";
       maintenance_status:
         | "issued"
         | "in_progress"
         | "completed"
         | "incompleted"
         | "rejected"
-        | "deffered"
-      notification_channel: "in_app" | "email" | "sms"
-      notification_type: "info" | "warning" | "success" | "error"
-      organization_type: "dusp" | "tp"
-      priority_level: "low" | "medium" | "high" | "urgent"
-      programme_status: "draft" | "active" | "completed" | "cancelled"
+        | "deferred";
+      notification_channel: "in_app" | "email" | "sms";
+      notification_type: "info" | "warning" | "success" | "error";
+      organization_type: "dusp" | "tp";
+      priority_level: "low" | "medium" | "high" | "urgent";
+      programme_status: "draft" | "active" | "completed" | "cancelled";
       session_event_type:
         | "login"
         | "logout"
@@ -10680,9 +10934,9 @@ export type Database = {
         | "vendor_admin"
         | "vendor_staff"
         | "tp_site"
-        | "sso_pic"
-      workflow_status: "draft" | "active" | "completed" | "cancelled"
-    }
+        | "sso_pic";
+      workflow_status: "draft" | "active" | "completed" | "cancelled";
+    };
     CompositeTypes: {
       [_ in never]: never
     }

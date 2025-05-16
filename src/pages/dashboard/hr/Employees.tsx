@@ -57,7 +57,7 @@ const Employees = () => {
   // Extract user types and roles from staff list for filtering options
   const [userTypeOptions, setUserTypeOptions] = useState<string[]>([]);
   const [roleOptions, setRoleOptions] = useState<string[]>([]);
-  
+
   useEffect(() => {
     if (userMetadataString) {
       try {
@@ -84,14 +84,18 @@ const Employees = () => {
   // Extract unique user types and roles once staff list is loaded
   useEffect(() => {
     if (staffList && staffList.length > 0) {
-      const uniqueUserTypes = [...new Set(staffList.map((staff) => staff.userType))].filter(Boolean);
-      const uniqueRoles = [...new Set(staffList.map((staff) => staff.role))].filter(Boolean);
-      
+      const uniqueUserTypes = [
+        ...new Set(staffList.map((staff) => staff.userType)),
+      ].filter(Boolean);
+      const uniqueRoles = [
+        ...new Set(staffList.map((staff) => staff.role)),
+      ].filter(Boolean);
+
       setUserTypeOptions(uniqueUserTypes);
       setRoleOptions(uniqueRoles);
     }
   }, [staffList]);
-  
+
   const filteredStaff = staffList.filter((staff) => {
     const matchesSearch =
       staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -102,12 +106,11 @@ const Employees = () => {
 
     const matchesStatus =
       statusFilter === "all" || staff.status === statusFilter;
-      
+
     const matchesUserType =
       userTypeFilter === "all" || staff.userType === userTypeFilter;
-      
-    const matchesRole =
-      roleFilter === "all" || staff.role === roleFilter;
+
+    const matchesRole = roleFilter === "all" || staff.role === roleFilter;
 
     return matchesSearch && matchesStatus && matchesUserType && matchesRole;
   });
@@ -376,7 +379,7 @@ const Employees = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto max-w-6xl">
+      <div>
         <StaffToolbar
           selectedStaff={getSelectedStaffObjects()}
           allStaff={staffList}

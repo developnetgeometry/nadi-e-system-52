@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -21,13 +20,23 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
-import { FileText, Download, Printer, FileSpreadsheet, Eye, Check, Flag, Minus } from "lucide-react";
+import {
+  FileText,
+  Download,
+  Printer,
+  FileSpreadsheet,
+  Eye,
+  Check,
+  Flag,
+  Minus,
+} from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 interface PayrollTableProps {
   data: any[];
@@ -41,41 +50,66 @@ interface PayrollTableProps {
   staffView?: boolean;
 }
 
-export function PayrollTable({ 
-  data, 
+export function PayrollTable({
+  data,
   columns,
   onExportSelected,
   pageSize = 10,
-  staffView = false
+  staffView = false,
 }: PayrollTableProps) {
   const { toast } = useToast();
   const { useUsersQuery } = useUsers();
   const userData = useUsersQuery();
   const user_type = userData?.data?.[0]?.user_type || "Guest";
-  const isEditable = user_type === "Super Admin" || user_type === "staff_manager";
-  
+  const isEditable =
+    user_type === "Super Admin" || user_type === "staff_manager";
+
   const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  
+
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [paginatedData, setPaginatedData] = useState<any[]>([]);
-  
+
   // Calculate total pages
   const totalPages = Math.ceil(data.length / pageSize);
-  
+
   // Update paginated data when page or data changes
   useEffect(() => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     setPaginatedData(data.slice(startIndex, endIndex));
   }, [data, currentPage, pageSize]);
-  
+
   // Reset pagination when data changes
   useEffect(() => {
     setCurrentPage(1);
   }, [data.length]);
-  
+
+  // Reset selected rows when paginated data changes
+  useEffect(() => {
+    setSelectedRows([]);
+  }, [data]);
+
+  const [selectedRows, setSelectedRows] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginatedData, setPaginatedData] = useState<any[]>([]);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(data.length / pageSize);
+
+  // Update paginated data when page or data changes
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    setPaginatedData(data.slice(startIndex, endIndex));
+  }, [data, currentPage, pageSize]);
+
+  // Reset pagination when data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [data.length]);
+
   // Reset selected rows when paginated data changes
   useEffect(() => {
     setSelectedRows([]);
@@ -85,7 +119,7 @@ export function PayrollTable({
     setSelectedRecord(record);
     setViewDialogOpen(true);
     toast({
-      title: `Viewing details for ${record.name || "record"}`
+      title: `Viewing details for ${record.name || "record"}`,
     });
   };
 
@@ -93,12 +127,12 @@ export function PayrollTable({
     if (record.status === "Pending") {
       toast({
         title: `Approved payment for ${record.name || "record"}`,
-        variant: "default"
+        variant: "default",
       });
     } else {
       toast({
         title: `Payment already approved for ${record.name || "record"}`,
-        variant: "default"
+        variant: "default",
       });
     }
   };
@@ -106,7 +140,7 @@ export function PayrollTable({
   const handleFlagRecord = (record: any) => {
     toast({
       title: `Flagged ${record.name || "record"} for review`,
-      variant: "destructive"
+      variant: "destructive",
     });
   };
 
@@ -114,7 +148,7 @@ export function PayrollTable({
     if (!selectedRecord) return;
     toast({
       title: `Printing payslip for ${selectedRecord.name}`,
-      variant: "default"
+      variant: "default",
     });
   };
 
@@ -122,7 +156,7 @@ export function PayrollTable({
     if (!selectedRecord) return;
     toast({
       title: `Downloading payslip for ${selectedRecord.name}`,
-      variant: "default"
+      variant: "default",
     });
   };
 
@@ -130,7 +164,7 @@ export function PayrollTable({
     if (isSelected) {
       setSelectedRows([...selectedRows, record]);
     } else {
-      setSelectedRows(selectedRows.filter(r => r.id !== record.id));
+      setSelectedRows(selectedRows.filter((r) => r.id !== record.id));
     }
   };
 
@@ -143,7 +177,7 @@ export function PayrollTable({
   };
 
   const isRowSelected = (record: any) => {
-    return selectedRows.some(r => r.id === record.id);
+    return selectedRows.some((r) => r.id === record.id);
   };
 
   const handleExportSelected = () => {
@@ -151,17 +185,17 @@ export function PayrollTable({
       toast({
         title: "No records selected",
         description: "Please select at least one record to export.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
+
     if (onExportSelected) {
       onExportSelected(selectedRows);
       toast({
         title: `Exported ${selectedRows.length} records`,
         description: "The file has been downloaded to your device.",
-        variant: "default"
+        variant: "default",
       });
     }
   };
@@ -185,16 +219,23 @@ export function PayrollTable({
     }
   };
 
+  const statusColors: Record<string, string> = {
+    Pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    Paid: "bg-green-100 text-green-800 border-green-200",
+    Rejected: "bg-red-100 text-red-800 border-red-200",
+  };
+
   return (
     <div className="space-y-4">
       {!staffView && selectedRows.length > 0 && (
         <div className="flex items-center justify-between bg-muted/20 p-2 rounded-md">
           <span className="text-sm">
-            {selectedRows.length} {selectedRows.length === 1 ? "record" : "records"} selected
+            {selectedRows.length}{" "}
+            {selectedRows.length === 1 ? "record" : "records"} selected
           </span>
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             onClick={handleExportSelected}
             className="gap-2"
           >
@@ -210,8 +251,11 @@ export function PayrollTable({
             <TableRow>
               {!staffView && (
                 <TableHead className="w-12">
-                  <Checkbox 
-                    checked={paginatedData.length > 0 && paginatedData.length === selectedRows.length} 
+                  <Checkbox
+                    checked={
+                      paginatedData.length > 0 &&
+                      paginatedData.length === selectedRows.length
+                    }
                     onCheckedChange={handleSelectAllRows}
                   />
                 </TableHead>
@@ -239,9 +283,11 @@ export function PayrollTable({
                 <TableRow key={index} className="hover:bg-muted/50">
                   {!staffView && (
                     <TableCell className="w-12">
-                      <Checkbox 
-                        checked={isRowSelected(record)} 
-                        onCheckedChange={(checked) => handleSelectRow(record, !!checked)}
+                      <Checkbox
+                        checked={isRowSelected(record)}
+                        onCheckedChange={(checked) =>
+                          handleSelectRow(record, !!checked)
+                        }
                       />
                     </TableCell>
                   )}
@@ -293,7 +339,9 @@ export function PayrollTable({
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                {record.status === "Paid" ? "Paid" : "Approve payment"}
+                                {record.status === "Paid"
+                                  ? "Paid"
+                                  : "Approve payment"}
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -386,12 +434,15 @@ export function PayrollTable({
                   Monthly Salary:
                 </div>
                 <div className="text-sm font-medium">
-                  RM {formatCurrency(selectedRecord.salary || selectedRecord.payment)}
+                  RM{" "}
+                  {formatCurrency(
+                    selectedRecord.salary || selectedRecord.payment
+                  )}
                 </div>
 
-                <div className="text-sm text-muted-foreground">Allowance:</div>
+                <div className="text-sm text-muted-foreground">Incentive:</div>
                 <div className="text-sm font-medium">
-                  RM {formatCurrency(selectedRecord.allowance)}
+                  RM {formatCurrency(selectedRecord.incentive)}
                 </div>
 
                 <div className="text-sm text-muted-foreground">
@@ -400,21 +451,25 @@ export function PayrollTable({
                 <div className="text-sm font-medium">
                   RM{" "}
                   {formatCurrency(
-                    (typeof selectedRecord.salary === "number" ? selectedRecord.salary : 
-                     typeof selectedRecord.payment === "number" ? selectedRecord.payment : 0) +
-                    (typeof selectedRecord.allowance === "number" ? selectedRecord.allowance : 0)
+                    (typeof selectedRecord.salary === "number"
+                      ? selectedRecord.salary
+                      : typeof selectedRecord.payment === "number"
+                      ? selectedRecord.payment
+                      : 0) +
+                      (typeof selectedRecord.incentive === "number"
+                        ? selectedRecord.incentive
+                        : 0)
                   )}
                 </div>
 
                 <div className="text-sm text-muted-foreground">Status:</div>
-                <div
-                  className={`text-sm font-medium ${
-                    selectedRecord.status === "Paid"
-                      ? "text-nadi-success"
-                      : "text-nadi-warning"
-                  }`}
-                >
-                  {selectedRecord.status || "N/A"}
+                <div>
+                  <Badge
+                    variant="outline"
+                    className={statusColors[selectedRecord.status]}
+                  >
+                    {selectedRecord.status || "N/A"}
+                  </Badge>
                 </div>
 
                 <div className="text-sm text-muted-foreground">
@@ -425,7 +480,7 @@ export function PayrollTable({
                 </div>
               </div>
 
-              <div className="rounded-md bg-muted/50 p-3">
+              {/* <div className="rounded-md bg-muted/50 p-3">
                 <h4 className="mb-2 text-sm font-medium">Payment History</h4>
                 <div className="text-xs text-muted-foreground">
                   <div className="flex justify-between mb-1">
@@ -433,9 +488,14 @@ export function PayrollTable({
                     <span>
                       RM{" "}
                       {formatCurrency(
-                        (typeof selectedRecord.salary === "number" ? selectedRecord.salary : 
-                         typeof selectedRecord.payment === "number" ? selectedRecord.payment : 0) +
-                        (typeof selectedRecord.allowance === "number" ? selectedRecord.allowance : 0)
+                        (typeof selectedRecord.salary === "number"
+                          ? selectedRecord.salary
+                          : typeof selectedRecord.payment === "number"
+                          ? selectedRecord.payment
+                          : 0) +
+                          (typeof selectedRecord.incentive === "number"
+                            ? selectedRecord.incentive
+                            : 0)
                       )}
                     </span>
                   </div>
@@ -444,9 +504,14 @@ export function PayrollTable({
                     <span>
                       RM{" "}
                       {formatCurrency(
-                        (typeof selectedRecord.salary === "number" ? selectedRecord.salary : 
-                         typeof selectedRecord.payment === "number" ? selectedRecord.payment : 0) +
-                        (typeof selectedRecord.allowance === "number" ? selectedRecord.allowance : 0)
+                        (typeof selectedRecord.salary === "number"
+                          ? selectedRecord.salary
+                          : typeof selectedRecord.payment === "number"
+                          ? selectedRecord.payment
+                          : 0) +
+                          (typeof selectedRecord.incentive === "number"
+                            ? selectedRecord.incentive
+                            : 0)
                       )}
                     </span>
                   </div>
@@ -455,14 +520,19 @@ export function PayrollTable({
                     <span>
                       RM{" "}
                       {formatCurrency(
-                        (typeof selectedRecord.salary === "number" ? selectedRecord.salary : 
-                         typeof selectedRecord.payment === "number" ? selectedRecord.payment : 0) +
-                        (typeof selectedRecord.allowance === "number" ? selectedRecord.allowance : 0)
+                        (typeof selectedRecord.salary === "number"
+                          ? selectedRecord.salary
+                          : typeof selectedRecord.payment === "number"
+                          ? selectedRecord.payment
+                          : 0) +
+                          (typeof selectedRecord.incentive === "number"
+                            ? selectedRecord.incentive
+                            : 0)
                       )}
                     </span>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           )}
 

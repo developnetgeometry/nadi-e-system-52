@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "../use-toast";
 import { handleAuthError } from "./utils/auth-error-handler";
 import { createUserSession } from "./utils/session-handler";
@@ -38,26 +38,26 @@ export const useLogin = () => {
 
       console.log("Auth successful, checking profile...");
 
-      // Fetch user profile
+      // ✅ Fetch user profile with group_profile
       const { profile, profileError } = await fetchUserProfile(
         authData.user.id
       );
 
       if (profileError && profileError.code !== "PGRST116") {
-        // Ignore "not found" error
         console.error("Profile fetch error:", profileError);
         throw profileError;
       }
 
-      // Handle organization details for tp_admin
+      // ✅ Fetch organization details (optional logic)
       const { organizationId, organizationName } =
         await fetchOrganizationDetails(authData.user.id, profile);
 
-      // Create user metadata
+      // ✅ Prepare metadata
       const userMetadata: Record<string, any> = {
         user_type: profile?.user_type || "member",
         organization_id: organizationId,
         organization_name: organizationName,
+        group_profile: profile?.group_profile || null,
       };
 
       if (profile?.user_group) {
@@ -66,12 +66,20 @@ export const useLogin = () => {
           profile.nd_user_group?.group_name || null;
       }
 
+      if (profile?.user_type == "tp_site") {
+        const siteId = await supabase
+          .from("nd_site_user")
+          .select("site_profile_id")
+          .eq("user_id", authData.user.id)
+          .single();
+        userMetadata.group_profile.site_profile_id =
+          siteId.data?.site_profile_id || null;
+      }
+
       console.log("User metadata:", userMetadata);
 
-      // Store user session
+      // ✅ Store session
       createUserSession(authData.user, profile, userMetadata);
-
-      console.log("Login successful with metadata:", userMetadata);
 
       toast({
         title: "Success",

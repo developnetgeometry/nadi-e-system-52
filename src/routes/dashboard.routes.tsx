@@ -1,178 +1,170 @@
-
+import { Suspense } from "react";
+import { Route, Routes } from "react-router-dom";
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { lazy } from "react";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Dashboard from "@/pages/dashboard/Dashboard";
-import Users from "@/pages/dashboard/Users";
-import UserGroups from "@/pages/dashboard/UserGroups";
-import Roles from "@/pages/dashboard/RoleConfig";
-import Settings from "@/pages/dashboard/Settings";
-import MenuVisibility from "@/pages/dashboard/MenuVisibility";
-import Permissions from "@/pages/dashboard/Permissions";
-import Reports from "@/pages/dashboard/Reports";
-import StateHolidays from "@/pages/dashboard/StateHolidays";
-import Activity from "@/pages/dashboard/Activity";
-import Organizations from "@/pages/dashboard/Organizations";
-import Notifications from "@/pages/dashboard/Notifications";
+import UsersPage from "@/pages/dashboard/Users";
+import RolesPage from "@/pages/dashboard/Roles";
+import PermissionsPage from "@/pages/dashboard/Permissions";
+import MenuVisibilityPage from "@/pages/dashboard/MenuVisibility";
+import ActivityLogPage from "@/pages/dashboard/Activity";
+import StateHolidaysPage from "@/pages/dashboard/StateHolidays";
+import OrganizationsPage from "@/pages/dashboard/Organizations";
+import SettingsPage from "@/pages/dashboard/Settings";
+import UserGroupsPage from "@/pages/dashboard/UserGroups";
+import LookupSettingsPage from "@/pages/dashboard/LookupSettings";
+import UserProfile from "@/pages/dashboard/profile/UserProfile";
 import NotificationManagement from "@/pages/dashboard/NotificationManagement";
 import NotificationUsage from "@/pages/dashboard/NotificationUsage";
-import Calendar from "@/pages/dashboard/Calendar";
-import Profile from "@/pages/dashboard/Profile";
-import UsageSessions from "@/pages/dashboard/UsageSessions";
-import LookupSettings from "@/pages/dashboard/LookupSettings";
-import WorkflowDashboard from "@/pages/dashboard/workflow/WorkflowDashboard";
-import WorkflowConfiguration from "@/pages/dashboard/workflow/WorkflowConfiguration";
-import FinanceDashboard from "@/pages/dashboard/finance/FinanceDashboard";
-import FinanceSettings from "@/pages/dashboard/finance/FinanceSettings";
-import NADIClosure from "@/pages/dashboard/site/NADIClosure";
-import AccessControl from "@/pages/dashboard/access-control";
-import HRDashboard from "@/pages/dashboard/hr/HRDashboard";
-import HRSettings from "@/pages/dashboard/hr/HRSettings";
-import Employees from "@/pages/dashboard/hr/Employees";
-import SiteStaff from "@/pages/dashboard/hr/SiteStaff";
-import StaffDetail from "@/pages/dashboard/hr/StaffDetail";
-import StaffEdit from "@/pages/dashboard/hr/StaffEdit";
-import StaffTraining from "@/pages/dashboard/hr/StaffTraining";
-import Attendance from "@/pages/dashboard/hr/Attendance";
-import Payroll from "@/pages/dashboard/hr/Payroll";
-import LeaveManagement from "@/pages/dashboard/hr/LeaveManagement";
+
+// Lazy load dashboard components
+const DashboardPage = lazy(() => Promise.resolve({ default: Dashboard }));
+const Users = lazy(() => import("@/pages/dashboard/Users"));
+const Roles = lazy(() => import("@/pages/dashboard/Roles"));
+const RoleConfig = lazy(() => import("@/pages/dashboard/RoleConfig"));
+const Settings = lazy(() => import("@/pages/dashboard/Settings"));
+const AccessControl = lazy(() => import("@/pages/dashboard/AccessControl"));
+const MenuVisibility = lazy(() => import("@/pages/dashboard/MenuVisibility"));
+const Activity = lazy(() => import("@/pages/dashboard/Activity"));
+const Reports = lazy(() => import("@/pages/dashboard/Reports"));
+const Calendar = lazy(() => import("@/pages/dashboard/Calendar"));
+const Notifications = lazy(() => import("@/pages/dashboard/Notifications"));
+const SiteManagement = lazy(
+  () => import("@/pages/dashboard/site/SiteManagement")
+);
+const Profile = lazy(() => import("@/pages/dashboard/Profile"));
+const UsageSessions = lazy(() => import("@/pages/dashboard/UsageSessions"));
+const Organizations = lazy(() => import("@/pages/dashboard/Organizations"));
+const OrganizationDetails = lazy(
+  () => import("@/pages/dashboard/OrganizationDetails")
+);
+const ParameterSettings = lazy(
+  () => import("@/pages/dashboard/OrganizationDetails")
+);
+const StateHolidays = lazy(() => import("@/pages/dashboard/StateHolidays"));
 
 export const dashboardRoutes = [
   {
-    path: "/dashboard",
-    element: <Dashboard />,
+    path: "/admin/dashboard",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <DashboardPage />
+      </Suspense>
+    ),
   },
   {
-    path: "/dashboard/users",
-    element: <Users />,
+    path: "/admin/users",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <UsersPage />
+      </Suspense>
+    ),
   },
   {
-    path: "/dashboard/user-groups",
-    element: <UserGroups />,
+    path: "/admin/user-groups",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <UserGroupsPage />
+      </Suspense>
+    ),
   },
   {
-    path: "/dashboard/roles",
-    element: <Roles />,
+    path: "/admin/roles",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <RolesPage />
+      </Suspense>
+    ),
   },
   {
-    path: "/dashboard/permissions",
-    element: <Permissions />,
+    path: "/admin/permissions",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <PermissionsPage />
+      </Suspense>
+    ),
   },
   {
-    path: "/dashboard/reports",
-    element: <Reports />,
+    path: "/admin/menu-visibility",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <MenuVisibilityPage />
+      </Suspense>
+    ),
   },
   {
-    path: "/dashboard/holidays",
-    element: <StateHolidays />,
+    path: "/admin/activity",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <ActivityLogPage />
+      </Suspense>
+    ),
   },
   {
-    path: "/dashboard/activity",
-    element: <Activity />,
+    path: "/admin/state-holidays",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <StateHolidaysPage />
+      </Suspense>
+    ),
   },
   {
-    path: "/dashboard/organizations",
-    element: <Organizations />,
+    path: "/admin/organizations",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <OrganizationsPage />
+      </Suspense>
+    ),
   },
   {
-    path: "/dashboard/notifications",
-    element: <Notifications />,
+    path: "/admin/settings",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <SettingsPage />
+      </Suspense>
+    ),
   },
   {
-    path: "/dashboard/notification-management",
-    element: <NotificationManagement />,
-  },
-  {
-    path: "/dashboard/notification-usage",
-    element: <NotificationUsage />,
-  },
-  {
-    path: "/dashboard/calendar",
-    element: <Calendar />,
+    path: "/admin/lookup-settings",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <LookupSettingsPage />
+      </Suspense>
+    ),
   },
   {
     path: "/dashboard/profile",
-    element: <Profile />,
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <UserProfile />
+      </Suspense>
+    ),
   },
   {
-    path: "/dashboard/settings",
-    element: <Settings />,
+    path: "/admin/notification-management",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <NotificationManagement />,
+      </Suspense>
+    ),
   },
   {
-    path: "/dashboard/menu-visibility",
-    element: <MenuVisibility />,
-  },
-  {
-    path: "/dashboard/usage-sessions",
-    element: <UsageSessions />,
-  },
-  {
-    path: "/dashboard/lookup-settings",
-    element: <LookupSettings />,
-  },
-  {
-    path: "/dashboard/nadi-closure",
-    element: <NADIClosure />,
-  },
-  {
-    path: "/dashboard/access-control",
-    element: <AccessControl />,
-  },
-  // Workflow Routes
-  {
-    path: "/dashboard/workflow",
-    element: <WorkflowDashboard />,
-  },
-  {
-    path: "/dashboard/workflow/configuration",
-    element: <WorkflowConfiguration />,
-  },
-  // Finance Routes
-  {
-    path: "/dashboard/finance",
-    element: <FinanceDashboard />,
-  },
-  {
-    path: "/dashboard/finance/settings",
-    element: <FinanceSettings />,
-  },
-  // HR Routes
-  {
-    path: "/dashboard/hr",
-    element: <HRDashboard />,
-  },
-  {
-    path: "/dashboard/hr/settings",
-    element: <HRSettings />,
-  },
-  {
-    path: "/dashboard/hr/employees",
-    element: <Employees />,
-  },
-  {
-    path: "/dashboard/hr/site-staff",
-    element: <SiteStaff />,
-  },
-  {
-    path: "/dashboard/hr/staff/:id",
-    element: <StaffDetail />,
-  },
-  {
-    path: "/dashboard/hr/staff/:id/edit",
-    element: <StaffEdit />,
-  },
-  {
-    path: "/dashboard/hr/staff-training",
-    element: <StaffTraining />,
-  },
-  {
-    path: "/dashboard/hr/attendance",
-    element: <Attendance />,
-  },
-  {
-    path: "/dashboard/hr/payroll",
-    element: <Payroll />,
-  },
-  {
-    path: "/dashboard/hr/leave",
-    element: <LeaveManagement />,
+    path: "/admin/notification-usage",
+    element: (
+      <Suspense fallback={<LoadingSpinner />}>
+        <NotificationUsage />,
+      </Suspense>
+    ),
   },
 ];
+
+export const DashboardRoutes = () => {
+  return (
+    <Routes>
+      {dashboardRoutes.map((route, index) => (
+        <Route key={index} path={route.path} element={route.element} />
+      ))}
+    </Routes>
+  );
+};
