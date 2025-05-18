@@ -224,6 +224,45 @@ export type Database = {
         }
         Relationships: []
       }
+      backup_requests: {
+        Row: {
+          completed_at: string | null
+          download_url: string | null
+          error_message: string | null
+          file_path: string | null
+          id: string
+          include_schema: boolean
+          requested_at: string
+          requested_by: string
+          status: string
+          tables: string[] | null
+        }
+        Insert: {
+          completed_at?: string | null
+          download_url?: string | null
+          error_message?: string | null
+          file_path?: string | null
+          id?: string
+          include_schema?: boolean
+          requested_at?: string
+          requested_by: string
+          status?: string
+          tables?: string[] | null
+        }
+        Update: {
+          completed_at?: string | null
+          download_url?: string | null
+          error_message?: string | null
+          file_path?: string | null
+          id?: string
+          include_schema?: boolean
+          requested_at?: string
+          requested_by?: string
+          status?: string
+          tables?: string[] | null
+        }
+        Relationships: []
+      }
       budgets: {
         Row: {
           amount: number
