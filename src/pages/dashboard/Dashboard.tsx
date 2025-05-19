@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AnnouncementCarousel } from "@/components/announcements/AnnouncementCarousel";
 import { AttachmentFile } from "@/components/announcements/AnnouncementAttachment";
+
 interface Announcement {
   id: string;
   title: string;
@@ -24,11 +25,13 @@ const Dashboard = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  
   useEffect(() => {
     if (user) {
       fetchAnnouncements();
     }
   }, [user]);
+  
   const fetchAnnouncements = async () => {
     try {
       setLoading(true);
@@ -77,6 +80,7 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
+  
   return (
     <DashboardLayout>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
@@ -94,6 +98,8 @@ const Dashboard = () => {
         </Card>
         <DynamicDashboard />
       </ErrorBoundary>
-    </DashboardLayout>;
+    </DashboardLayout>
+  );
 };
+
 export default Dashboard;
