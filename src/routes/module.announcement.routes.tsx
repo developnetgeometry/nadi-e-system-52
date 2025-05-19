@@ -1,3 +1,4 @@
+
 import { Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
@@ -8,6 +9,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Announcements from "@/pages/dashboard/announcements/Announcements";
 import AnnouncementSettings from "@/pages/dashboard/announcements/AnnouncementSettings";
 import CreateAnnouncement from "@/pages/dashboard/announcements/CreateAnnouncement";
+import AnnouncementsList from "@/pages/dashboard/announcements/AnnouncementsList"; // Added new page
 
 export const dashboardRoutes = [
   // Setup routes for the module
@@ -16,6 +18,14 @@ export const dashboardRoutes = [
     element: (
       // <ProtectedRoute requiredPermission="view_site_details">
       <Announcements />
+      // </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/announcements/list",
+    element: (
+      // <ProtectedRoute>
+      <AnnouncementsList />
       // </ProtectedRoute>
     ),
   },

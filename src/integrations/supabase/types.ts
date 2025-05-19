@@ -40,6 +40,7 @@ export type Database = {
       }
       announcements: {
         Row: {
+          attachments: Json | null
           created_at: string | null
           created_by: string | null
           end_date: string | null
@@ -52,6 +53,7 @@ export type Database = {
           user_types: Database["public"]["Enums"]["user_type"][] | null
         }
         Insert: {
+          attachments?: Json | null
           created_at?: string | null
           created_by?: string | null
           end_date?: string | null
@@ -64,6 +66,7 @@ export type Database = {
           user_types?: Database["public"]["Enums"]["user_type"][] | null
         }
         Update: {
+          attachments?: Json | null
           created_at?: string | null
           created_by?: string | null
           end_date?: string | null
@@ -5502,6 +5505,7 @@ export type Database = {
           created_by: string | null
           id: string
           member_id: number | null
+          remarks: string | null
           transaction_date: string | null
           type: string | null
           updated_at: string | null
@@ -5512,6 +5516,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           member_id?: number | null
+          remarks?: string | null
           transaction_date?: string | null
           type?: string | null
           updated_at?: string | null
@@ -5522,6 +5527,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           member_id?: number | null
+          remarks?: string | null
           transaction_date?: string | null
           type?: string | null
           updated_at?: string | null
