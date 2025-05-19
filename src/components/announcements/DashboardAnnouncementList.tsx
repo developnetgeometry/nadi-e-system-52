@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/utils/date-utils";
 import { Button } from "@/components/ui/button";
@@ -25,11 +24,11 @@ interface DashboardAnnouncementListProps {
   loading: boolean;
 }
 
-export const DashboardAnnouncementList: React.FC<DashboardAnnouncementListProps> = ({
-  announcements,
-  loading
-}) => {
-  const [selectedAnnouncement, setSelectedAnnouncement] = React.useState<Announcement | null>(null);
+export const DashboardAnnouncementList: React.FC<
+  DashboardAnnouncementListProps
+> = ({ announcements, loading }) => {
+  const [selectedAnnouncement, setSelectedAnnouncement] =
+    React.useState<Announcement | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
 
   const viewAnnouncement = (announcement: Announcement) => {
@@ -38,18 +37,26 @@ export const DashboardAnnouncementList: React.FC<DashboardAnnouncementListProps>
   };
 
   if (loading) {
-    return <div className="text-center py-4 text-muted-foreground">Loading announcements...</div>;
+    return (
+      <div className="text-center py-4 text-muted-foreground">
+        Loading announcements...
+      </div>
+    );
   }
 
   if (announcements.length === 0) {
-    return <div className="text-center py-4 text-muted-foreground">No announcements available at this time.</div>;
+    return (
+      <div className="text-center py-4 text-muted-foreground">
+        No announcements available at this time.
+      </div>
+    );
   }
 
   return (
     <div className="space-y-3">
       {announcements.slice(0, 3).map((announcement) => (
-        <div 
-          key={announcement.id} 
+        <div
+          key={announcement.id}
           className="p-3 bg-primary/5 rounded-md border border-primary/20 cursor-pointer hover:bg-primary/10 transition-colors"
           onClick={() => viewAnnouncement(announcement)}
         >
@@ -64,15 +71,19 @@ export const DashboardAnnouncementList: React.FC<DashboardAnnouncementListProps>
                 {announcement.message}
               </div>
             </div>
-            {announcement.attachments && announcement.attachments.length > 0 && (
-              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 flex-shrink-0">
-                {announcement.attachments.length}
-              </Badge>
-            )}
+            {announcement.attachments &&
+              announcement.attachments.length > 0 && (
+                <Badge
+                  variant="outline"
+                  className="bg-blue-100 text-blue-800 border-blue-200 flex-shrink-0"
+                >
+                  {announcement.attachments.length}
+                </Badge>
+              )}
           </div>
         </div>
       ))}
-      
+
       {announcements.length > 3 && (
         <div className="text-center mt-2">
           <Button variant="link" asChild>
@@ -81,7 +92,7 @@ export const DashboardAnnouncementList: React.FC<DashboardAnnouncementListProps>
         </div>
       )}
 
-      <AnnouncementViewModal 
+      <AnnouncementViewModal
         announcement={selectedAnnouncement}
         open={modalOpen}
         onOpenChange={setModalOpen}

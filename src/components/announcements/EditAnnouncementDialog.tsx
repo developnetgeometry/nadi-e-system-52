@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +55,6 @@ export function EditAnnouncementDialog({
   const [uploading, setUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const { uploadFile } = useFileUpload();
-  
   const form = useForm({
     defaultValues: {
       title: announcement.title,
@@ -99,22 +97,24 @@ export function EditAnnouncementDialog({
     const uploadedFiles: AttachmentFile[] = [];
 
     for (const file of files) {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      
-      const publicUrl = await uploadFile(file, 'announcement-attachments', '');
-      
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${Date.now()}_${Math.random()
+        .toString(36)
+        .substring(2, 15)}.${fileExt}`;
+
+      const publicUrl = await uploadFile(file, "announcement-attachments", "");
+
       if (publicUrl) {
         uploadedFiles.push({
           name: file.name,
           path: filePath,
           size: file.size,
           type: file.type,
-          url: publicUrl
+          url: publicUrl,
         });
       }
     }
-    
+
     return uploadedFiles;
   };
 
@@ -150,7 +150,8 @@ export function EditAnnouncementDialog({
           user_types: data.user_types,
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
-          attachments: updatedAttachments.length > 0 ? updatedAttachments : null
+          attachments:
+            updatedAttachments.length > 0 ? updatedAttachments : null,
         })
         .eq("id", announcement.id);
 
@@ -168,7 +169,7 @@ export function EditAnnouncementDialog({
         title: "Success",
         description: "Announcement updated successfully",
       });
-      
+
       setOpen(false);
       onUpdate();
     } catch (error) {
@@ -298,7 +299,6 @@ export function EditAnnouncementDialog({
               >
                 Add New Attachments
               </FileUpload>
-              
               {selectedFiles.length > 0 && (
                 <div className="mt-2">
                   <p className="text-sm font-medium">Selected files:</p>
@@ -309,17 +309,18 @@ export function EditAnnouncementDialog({
                   </ul>
                 </div>
               )}
-              
-              {announcement.attachments && announcement.attachments.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm font-medium">Current attachments:</p>
-                  <ul className="text-sm text-muted-foreground">
-                    {announcement.attachments.map((file, index) => (
-                      <li key={index}>{file.name}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+
+              {announcement.attachments &&
+                announcement.attachments.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-sm font-medium">Current attachments:</p>
+                    <ul className="text-sm text-muted-foreground">
+                      {announcement.attachments.map((file, index) => (
+                        <li key={index}>{file.name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
             </div>
 
             <div className="flex gap-4 justify-end">

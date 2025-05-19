@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -32,7 +31,8 @@ export const CreateAnnouncementDialog = () => {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
-  const { register, handleSubmit, reset, setValue } = useForm<AnnouncementFormData>();
+  const { register, handleSubmit, reset, setValue } =
+    useForm<AnnouncementFormData>();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const handleFileSelection = (files: File[]) => {
@@ -43,26 +43,28 @@ export const CreateAnnouncementDialog = () => {
     const uploadedFiles: AttachmentFile[] = [];
 
     for (const file of files) {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${Date.now()}_${Math.random()
+        .toString(36)
+        .substring(2, 15)}.${fileExt}`;
+
       const { data, error } = await supabase.storage
-        .from('announcement-attachments')
+        .from("announcement-attachments")
         .upload(filePath, file);
-        
+
       if (error) {
-        console.error('Error uploading file:', error);
+        console.error("Error uploading file:", error);
         continue;
       }
-      
+
       uploadedFiles.push({
         name: file.name,
         path: filePath,
         size: file.size,
-        type: file.type
+        type: file.type,
       });
     }
-    
+
     return uploadedFiles;
   };
 
@@ -71,12 +73,13 @@ export const CreateAnnouncementDialog = () => {
       setUploading(true);
 
       // First upload files if any
-      const attachments = selectedFiles.length > 0 ? await uploadFiles(selectedFiles) : null;
+      const attachments =
+        selectedFiles.length > 0 ? await uploadFiles(selectedFiles) : null;
 
       const { error } = await supabase.from("announcements").insert({
         title: data.title,
         message: data.message,
-        attachments: attachments
+        attachments: attachments,
       });
 
       if (error) {
@@ -143,11 +146,7 @@ export const CreateAnnouncementDialog = () => {
               Add Attachments
             </FileUpload>
           </div>
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={uploading}
-          >
+          <Button type="submit" className="w-full" disabled={uploading}>
             {uploading ? "Creating..." : "Create Announcement"}
           </Button>
         </form>

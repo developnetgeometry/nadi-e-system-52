@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,10 +6,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { UserTypeChips } from "@/components/user-groups/UserTypeChips";
 import { formatDate } from "@/utils/date-utils";
 import { Clock } from "lucide-react";
-import { AnnouncementAttachment, AttachmentFile } from "./AnnouncementAttachment";
+import {
+  AnnouncementAttachment,
+  AttachmentFile,
+} from "./AnnouncementAttachment";
 
 interface Announcement {
   id: string;
@@ -36,7 +37,6 @@ export const AnnouncementViewModal: React.FC<AnnouncementViewModalProps> = ({
   onOpenChange,
 }) => {
   if (!announcement) return null;
-  
   const isAnnouncementExpired = (endDate: string) => {
     return new Date(endDate) < new Date();
   };
@@ -45,16 +45,23 @@ export const AnnouncementViewModal: React.FC<AnnouncementViewModalProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">{announcement.title}</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            {announcement.title}
+          </DialogTitle>
           <div className="flex flex-wrap items-center gap-2 mt-2">
-            <UserTypeChips userTypes={announcement.user_types} />
             {announcement.status === "inactive" && (
-              <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">
+              <Badge
+                variant="outline"
+                className="bg-gray-100 text-gray-800 border-gray-200"
+              >
                 Hidden
               </Badge>
             )}
             {isAnnouncementExpired(announcement.end_date) && (
-              <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200">
+              <Badge
+                variant="outline"
+                className="bg-amber-100 text-amber-800 border-amber-200"
+              >
                 Expired
               </Badge>
             )}
@@ -67,12 +74,10 @@ export const AnnouncementViewModal: React.FC<AnnouncementViewModalProps> = ({
             </span>
           </div>
         </DialogHeader>
-        
         <div className="mt-4 space-y-4">
           <div className="prose prose-sm dark:prose-invert max-w-none">
             <p className="whitespace-pre-line">{announcement.message}</p>
           </div>
-          
           <AnnouncementAttachment attachments={announcement.attachments} />
         </div>
       </DialogContent>

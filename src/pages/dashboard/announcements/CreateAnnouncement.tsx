@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -93,26 +92,28 @@ export default function CreateAnnouncement() {
     const uploadedFiles: AttachmentFile[] = [];
 
     for (const file of files) {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${Date.now()}_${Math.random()
+        .toString(36)
+        .substring(2, 15)}.${fileExt}`;
+
       const { data, error } = await supabase.storage
-        .from('announcement-attachments')
+        .from("announcement-attachments")
         .upload(filePath, file);
-        
+
       if (error) {
-        console.error('Error uploading file:', error);
+        console.error("Error uploading file:", error);
         continue;
       }
-      
+
       uploadedFiles.push({
         name: file.name,
         path: filePath,
         size: file.size,
-        type: file.type
+        type: file.type,
       });
     }
-    
+
     return uploadedFiles;
   };
 
@@ -133,7 +134,8 @@ export default function CreateAnnouncement() {
       }
 
       // Upload files if any
-      const attachments = selectedFiles.length > 0 ? await uploadFiles(selectedFiles) : null;
+      const attachments =
+        selectedFiles.length > 0 ? await uploadFiles(selectedFiles) : null;
 
       const { error } = await supabase.from("announcements").insert({
         title: data.title,
@@ -142,7 +144,7 @@ export default function CreateAnnouncement() {
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
         status: "active",
-        attachments: attachments
+        attachments: attachments,
       });
 
       if (error) {
