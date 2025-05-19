@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { DynamicDashboard } from "@/components/dashboard/DynamicDashboard";
 import { ErrorBoundary } from "react-error-boundary";
@@ -6,7 +7,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { DashboardAnnouncementList } from "@/components/announcements/DashboardAnnouncementList";
+import { AnnouncementCarousel } from "@/components/announcements/AnnouncementCarousel";
 import { AttachmentFile } from "@/components/announcements/AnnouncementAttachment";
 
 interface Announcement {
@@ -87,7 +88,7 @@ const Dashboard = () => {
             <CardTitle>Announcements</CardTitle>
           </CardHeader>
           <CardContent>
-            <DashboardAnnouncementList 
+            <AnnouncementCarousel 
               announcements={announcements} 
               loading={loading}
             />
