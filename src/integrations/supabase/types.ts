@@ -1506,7 +1506,7 @@ export type Database = {
           claim_type_id: number | null
           created_at: string | null
           created_by: string | null
-          file_path: string[] | null
+          file_path: string | null
           id: number
           request_id: number | null
           updated_at: string | null
@@ -1516,7 +1516,7 @@ export type Database = {
           claim_type_id?: number | null
           created_at?: string | null
           created_by?: string | null
-          file_path?: string[] | null
+          file_path?: string | null
           id?: number
           request_id?: number | null
           updated_at?: string | null
@@ -1526,7 +1526,7 @@ export type Database = {
           claim_type_id?: number | null
           created_at?: string | null
           created_by?: string | null
-          file_path?: string[] | null
+          file_path?: string | null
           id?: number
           request_id?: number | null
           updated_at?: string | null
@@ -1774,7 +1774,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           id: number
-          item_id: number | null
+          item_ids: number[] | null
           remark: string | null
           status_item: boolean | null
           updated_at: string | null
@@ -1786,7 +1786,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: number
-          item_id?: number | null
+          item_ids?: number[] | null
           remark?: string | null
           status_item?: boolean | null
           updated_at?: string | null
@@ -1798,7 +1798,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: number
-          item_id?: number | null
+          item_ids?: number[] | null
           remark?: string | null
           status_item?: boolean | null
           updated_at?: string | null
@@ -1817,13 +1817,6 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "nd_claim_categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nd_claim_request_item_id_fkey"
-            columns: ["item_id"]
-            isOneToOne: false
-            referencedRelation: "nd_claim_items"
             referencedColumns: ["id"]
           },
         ]

@@ -1,150 +1,124 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Suspense } from "react";
-import Landing from "@/pages/Landing";
+import { useEffect, lazy, Suspense } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useAppSettings } from "@/hooks/use-app-settings";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Login from "@/pages/auth/Login";
-import Register from "@/pages/auth/Register";
-import MemberLogin from "@/pages/auth/MemberLogin";
-import { dashboardRoutes, DashboardRoutes } from "@/routes/dashboard.routes";
-import { memberRoutes } from "@/routes/module.member.routes";
-import { moduleRoutes } from "@/routes/module.routes";
-import UIComponents from "@/pages/UIComponents";
-import OrganizationDetails from "@/pages/dashboard/OrganizationDetails";
-import NotFound from "@/pages/NotFound";
-import UnderDevelopment from "@/pages/UnderDevelopment";
-import NoAccess from "@/pages/NoAccess";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { LoadingScreen } from "@/components/loading/LoadingScreen";
+import { AuthLayout } from "@/components/layout/AuthLayout";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AdminRoute } from "@/components/auth/AdminRoute";
+import { ErrorBoundary } from "react-error-boundary";
+import { ErrorFallback } from "@/components/error/ErrorFallback";
 
-// Import example pages
-import HomeExample from "@/pages/examples/HomeExample";
-import DetailExample from "@/pages/examples/DetailExample";
-import SettingsExample from "@/pages/examples/SettingsExample";
-import Announcements from "@/pages/dashboard/Announcements";
-import AnnouncementSettings from "@/pages/dashboard/AnnouncementSettings";
-import CreateAnnouncement from "@/pages/demo/CreateAnnouncement";
-import Takwim from "@/pages/dashboard/Takwim";
-import Notifications from "@/pages/dashboard/Notifications";
+// Auth Pages
+const Login = lazy(() => import("@/pages/auth/Login"));
+const Register = lazy(() => import("@/pages/auth/Register"));
+const ForgotPassword = lazy(() => import("@/pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/auth/ResetPassword"));
+const VerifyEmail = lazy(() => import("@/pages/auth/VerifyEmail"));
 
-// Import HR pages
-import Employees from "@/pages/dashboard/hr/Employees";
-import SiteStaff from "@/pages/dashboard/hr/SiteStaff";
-import StaffDetail from "@/pages/dashboard/hr/StaffDetail";
-import StaffEdit from "@/pages/dashboard/hr/StaffEdit";
+// Dashboard Pages
+const Dashboard = lazy(() => import("@/pages/dashboard/Dashboard"));
+const Profile = lazy(() => import("@/pages/dashboard/Profile"));
+const Settings = lazy(() => import("@/pages/dashboard/Settings"));
+const Users = lazy(() => import("@/pages/dashboard/Users"));
+const Announcements = lazy(() => import("@/pages/dashboard/Announcements"));
+const ProgrammesDashboard = lazy(() => import("@/pages/dashboard/programmes/ProgrammesDashboard"));
+const ProgrammeRegistration = lazy(() => import("@/pages/dashboard/programmes/ProgrammeRegistration"));
 
-const queryClient = new QueryClient();
+// Error Pages
+const NotFound = lazy(() => import("@/pages/error/NotFound"));
+const Unauthorized = lazy(() => import("@/pages/error/Unauthorized"));
 
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-  </div>
-);
+// Demo Pages
+const DemoComponents = lazy(() => import("@/pages/demo/DemoComponents"));
+const DemoForms = lazy(() => import("@/pages/demo/DemoForms"));
+const DemoTables = lazy(() => import("@/pages/demo/DemoTables"));
+const DemoCharts = lazy(() => import("@/pages/demo/DemoCharts"));
+const DemoMaps = lazy(() => import("@/pages/demo/DemoMaps"));
+const DemoCalendar = lazy(() => import("@/pages/demo/DemoCalendar"));
+const DemoKanban = lazy(() => import("@/pages/demo/DemoKanban"));
+const DemoEditor = lazy(() => import("@/pages/demo/DemoEditor"));
+const DemoUpload = lazy(() => import("@/pages/demo/DemoUpload"));
+const DemoNotifications = lazy(() => import("@/pages/demo/DemoNotifications"));
+const DemoAnnouncementSettings = lazy(() => import("@/pages/demo/DemoAnnouncementSettings"));
+
+// Site Management
+const SiteManagementDashboard = lazy(() => import("@/pages/dashboard/main-dashboard/SiteManagementDashboard"));
 
 function App() {
+  const { isInitialized, isAuthenticated } = useAuth();
+  const { fetchSettings } = useAppSettings();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchSettings();
+    }
+  }, [isAuthenticated, fetchSettings]);
+
+  if (!isInitialized) {
+    return <LoadingScreen />;
+  }
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-        <Router>
-          <Suspense fallback={<LoadingSpinner />}>
+    <ThemeProvider defaultTheme="light" storageKey="ui-theme">
+      <SidebarProvider>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <Suspense fallback={<LoadingScreen />}>
             <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/member-login" element={<MemberLogin />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/ui-components" element={<UIComponents />} />
+              {/* Auth Routes */}
+              <Route element={<AuthLayout />}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
+              </Route>
 
-              <Route path="/examples/home" element={<HomeExample />} />
-              <Route path="/examples/detail" element={<DetailExample />} />
-              <Route path="/examples/settings" element={<SettingsExample />} />
+              {/* Protected Routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/announcements/list" element={<Announcements />} />
+                <Route path="/programmes" element={<ProgrammesDashboard />} />
+                <Route path="/programmes/register" element={<ProgrammeRegistration />} />
+                <Route path="/site-management" element={<SiteManagementDashboard />} />
+              </Route>
 
-              {/* HR Routes */}
-              <Route path="/dashboard/hr/employees" element={<Employees />} />
-              <Route path="/dashboard/hr/site-staff" element={<SiteStaff />} />
-              <Route path="/dashboard/hr/staff/:id" element={<StaffDetail />} />
-              <Route
-                path="/dashboard/hr/staff/:id/edit"
-                element={<StaffEdit />}
-              />
+              {/* Admin Routes */}
+              <Route element={<AdminRoute />}>
+                <Route path="/users" element={<Users />} />
+              </Route>
 
-              {/* Dashboard Routes */}
-              {dashboardRoutes.map((route, index) => (
-                <Route
-                  key={`dashboard-${index}`}
-                  path={route.path}
-                  element={route.element}
-                />
-              ))}
+              {/* Demo Routes */}
+              <Route path="/demo/components" element={<DemoComponents />} />
+              <Route path="/demo/forms" element={<DemoForms />} />
+              <Route path="/demo/tables" element={<DemoTables />} />
+              <Route path="/demo/charts" element={<DemoCharts />} />
+              <Route path="/demo/maps" element={<DemoMaps />} />
+              <Route path="/demo/calendar" element={<DemoCalendar />} />
+              <Route path="/demo/kanban" element={<DemoKanban />} />
+              <Route path="/demo/editor" element={<DemoEditor />} />
+              <Route path="/demo/upload" element={<DemoUpload />} />
+              <Route path="/demo/notifications" element={<DemoNotifications />} />
+              <Route path="/demo/announcement-settings" element={<DemoAnnouncementSettings />} />
 
-              {/* Member Routes */}
-              {memberRoutes.map((route, index) => (
-                <Route
-                  key={`member-${index}`}
-                  path={route.path}
-                  element={route.element}
-                />
-              ))}
+              {/* Error Routes */}
+              <Route path="/unauthorized" element={<Unauthorized />} />
+              <Route path="/404" element={<NotFound />} />
 
-              {/* Module Routes */}
-              {moduleRoutes.map((route, index) => (
-                <Route
-                  key={`module-${index}`}
-                  path={route.path}
-                  element={route.element}
-                />
-              ))}
-
-              <Route
-                path="/admin/organizations/:id"
-                element={<OrganizationDetails />}
-              />
-
-              <Route path="/under-development" element={<UnderDevelopment />} />
-
-              <Route path="/no-access" element={<NoAccess />} />
-
-              {/* Dashboard routes */}
-              {dashboardRoutes.map((route) => (
-                <Route
-                  key={route.path}
-                  path={route.path}
-                  element={
-                    <Suspense fallback={<LoadingSpinner />}>
-                      {route.element}
-                    </Suspense>
-                  }
-                />
-              ))}
-
-              <Route path="/demo/announcements" element={<Announcements />} />
-              <Route
-                path="/demo/announcements/create"
-                element={<CreateAnnouncement />}
-              />
-              <Route
-                path="/demo/announcement-settings"
-                element={<AnnouncementSettings />}
-              />
-
-              {/* Module routes */}
-              {Array.isArray(moduleRoutes) &&
-                moduleRoutes.map((route) => (
-                  <Route
-                    key={route.path}
-                    path={route.path}
-                    element={
-                      <Suspense fallback={<LoadingSpinner />}>
-                        {route.element}
-                      </Suspense>
-                    }
-                  />
-                ))}
-              <Route path="*" element={<NotFound />} />
+              {/* Redirects */}
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<Navigate to="/404" replace />} />
             </Routes>
           </Suspense>
-        </Router>
-        <Toaster />
-      </ThemeProvider>
-    </QueryClientProvider>
+        </ErrorBoundary>
+      </SidebarProvider>
+      <Toaster />
+    </ThemeProvider>
   );
 }
 
