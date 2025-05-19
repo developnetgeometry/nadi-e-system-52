@@ -1,4 +1,5 @@
-import { Menu } from "lucide-react";
+
+import { Menu, CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppSettings } from "@/hooks/use-app-settings";
 import { useSidebar } from "@/hooks/use-sidebar";
@@ -7,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./navbar/ThemeToggle";
 import { NotificationToggle } from "./navbar/NotificationToggle";
 import { HeaderProfile } from "./navbar/HeaderProfile";
+import { Link } from "react-router-dom";
 
 export const DashboardNavbar = () => {
   const { settings } = useAppSettings();
@@ -54,6 +56,17 @@ export const DashboardNavbar = () => {
             !isMobile && "flex-1 justify-end"
           )}
         >
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2 hidden md:flex"
+            asChild
+          >
+            <Link to="/announcements/list">
+              <CheckSquare className="h-4 w-4" />
+              Announcements
+            </Link>
+          </Button>
           <ThemeToggle />
           <NotificationToggle />
           <HeaderProfile />
