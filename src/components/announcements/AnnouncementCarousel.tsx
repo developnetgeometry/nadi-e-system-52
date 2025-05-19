@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { formatDate } from "@/utils/date-utils";
@@ -8,7 +7,6 @@ import { Info } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AttachmentFile } from "./AnnouncementAttachment";
 import { AnnouncementViewModal } from "./AnnouncementViewModal";
-
 interface Announcement {
   id: string;
   title: string;
@@ -20,12 +18,10 @@ interface Announcement {
   end_date: string;
   attachments: AttachmentFile[] | null;
 }
-
 interface AnnouncementCarouselProps {
   announcements: Announcement[];
   loading: boolean;
 }
-
 export const AnnouncementCarousel: React.FC<AnnouncementCarouselProps> = ({
   announcements,
   loading

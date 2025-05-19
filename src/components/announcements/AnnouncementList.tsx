@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -17,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { UserTypeChips } from "@/components/user-groups/UserTypeChips";
 import { formatDate } from "@/utils/date-utils";
 import { EditAnnouncementDialog } from "./EditAnnouncementDialog";
-import { AttachmentFile } from "./AnnouncementAttachment";
 
 interface Announcement {
   id: string;
@@ -28,7 +26,6 @@ interface Announcement {
   created_at: string;
   start_date: string;
   end_date: string;
-  attachments: AttachmentFile[] | null;
 }
 
 export function AnnouncementList() {
