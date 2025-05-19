@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { DynamicDashboard } from "@/components/dashboard/DynamicDashboard";
 import { ErrorBoundary } from "react-error-boundary";
@@ -8,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AnnouncementCarousel } from "@/components/announcements/AnnouncementCarousel";
 import { AttachmentFile } from "@/components/announcements/AnnouncementAttachment";
+import { ScreenshotButton } from "@/components/ui/screenshot-button";
 
 interface Announcement {
   id: string;
@@ -85,9 +87,14 @@ const Dashboard = () => {
     <DashboardLayout>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         {/* Announcement Banner */}
-        <Card className="mb-2">
-          <CardHeader className="pb-2">
+        <Card className="mb-2" id="announcements-card">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle>Announcements</CardTitle>
+            <ScreenshotButton 
+              targetId="announcements-card" 
+              filename="announcements.png" 
+              variant="outline"
+            />
           </CardHeader>
           <CardContent>
             <AnnouncementCarousel
