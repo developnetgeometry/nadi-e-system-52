@@ -7,7 +7,6 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 // Lazy load components
 const ProgrammesDashboard = lazy(() => import("@/pages/dashboard/programmes/ProgrammesDashboard"));
 const ProgrammeSettings = lazy(() => import("@/pages/dashboard/programmes/ProgrammeSettings"));
-const ProgrammeOthers = lazy(() => import("@/pages/dashboard/programmes/ProgrammeOthers"));
 // const ProgrammeRegister = lazy(() => import("@/pages/dashboard/programmes/ProgrammeRegister"));
 // const ProgrammeNADI4U = lazy(() => import("@/pages/dashboard/programmes/ProgrammeNADI4U"));
 // const ProgrammeNADI2U = lazy(() => import("@/pages/dashboard/programmes/ProgrammeNADI2U"));
@@ -29,16 +28,6 @@ export const programmeRoutes = [
             <Suspense fallback={<LoadingSpinner />}>
                 {/* <ProtectedRoute requiredPermission=""> */}
                 <ProgrammeSettings />
-                {/* </ProtectedRoute> */}
-            </Suspense>
-        ),
-    },
-    {
-        path: "/programmes/others",
-        element: (
-            <Suspense fallback={<LoadingSpinner />}>
-                {/* <ProtectedRoute requiredPermission=""> */}
-                <ProgrammeOthers />
                 {/* </ProtectedRoute> */}
             </Suspense>
         ),

@@ -1465,6 +1465,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "nd_claim_application_app_settings_fk"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_settings"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "nd_claim_application_app_settings_fk_1"
             columns: ["updated_by"]
             isOneToOne: false
@@ -1499,7 +1506,7 @@ export type Database = {
           claim_type_id: number | null
           created_at: string | null
           created_by: string | null
-          file_path: string | null
+          file_path: string[] | null
           id: number
           request_id: number | null
           updated_at: string | null
@@ -1509,7 +1516,7 @@ export type Database = {
           claim_type_id?: number | null
           created_at?: string | null
           created_by?: string | null
-          file_path?: string | null
+          file_path?: string[] | null
           id?: number
           request_id?: number | null
           updated_at?: string | null
@@ -1519,13 +1526,20 @@ export type Database = {
           claim_type_id?: number | null
           created_at?: string | null
           created_by?: string | null
-          file_path?: string | null
+          file_path?: string[] | null
           id?: number
           request_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "nd_claim_attachment_app_settings_fk"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_settings"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "nd_claim_attachment_app_settings_fk_1"
             columns: ["updated_by"]
@@ -1760,7 +1774,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           id: number
-          item_ids: number[] | null
+          item_id: number | null
           remark: string | null
           status_item: boolean | null
           updated_at: string | null
@@ -1772,7 +1786,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: number
-          item_ids?: number[] | null
+          item_id?: number | null
           remark?: string | null
           status_item?: boolean | null
           updated_at?: string | null
@@ -1784,7 +1798,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: number
-          item_ids?: number[] | null
+          item_id?: number | null
           remark?: string | null
           status_item?: boolean | null
           updated_at?: string | null
@@ -1803,6 +1817,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "nd_claim_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_claim_request_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "nd_claim_items"
             referencedColumns: ["id"]
           },
         ]
