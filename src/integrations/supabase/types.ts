@@ -2820,7 +2820,7 @@ export type Database = {
           created_by: string | null
           event_id: string | null
           id: number
-          member_id: string | null
+          member_id: number | null
           updated_at: string | null
           updated_by: string | null
           verified_by: string | null
@@ -2832,7 +2832,7 @@ export type Database = {
           created_by?: string | null
           event_id?: string | null
           id: number
-          member_id?: string | null
+          member_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
           verified_by?: string | null
@@ -2844,12 +2844,27 @@ export type Database = {
           created_by?: string | null
           event_id?: string | null
           id?: number
-          member_id?: string | null
+          member_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
           verified_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nd_event_participant_nd_event_fk"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "nd_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_event_participant_nd_member_profile_fk"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "nd_member_profile"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nd_event_program: {
         Row: {
