@@ -2503,7 +2503,6 @@ export type Database = {
           description: string | null
           duration: number | null
           end_datetime: string | null
-          id: number
           location_event: string | null
           module_id: number | null
           program_id: number | null
@@ -2529,7 +2528,6 @@ export type Database = {
           description?: string | null
           duration?: number | null
           end_datetime?: string | null
-          id?: number
           location_event?: string | null
           module_id?: number | null
           program_id?: number | null
@@ -2555,7 +2553,6 @@ export type Database = {
           description?: string | null
           duration?: number | null
           end_datetime?: string | null
-          id?: number
           location_event?: string | null
           module_id?: number | null
           program_id?: number | null
