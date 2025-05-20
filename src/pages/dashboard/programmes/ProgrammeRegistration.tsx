@@ -1,4 +1,3 @@
-
 import React from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/dashboard/PageHeader";
@@ -24,10 +23,7 @@ const ProgrammeRegistration = () => {
           title="Register New Programme"
           description="Create a new programme in the system"
         />
-
-        <div className="mt-8">
-          <RegisterProgrammeForm />
-        </div>
+        <RegisterProgrammeForm />
       </PageContainer>
     </DashboardLayout>
   );
