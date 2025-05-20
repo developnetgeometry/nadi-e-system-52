@@ -1104,6 +1104,7 @@ export type Database = {
           is_using: boolean | null
           purpose: string | null
           requester_id: string | null
+          site_id: number | null
           site_space_id: number | null
           updated_at: string | null
           updated_by: string | null
@@ -1118,6 +1119,7 @@ export type Database = {
           is_using?: boolean | null
           purpose?: string | null
           requester_id?: string | null
+          site_id?: number | null
           site_space_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -1132,6 +1134,7 @@ export type Database = {
           is_using?: boolean | null
           purpose?: string | null
           requester_id?: string | null
+          site_id?: number | null
           site_space_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -1142,6 +1145,20 @@ export type Database = {
             columns: ["asset_id"]
             isOneToOne: false
             referencedRelation: "nd_asset"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_nd_booking_site"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_nd_booking_site"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile_name"
             referencedColumns: ["id"]
           },
           {
@@ -3337,12 +3354,12 @@ export type Database = {
       }
       nd_inventory: {
         Row: {
-          barcode: number | null
+          barcode: string | null
           created_at: string | null
           created_by: string | null
           deleted_at: string | null
           description: string | null
-          id: number
+          id: string
           name: string | null
           price: number | null
           quantity: number | null
@@ -3353,12 +3370,12 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
-          barcode?: number | null
+          barcode?: string | null
           created_at?: string | null
           created_by?: string | null
           deleted_at?: string | null
           description?: string | null
-          id: number
+          id?: string
           name?: string | null
           price?: number | null
           quantity?: number | null
@@ -3369,12 +3386,12 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
-          barcode?: number | null
+          barcode?: string | null
           created_at?: string | null
           created_by?: string | null
           deleted_at?: string | null
           description?: string | null
-          id?: number
+          id?: string
           name?: string | null
           price?: number | null
           quantity?: number | null
@@ -4375,6 +4392,7 @@ export type Database = {
           id: number
           maintenance_date: string | null
           no_docket: string
+          priority_type_id: number | null
           requester_by: string | null
           sla_id: number | null
           status: Database["public"]["Enums"]["maintenance_status"] | null
@@ -4392,6 +4410,7 @@ export type Database = {
           id?: number
           maintenance_date?: string | null
           no_docket: string
+          priority_type_id?: number | null
           requester_by?: string | null
           sla_id?: number | null
           status?: Database["public"]["Enums"]["maintenance_status"] | null
@@ -4409,6 +4428,7 @@ export type Database = {
           id?: number
           maintenance_date?: string | null
           no_docket?: string
+          priority_type_id?: number | null
           requester_by?: string | null
           sla_id?: number | null
           status?: Database["public"]["Enums"]["maintenance_status"] | null
@@ -5597,7 +5617,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           id: string
-          item_id: number | null
+          item_id: string
           price_per_unit: number | null
           quantity: number | null
           total_price: number | null
@@ -5609,7 +5629,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: string
-          item_id?: number | null
+          item_id: string
           price_per_unit?: number | null
           quantity?: number | null
           total_price?: number | null
@@ -5621,7 +5641,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: string
-          item_id?: number | null
+          item_id?: string
           price_per_unit?: number | null
           quantity?: number | null
           total_price?: number | null
@@ -5809,7 +5829,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           created_by?: string | null
-          id: number
+          id?: number
           is_active?: boolean | null
           name?: string | null
           updated_at?: string | null
@@ -5839,7 +5859,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           created_by?: string | null
-          id: number
+          id?: number
           is_active?: boolean | null
           name?: string | null
           updated_at?: string | null
@@ -7978,7 +7998,15 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nd_staff_pay_info_nd_bank_list_fk"
+            columns: ["bank_id"]
+            isOneToOne: false
+            referencedRelation: "nd_bank_list"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nd_staff_payroll: {
         Row: {
@@ -7988,7 +8016,6 @@ export type Database = {
           created_by: string
           epf_deduction: number | null
           gross_pay: number | null
-          ic_no: string | null
           id: number
           net_pay: number | null
           pay_info_id: number | null
@@ -8007,7 +8034,6 @@ export type Database = {
           created_by: string
           epf_deduction?: number | null
           gross_pay?: number | null
-          ic_no?: string | null
           id: number
           net_pay?: number | null
           pay_info_id?: number | null
@@ -8026,7 +8052,6 @@ export type Database = {
           created_by?: string
           epf_deduction?: number | null
           gross_pay?: number | null
-          ic_no?: string | null
           id?: number
           net_pay?: number | null
           pay_info_id?: number | null
@@ -8038,7 +8063,22 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nd_staff_payroll_nd_staff_pay_info_fk"
+            columns: ["pay_info_id"]
+            isOneToOne: false
+            referencedRelation: "nd_staff_pay_info"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_staff_payroll_nd_staff_profile_fk"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "nd_staff_profile"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nd_staff_photo: {
         Row: {
@@ -8820,8 +8860,8 @@ export type Database = {
           id: number
           is_active: boolean | null
           location: string | null
-          mode: string | null
           online_link: string | null
+          program_mode_id: string | null
           start_date: string | null
           title: string | null
           trainer_name: string | null
@@ -8837,8 +8877,8 @@ export type Database = {
           id: number
           is_active?: boolean | null
           location?: string | null
-          mode?: string | null
           online_link?: string | null
+          program_mode_id?: string | null
           start_date?: string | null
           title?: string | null
           trainer_name?: string | null
@@ -8854,8 +8894,8 @@ export type Database = {
           id?: number
           is_active?: boolean | null
           location?: string | null
-          mode?: string | null
           online_link?: string | null
+          program_mode_id?: string | null
           start_date?: string | null
           title?: string | null
           trainer_name?: string | null
@@ -8863,7 +8903,15 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nd_training_nd_program_mode_fk"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "nd_program_mode"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nd_training_type: {
         Row: {
