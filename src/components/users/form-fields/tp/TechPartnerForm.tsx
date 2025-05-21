@@ -1,4 +1,3 @@
-
 import { UseFormReturn } from "react-hook-form";
 import { UserFormData } from "../../types";
 import {
@@ -20,7 +19,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { OrganizationType } from "@/types/organization";
-import { useEffect } from "react";
 
 interface TechPartnerFormProps {
   form: UseFormReturn<UserFormData>;
@@ -28,8 +26,6 @@ interface TechPartnerFormProps {
 }
 
 export function TechPartnerForm({ form, isLoading }: TechPartnerFormProps) {
-  const userType = form.watch("user_type");
-
   // Fetch organizations of type 'tp' (Technology Partner)
   const { data: organizations, isLoading: isLoadingOrganizations } = useQuery({
     queryKey: ["organizations-tp"],
@@ -45,24 +41,13 @@ export function TechPartnerForm({ form, isLoading }: TechPartnerFormProps) {
     },
   });
 
-  // Fetch available sites based on organization
-  const organizationId = form.watch("organization_id");
-  const { data: sites, isLoading: isLoadingSites } = useQuery({
-    queryKey: ["organization-sites", organizationId],
-    queryFn: async () => {
-      if (!organizationId) return [];
-      
-      const { data, error } = await supabase
-        .from("nd_site_profile")
-        .select("id, sitename")
-        .eq("dusp_tp_id", organizationId)
-        .order("sitename", { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!organizationId && userType === "tp_site",
-  });
+  // Fetch available roles for organizations
+  const roleOptions = [
+    { id: "admin", name: "Admin" },
+    { id: "member", name: "Member" },
+    { id: "manager", name: "Manager" },
+    { id: "viewer", name: "Viewer" },
+  ];
 
   // Fetch races
   const { data: races, isLoading: isLoadingRaces } = useQuery({
@@ -125,35 +110,6 @@ export function TechPartnerForm({ form, isLoading }: TechPartnerFormProps) {
     },
   });
 
-  // Map user type to organization role
-  useEffect(() => {
-    if (userType && userType.startsWith('tp_')) {
-      let role = '';
-      
-      if (userType === 'tp_admin') {
-        role = 'admin';
-      } else if (userType === 'tp_finance') {
-        role = 'finance';
-      } else if (userType === 'tp_hr') {
-        role = 'hr';
-      } else if (userType === 'tp_management') {
-        role = 'management';
-      } else if (userType === 'tp_operation') {
-        role = 'operation';
-      } else if (userType === 'tp_pic') {
-        role = 'pic';
-      } else if (userType === 'tp_region') {
-        role = 'region';
-      } else if (userType === 'tp_site') {
-        role = 'site';
-      } else {
-        role = 'member'; // Default role
-      }
-      
-      form.setValue("organization_role", role);
-    }
-  }, [userType, form]);
-
   // Check if any data is still loading
   const isDataLoading =
     isLoadingOrganizations ||
@@ -205,7 +161,7 @@ export function TechPartnerForm({ form, isLoading }: TechPartnerFormProps) {
           )}
         />
 
-        {/* Organization Role - Read-only as it's set automatically based on user_type */}
+        {/* Organization Role */}
         <FormField
           control={form.control}
           name="organization_role"
@@ -214,53 +170,28 @@ export function TechPartnerForm({ form, isLoading }: TechPartnerFormProps) {
               <FormLabel>
                 Role <span className="text-red-500">*</span>
               </FormLabel>
-              <Input 
+              <Select
+                disabled={isLoading}
+                onValueChange={field.onChange}
                 value={field.value || ""}
-                disabled={true}
-                className="bg-gray-100"
-              />
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {roleOptions.map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        {/* Site selection for tp_site users */}
-        {userType === "tp_site" && (
-          <FormField
-            control={form.control}
-            name="assigned_site_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Assigned Site <span className="text-red-500">*</span>
-                </FormLabel>
-                {isLoadingSites ? (
-                  <Skeleton className="h-10 w-full" />
-                ) : (
-                  <Select
-                    disabled={isLoading || !organizationId}
-                    onValueChange={field.onChange}
-                    value={field.value || ""}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select site" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {sites.map((site) => (
-                        <SelectItem key={site.id} value={site.id.toString()}>
-                          {site.sitename}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
