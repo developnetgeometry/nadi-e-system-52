@@ -12,11 +12,11 @@ export const OrganizationUserList = () => {
     setSelectedRole,
     filterUserType,
     setFilterUserType,
-    eligibleUserTypes,
-    orgUsers,
+    eligibleUserTypes = [], // Add default empty array
+    orgUsers = [], // Add default empty array
     loadingOrgUsers,
     orgUsersError,
-    filteredAvailableUsers,
+    filteredAvailableUsers = [], // Add default empty array
     loadingEligibleUsers,
     handleAddUser,
     handleRemoveUser,

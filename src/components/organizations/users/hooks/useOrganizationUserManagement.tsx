@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useOrganizations } from "@/hooks/use-organizations";
@@ -35,18 +36,17 @@ export const useOrganizationUserManagement = () => {
   const { data: organization } = useOrganizationQuery(id!);
 
   // Get eligible user types based on organization type
-  const eligibleUserTypes: UserType[] =
-    organization?.type === "dusp"
-      ? ["dusp_admin", "dusp_management", "dusp_operation"]
-      : [
-          "tp_admin",
-          "tp_management",
-          "tp_pic",
-          "tp_hr",
-          "tp_finance",
-          "tp_operation",
-          "tp_site",
-        ];
+  const eligibleUserTypes: UserType[] = organization?.type === "dusp"
+    ? ["dusp_admin", "dusp_management", "dusp_operation"]
+    : [
+        "tp_admin",
+        "tp_management",
+        "tp_pic",
+        "tp_hr",
+        "tp_finance",
+        "tp_operation",
+        "tp_site",
+      ];
 
   // Get user groups based on organization type
   const { data: userGroups = [], isLoading: loadingUserGroups } = useQuery({
@@ -54,10 +54,7 @@ export const useOrganizationUserManagement = () => {
     queryFn: async () => {
       if (!organization?.type) return [];
 
-      console.log(
-        "Fetching user groups for organization type:",
-        organization.type
-      );
+      console.log("Fetching user groups for organization type:", organization.type);
 
       // Get appropriate user group for the organization type - using ILIKE for case-insensitive matching
       const { data, error } = await supabase
@@ -102,59 +99,64 @@ export const useOrganizationUserManagement = () => {
           "Fetching eligible users with user_group and user_type details"
         );
 
-        // Get users from profiles table filtered by user_group and user_type
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id, full_name, email, user_type, user_group")
-          .in("user_group", userGroupIds)
-          .in("user_type", eligibleUserTypes);
+        try {
+          // Get users from profiles table filtered by user_group and user_type
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("id, full_name, email, user_type, user_group")
+            .in("user_group", userGroupIds)
+            .in("user_type", eligibleUserTypes);
 
-        if (error) {
-          console.error("Error fetching eligible users:", error);
-          throw error;
-        }
+          if (error) {
+            console.error("Error fetching eligible users:", error);
+            throw error;
+          }
 
-        console.log("Found eligible users:", data.length);
+          console.log("Found eligible users:", data?.length || 0);
 
-        // Fetch user group details for each user and cast to ExtendedUserProfile
-        const extendedUsers: ExtendedUserProfile[] = [...data];
+          // Fetch user group details for each user and cast to ExtendedUserProfile
+          const extendedUsers: ExtendedUserProfile[] = [...(data || [])];
 
-        for (const user of extendedUsers) {
-          // Fetch user group name
-          if (user.user_group) {
-            const { data: groupData, error: groupError } = await supabase
-              .from("nd_user_group")
-              .select("group_name")
-              .eq("id", user.user_group)
-              .single();
+          for (const user of extendedUsers) {
+            // Fetch user group name
+            if (user.user_group) {
+              const { data: groupData, error: groupError } = await supabase
+                .from("nd_user_group")
+                .select("group_name")
+                .eq("id", user.user_group)
+                .single();
 
-            if (!groupError && groupData) {
-              user.user_group_name = groupData.group_name;
+              if (!groupError && groupData) {
+                user.user_group_name = groupData.group_name;
+              }
+            }
+
+            // Fetch organization name if the user has an organization_id
+            if (user.organization_id) {
+              const { data: orgData, error: orgError } = await supabase
+                .from("organizations")
+                .select("name")
+                .eq("id", user.organization_id)
+                .maybeSingle();
+
+              if (!orgError && orgData) {
+                user.organization_name = orgData.name;
+              }
             }
           }
 
-          // Fetch organization name if the user has an organization_id
-          if (user.organization_id) {
-            const { data: orgData, error: orgError } = await supabase
-              .from("organizations")
-              .select("name")
-              .eq("id", user.organization_id)
-              .maybeSingle();
-
-            if (!orgError && orgData) {
-              user.organization_name = orgData.name;
-            }
-          }
+          return extendedUsers;
+        } catch (e) {
+          console.error("Error in eligible users query:", e);
+          return [];
         }
-
-        return extendedUsers;
       },
       enabled: userGroupIds.length > 0 && eligibleUserTypes.length > 0,
     });
 
   // Filter users not already in the organization
-  const availableUsers = eligibleUsers.filter(
-    (user) => !orgUsers.some((orgUser) => orgUser.user_id === user.id)
+  const availableUsers = (eligibleUsers || []).filter(
+    (user) => !(orgUsers || []).some((orgUser) => orgUser.user_id === user.id)
   );
 
   // Filter available users by search term and selected user type
@@ -215,7 +217,7 @@ export const useOrganizationUserManagement = () => {
     filterUserType,
     setFilterUserType,
     eligibleUserTypes,
-    orgUsers,
+    orgUsers: orgUsers || [],
     loadingOrgUsers,
     orgUsersError,
     filteredAvailableUsers,

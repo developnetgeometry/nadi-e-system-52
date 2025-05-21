@@ -9,12 +9,16 @@ interface OrganizationMembersListProps {
   onRemoveUser: (userId: string) => void;
 }
 
-export const OrganizationMembersList = ({ orgUsers, isLoading, onRemoveUser }: OrganizationMembersListProps) => {
+export const OrganizationMembersList = ({ 
+  orgUsers = [], // Provide default empty array
+  isLoading, 
+  onRemoveUser 
+}: OrganizationMembersListProps) => {
   if (isLoading) {
     return <LoadingSpinner />;
   }
   
-  if (orgUsers.length === 0) {
+  if (!orgUsers || orgUsers.length === 0) {
     return (
       <div className="text-center py-4 text-muted-foreground">
         No members in this organization yet.
