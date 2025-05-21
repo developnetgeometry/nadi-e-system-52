@@ -1,148 +1,144 @@
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
-// Define CORS headers
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Handle CORS preflight requests
-Deno.serve(async (req) => {
+interface BackupRequest {
+  includeTables?: string[];
+  includeSchema?: boolean;
+}
+
+serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Only allow authenticated requests
-    const authHeader = req.headers.get("Authorization");
+    // Create a Supabase client with the service role key
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Get the authorization header
+    const authHeader = req.headers.get('authorization');
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: "Missing authorization header" }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Create a Supabase client with the service role key (admin privileges)
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    // Extract the token
+    const token = authHeader.replace('Bearer ', '');
     
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Validate auth token
-    const token = authHeader.replace("Bearer ", "");
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseAdmin.auth.getUser(token);
-
+    // Verify the token and get the user
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
-
-    // Check if user is super_admin (only super_admin should be able to backup database)
-    const { data: profile, error: profileError } = await supabaseAdmin
+    
+    // Check if the user is a super admin
+    const { data: userProfile, error: profileError } = await supabaseAdmin
       .from("profiles")
       .select("user_type")
       .eq("id", user.id)
       .single();
-
-    if (profileError || !profile || profile.user_type !== "super_admin") {
+    
+    if (profileError || !userProfile) {
       return new Response(
-        JSON.stringify({
-          error: "Unauthorized - requires super_admin privileges",
-        }),
-        {
-          status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "User profile not found" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    if (userProfile.user_type !== 'super_admin') {
+      return new Response(
+        JSON.stringify({ error: "Only super admins can request database backups" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Extract request parameters
-    const { includeSchema = true, tables = [] } = await req.json();
-
-    // Generate timestamp for backup filename
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const backupName = `backup-${timestamp}`;
-
-    // Generate a temporary access URL where the backup will be stored
-    const { data: bucketData, error: storageError } = await supabaseAdmin.storage
-      .from("database_backups")
-      .createSignedUrl(`${backupName}.sql`, 24 * 60 * 60); // 24 hours expiry
-
-    if (storageError) {
-      console.error("Storage error:", storageError);
-      return new Response(
-        JSON.stringify({ error: "Failed to create storage URL for backup" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Parse the request body
+    let requestData: BackupRequest = {};
+    if (req.method === "POST") {
+      try {
+        const body = await req.text();
+        if (body && body.trim() !== "") {
+          requestData = JSON.parse(body);
         }
-      );
+      } catch (e) {
+        console.error("Error parsing request body:", e);
+      }
     }
 
-    // Since we can't directly run pg_dump in Edge Functions, we'll create a record
-    // in a special table that a server-side cronjob will process
-    const { data: requestData, error: requestError } = await supabaseAdmin
+    // Create a backup request record
+    const timestamp = new Date().toISOString();
+    const filename = `backup_${timestamp.replace(/[:.]/g, "-")}.sql`;
+    
+    const { data: backupRequest, error: backupRequestError } = await supabaseAdmin
       .from("backup_requests")
-      .insert([
-        {
-          requested_by: user.id,
-          status: "pending",
-          include_schema: includeSchema,
-          tables: tables.length > 0 ? tables : null,
-          download_url: bucketData.signedUrl,
-          file_path: `${backupName}.sql`,
-        },
-      ])
+      .insert({
+        requested_by: user.id,
+        status: "pending",
+        include_schema: requestData.includeSchema !== false, // Default to true
+        tables: requestData.includeTables || null,
+      })
       .select()
       .single();
-
-    if (requestError) {
-      console.error("Request error:", requestError);
+    
+    if (backupRequestError) {
       return new Response(
-        JSON.stringify({
-          error: "Failed to create backup request",
-          details: requestError,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "Failed to create backup request", details: backupRequestError.message }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // In a real implementation, you would trigger the actual backup process here
+    // For this example, we'll just update the status to show it was requested
+    
+    // Create a signed URL for future download
+    const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin
+      .storage
+      .from('database_backups')
+      .createSignedUrl(`backups/${filename}`, 60 * 60); // 1 hour expiry
+    
+    if (signedUrlError) {
+      console.error("Error creating signed URL:", signedUrlError);
+    } else {
+      // Update the backup request with the signed URL
+      await supabaseAdmin
+        .from("backup_requests")
+        .update({
+          download_url: signedUrlData.signedUrl,
+          file_path: `backups/${filename}`
+        })
+        .eq("id", backupRequest.id);
     }
 
     return new Response(
       JSON.stringify({
-        message: "Backup request submitted successfully",
-        requestId: requestData.id,
-        estimatedCompletionTime: "5-10 minutes",
-        downloadUrl: bucketData.signedUrl,
+        message: "Backup request created",
+        backupId: backupRequest.id,
+        status: "pending",
+        downloadUrl: signedUrlData?.signedUrl
       }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Server error:", error);
+    console.error("Unexpected error:", error);
     return new Response(
-      JSON.stringify({
-        error: "Internal server error",
-        details: error.message,
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ error: error.message || "Unknown server error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
