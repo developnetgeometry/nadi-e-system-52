@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -209,8 +210,6 @@ export const AssetFormDialog = ({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
-
     setIsSubmitting(true);
 
     if (!siteId && !isStaffUser) {
@@ -223,25 +222,35 @@ export const AssetFormDialog = ({
       return;
     }
 
-    const asset = {
+    const formData = new FormData(e.currentTarget);
+
+    // Convert string values to numbers where needed
+    const assetTypeId = parseInt(assetType, 10) || 0;
+    const assetBrandIdNum = parseInt(assetBrandId, 10) || 0;
+    const assetRetailTypeNum = parseInt(assetRetailType, 10) || 0;
+    const assetLocationIdNum = parseInt(assetLocationId, 10) || 0;
+    const siteIdValue = String(selectedSite?.nd_site?.[0]?.id);
+    const qtyUnit = parseInt(String(formData.get("quantity")), 10) || 0;
+
+    const assetData = {
       name: formData.get("name"),
-      type_id: assetType,
-      brand_id: assetBrandId,
+      type_id: assetTypeId,
+      brand_id: assetBrandIdNum,
       remark: formData.get("description"),
       serial_number: assetSerialNumber,
-      retail_type: assetRetailType,
-      qty_unit: formData.get("quantity"),
-      location_id: assetLocationId,
-      site_id: String(selectedSite?.nd_site?.[0]?.id),
+      retail_type: assetRetailTypeNum,
+      qty_unit: qtyUnit,
+      location_id: assetLocationIdNum,
+      site_id: siteIdValue,
     };
 
     try {
       if (assetId) {
-        console.log("Updating asset:", asset);
+        console.log("Updating asset:", assetData);
         const { error: updateError } = await supabase
           .from("nd_asset")
           .update({
-            ...asset,
+            ...assetData,
             updated_at: new Date().toISOString(),
           })
           .eq("id", assetId);
@@ -253,10 +262,10 @@ export const AssetFormDialog = ({
           description: "The asset has been updated in the system.",
         });
       } else {
-        console.log("Creating new asset:", asset);
+        console.log("Creating new asset:", assetData);
         const { error: insertError } = await supabase.from("nd_asset").insert([
           {
-            ...asset,
+            ...assetData,
             created_at: new Date().toISOString(),
           },
         ]);

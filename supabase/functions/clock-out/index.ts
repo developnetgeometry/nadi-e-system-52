@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
@@ -9,15 +10,18 @@ const corsHeaders = {
   "Content-Type": "application/json",
 };
 
-// Expected request body type
+// Define the expected request body type
 interface ClockOutRequest {
   staff_id: number;
-  photo_path: string;
+  latitude?: number;
+  longitude?: number;
+  address?: string;
+  photo_path?: string;
   updated_by: string;
 }
 
 serve(async (req) => {
-  // Handle preflight request
+  // Handle preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -41,17 +45,18 @@ serve(async (req) => {
 
     try {
       payload = JSON.parse(body);
-    } catch (err) {
-      console.error("Invalid JSON:", err);
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON in request body" }),
-        { status: 400, headers: corsHeaders }
-      );
+    } catch (parseErr) {
+      console.error("JSON parse error:", parseErr);
+      return new Response(JSON.stringify({ error: "Invalid JSON format" }), {
+        status: 400,
+        headers: corsHeaders,
+      });
     }
 
-    const { staff_id, photo_path, updated_by } = payload;
+    const { staff_id, latitude, longitude, address, photo_path, updated_by } =
+      payload;
 
-    if (!staff_id || !photo_path || !updated_by) {
+    if (!staff_id || !updated_by) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: corsHeaders }
@@ -60,41 +65,53 @@ serve(async (req) => {
 
     const today = new Date().toISOString().split("T")[0];
 
-    // 1. Find today's attendance record without clock_out
-    const { data: record, error: fetchError } = await supabase
+    // 1. Find today's attendance record
+    const { data: attendanceRecord, error: findError } = await supabase
       .from("nd_staff_attendance")
       .select("*")
       .eq("staff_id", staff_id)
       .eq("attend_date", today)
-      .is("check_out", null)
       .maybeSingle();
 
-    if (!record) {
+    if (!attendanceRecord || findError) {
       return new Response(
-        JSON.stringify({ error: "No valid clock-in record found for today." }),
+        JSON.stringify({ error: "No clock-in record found for today" }),
         { status: 404, headers: corsHeaders }
       );
     }
 
-    const now = new Date();
-    const checkIn = new Date(record.check_in);
+    if (attendanceRecord.check_out) {
+      return new Response(
+        JSON.stringify({ error: "Staff has already clocked out today" }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-    // 2. Calculate total working hours (float)
-    const totalHours = parseFloat(
-      ((now.getTime() - checkIn.getTime()) / (1000 * 60 * 60)).toFixed(2)
-    );
+    // Calculate total working hours
+    const checkInTime = new Date(attendanceRecord.check_in);
+    const checkOutTime = new Date();
+    const totalHours = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
 
-    // 3. Update the record
+    // 2. Update the record with clock-out information
+    const updateData: any = {
+      check_out: checkOutTime.toISOString(),
+      total_working_hour: parseFloat(totalHours.toFixed(2)),
+      updated_by,
+      updated_at: checkOutTime.toISOString(),
+    };
+
+    if (latitude) updateData.latitude = latitude;
+    if (longitude) {
+      updateData.longitude = longitude;
+      updateData.longtitude = longitude; // Support typo column
+    }
+    if (address) updateData.address = address;
+    if (photo_path) updateData.photo_path = photo_path;
+
     const { error: updateError } = await supabase
       .from("nd_staff_attendance")
-      .update({
-        check_out: now.toISOString(),
-        total_working_hour: totalHours,
-        photo_path,
-        updated_by,
-        updated_at: now.toISOString(),
-      })
-      .eq("id", record.id);
+      .update(updateData)
+      .eq("id", attendanceRecord.id);
 
     if (updateError) {
       console.error("Update error:", updateError);
@@ -110,14 +127,14 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         message: "Clock-out successful",
-        total_working_hour: totalHours,
+        total_hours: parseFloat(totalHours.toFixed(2)),
       }),
       { status: 200, headers: corsHeaders }
     );
   } catch (error) {
     console.error("Unexpected error:", error);
     return new Response(
-      JSON.stringify({ error: error.message || "Unknown error" }),
+      JSON.stringify({ error: error.message || "Unexpected server error" }),
       { status: 500, headers: corsHeaders }
     );
   }

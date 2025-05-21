@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PaginationComponent } from "@/components/ui/PaginationComponent";
@@ -182,11 +183,14 @@ export const AssetList = ({
         (space) => String(space.id) === String(asset.location_id)
       );
 
+      // Instead of asset.brand.name, use brand property from asset.type or asset itself
+      const brandName = asset.brand_id ? asset.brand?.name ?? "" : "";
+
       const row = [
         index + 1,
         asset.name,
         asset.type?.name ?? "",
-        asset.brand?.name ?? "",
+        brandName,
         asset.serial_number ?? "",
         asset.qty_unit ?? "",
         asset.remark ?? "",

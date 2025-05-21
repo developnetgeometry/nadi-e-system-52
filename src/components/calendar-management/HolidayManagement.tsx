@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+export const holidayToastHandler = (toast: any, title: string, message: string, variant: "default" | "destructive" | "success" = "default") => {
+  toast({
+    title: `${title}: ${message}`,
+    variant
+  });
+};
 
 const CalendarManagement = () => {
   const [selectedState, setSelectedState] = useState<string>("State1");
@@ -41,18 +47,9 @@ const CalendarManagement = () => {
         [selectedState]: [...(prev[selectedState] || []), newHoliday],
       }));
       setNewHoliday(undefined);
-      toast({
-        title: "Holiday added",
-        description: `Holiday added for ${selectedState} on ${format(
-          newHoliday,
-          "PPP"
-        )}`,
-      });
+      holidayToastHandler(toast, "Holiday", "Holiday added for " + selectedState + " on " + format(newHoliday, "PPP"));
     } else {
-      toast({
-        title: "No date selected",
-        description: "Please select a date before adding a holiday.",
-      });
+      holidayToastHandler(toast, "No date selected", "Please select a date before adding a holiday.");
     }
   };
 
@@ -63,13 +60,7 @@ const CalendarManagement = () => {
         (h) => h.getTime() !== holiday.getTime()
       ),
     }));
-    toast({
-      title: "Holiday removed",
-      description: `Holiday removed for ${selectedState} on ${format(
-        holiday,
-        "PPP"
-      )}`,
-    });
+    holidayToastHandler(toast, "Holiday", "Holiday removed for " + selectedState + " on " + format(holiday, "PPP"));
   };
 
   const handleAddState = () => {
@@ -79,15 +70,9 @@ const CalendarManagement = () => {
         [newState]: [],
       }));
       setNewState("");
-      toast({
-        title: "State added",
-        description: `State ${newState} has been added.`,
-      });
+      holidayToastHandler(toast, "State", "State " + newState + " has been added.");
     } else {
-      toast({
-        title: "Invalid state",
-        description: "State is either empty or already exists.",
-      });
+      holidayToastHandler(toast, "Invalid state", "State is either empty or already exists.");
     }
   };
 
@@ -95,15 +80,9 @@ const CalendarManagement = () => {
     if (newYear && !years.includes(newYear)) {
       setYears((prev) => [...prev, newYear]);
       setNewYear("");
-      toast({
-        title: "Year added",
-        description: `Year ${newYear} has been added.`,
-      });
+      holidayToastHandler(toast, "Year", "Year " + newYear + " has been added.");
     } else {
-      toast({
-        title: "Invalid year",
-        description: "Year is either empty or already exists.",
-      });
+      holidayToastHandler(toast, "Invalid year", "Year is either empty or already exists.");
     }
   };
 

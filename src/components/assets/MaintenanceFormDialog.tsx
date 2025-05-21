@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,6 +22,7 @@ import { Asset } from "@/types/asset";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+
 interface MaintenanceFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -43,13 +45,21 @@ export const MaintenanceFormDialog = ({
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
 
+    // Convert to proper data types
+    const assetId = String(asset.id);
+    const maintenanceDate = String(formData.get("maintenanceDate"));
+    const description = String(formData.get("description"));
+    const cost = parseFloat(String(formData.get("cost")));
+    const performedBy = String(formData.get("performedBy"));
+    const nextMaintenanceDate = String(formData.get("nextMaintenanceDate"));
+
     const maintenanceRecord = {
-      asset_id: asset.id,
-      maintenance_date: formData.get("maintenanceDate"),
-      description: formData.get("description"),
-      cost: formData.get("cost"),
-      performed_by: formData.get("performedBy"),
-      next_maintenance_date: formData.get("nextMaintenanceDate"),
+      asset_id: assetId,
+      maintenance_date: maintenanceDate,
+      description: description,
+      cost: cost,
+      performed_by: performedBy,
+      next_maintenance_date: nextMaintenanceDate,
     };
 
     try {
