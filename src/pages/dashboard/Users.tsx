@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Profile } from "@/types/auth";
-import { Plus, User, UserPlus, UserCog, Trash2 } from "lucide-react";
+import { Plus, User, UserPlus, UserCog, Trash2, AlertCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { UserTable } from "@/components/users/UserTable";
 import { SortDirection, SortField } from "@/hooks/use-user-management";
 import { UserFormDialog } from "@/components/users/UserFormDialog";
-import { Alert, AlertCircle, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");

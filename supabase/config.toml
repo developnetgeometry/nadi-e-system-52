@@ -71,3 +71,7 @@ enabled = true
 verify_jwt = true
 import_map = "./functions/backup-database/deno.json"
 entrypoint = "./functions/backup-database/index.ts"
+
+[functions.validate-member]
+enabled = true
+verify_jwt = false
