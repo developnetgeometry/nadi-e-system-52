@@ -1,20 +1,22 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { UserFormData } from "../types";
 import { Profile } from "@/types/auth";
+import { useToast } from "@/hooks/use-toast";
 
 export async function handleCreateUser(data: UserFormData) {
   try {
-    // Create user in Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email: data.email,
-      password: data.password || generateTemporaryPassword(),
-      email_confirm: true,
-      user_metadata: { full_name: data.full_name },
+    // Instead of using the admin API directly, we'll use a server-side function
+    // This assumes you have set up a Supabase Edge Function for user creation
+    const { data: authData, error: authError } = await supabase.functions.invoke('create-user', {
+      body: {
+        email: data.email,
+        password: data.password || generateTemporaryPassword(),
+        user_metadata: { full_name: data.full_name },
+      }
     });
 
     if (authError) throw authError;
-    if (!authData.user) throw new Error("Failed to create user");
+    if (!authData?.user) throw new Error("Failed to create user");
 
     const userId = authData.user.id;
 
