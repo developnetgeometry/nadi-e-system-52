@@ -14,7 +14,7 @@ interface OrganizationMembersCardProps {
 }
 
 export const OrganizationMembersCard = ({ 
-  orgUsers = [], // Add default empty array
+  orgUsers, 
   isLoading, 
   error, 
   onRemoveUser 
@@ -37,7 +37,7 @@ export const OrganizationMembersCard = ({
         <CardTitle className="flex items-center justify-between">
           <span>Organization Members</span>
           <Badge variant="outline">
-            {(orgUsers && orgUsers.length) || 0} {(orgUsers && orgUsers.length === 1) ? 'Member' : 'Members'}
+            {orgUsers.length} {orgUsers.length === 1 ? 'Member' : 'Members'}
           </Badge>
         </CardTitle>
       </CardHeader>

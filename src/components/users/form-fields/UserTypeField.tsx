@@ -33,21 +33,16 @@ export function UserTypeField({
 }: UserTypeFieldProps) {
   const selectedUserGroup = form.watch("user_group");
 
-  const { data: userTypes = [], isLoading: isLoadingTypes } = useQuery({
+  const { data: userTypes, isLoading: isLoadingTypes } = useQuery({
     queryKey: ["user-types"],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from("roles")
-          .select("name, description")
-          .order("name", { ascending: true });
+      const { data, error } = await supabase
+        .from("roles")
+        .select("name, description")
+        .order("name", { ascending: true });
 
-        if (error) throw error;
-        return data || []; // Ensure we return an array even if data is null
-      } catch (e) {
-        console.error("Error fetching user types:", e);
-        return [];
-      }
+      if (error) throw error;
+      return data;
     },
   });
 
@@ -56,28 +51,23 @@ export function UserTypeField({
     queryFn: async () => {
       if (!selectedUserGroup) return null;
       
-      try {
-        const { data, error } = await supabase
-          .from("nd_user_group")
-          .select("group_name")
-          .eq("id", selectedUserGroup)
-          .single();
-        
-        if (error) throw error;
-        return data;
-      } catch (e) {
-        console.error("Error fetching group info:", e);
-        return null;
-      }
+      const { data, error } = await supabase
+        .from("nd_user_group")
+        .select("group_name")
+        .eq("id", selectedUserGroup)
+        .single();
+      
+      if (error) throw error;
+      return data;
     },
     enabled: !!selectedUserGroup,
   });
   
   // Filter user types based on the selected user group
   const filteredUserTypes = useMemo(() => {
-    if (!userTypes || !selectedGroupInfo?.group_name) return userTypes || [];
+    if (!userTypes || !selectedGroupInfo?.group_name) return userTypes;
     
-    const groupName = (selectedGroupInfo.group_name || "").toLowerCase();
+    const groupName = selectedGroupInfo.group_name.toLowerCase();
     let keyword = "";
     
     if (groupName.includes("mcmc")) {
@@ -97,7 +87,7 @@ export function UserTypeField({
     
     // Filter user types that include the keyword
     return userTypes.filter(type => 
-      (type.name || "").toLowerCase().includes(keyword)
+      type.name.toLowerCase().includes(keyword)
     );
   }, [userTypes, selectedGroupInfo]);
 
@@ -133,8 +123,8 @@ export function UserTypeField({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {(filteredUserTypes || []).map((type) => (
-                  <SelectItem key={type.name} value={type.name || ""}>
+                {filteredUserTypes?.map((type) => (
+                  <SelectItem key={type.name} value={type.name}>
                     {type.name}{" "}
                     {type.description ? `- ${type.description}` : ""}
                   </SelectItem>

@@ -32,9 +32,9 @@ interface UserTableProps {
 }
 
 export const UserTable = ({
-  users = [],  // Provide a default empty array to prevent undefined
+  users,
   isLoading,
-  selectedUsers = [],  // Provide a default empty array to prevent undefined
+  selectedUsers,
   onSelectAll,
   onSelectUser,
   onEditUser,

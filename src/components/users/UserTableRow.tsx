@@ -1,4 +1,3 @@
-
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,14 +27,8 @@ export const UserTableRow = ({
   onSelect,
   onEdit,
   onDelete,
-  rowIndex = 0,
+  rowIndex,
 }: UserTableRowProps) => {
-  // If user is undefined or doesn't have an id, don't render the row
-  if (!user || !user.id) {
-    console.error("Invalid user object in UserTableRow", user);
-    return null;
-  }
-
   // Simulating additional fields since the current Profile type doesn't have them
   const mockData = {
     phone:
@@ -90,24 +83,22 @@ export const UserTableRow = ({
               {user.full_name?.substring(0, 2) || "U"}
             </AvatarFallback>
           </Avatar>
-          <span>{user.full_name || "Unknown User"}</span>
+          <span>{user.full_name}</span>
         </div>
       </TableCell>
-      <TableCell>{user.email || "N/A"}</TableCell>
-      <TableCell>{user.phone_number || "N/A"}</TableCell>
+      <TableCell >{user.email}</TableCell>
+      <TableCell >{user.phone_number}</TableCell>
       <TableCell>{getStatusBadge(mockData.status)}</TableCell>
-      <TableCell>{mockData.site}</TableCell>
-      <TableCell>{mockData.phase}</TableCell>
-      <TableCell>{mockData.state}</TableCell>
-      <TableCell>{user.user_type || "N/A"}</TableCell>
-      <TableCell>
-        {user.created_at 
-          ? new Date(user.created_at).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-            })
-          : "N/A"}
+      <TableCell >{mockData.site}</TableCell>
+      <TableCell >{mockData.phase}</TableCell>
+      <TableCell >{mockData.state}</TableCell>
+      <TableCell >{user.user_type}</TableCell>
+      <TableCell >
+        {new Date(user.created_at).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        })}
       </TableCell>
     </TableRow>
   );

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -44,50 +43,36 @@ const Users = () => {
     data: usersData,
     isLoading,
     refetch,
-    error,
   } = useQuery({
     queryKey: ["users", page, searchTerm, sortField, sortDirection],
     queryFn: async () => {
-      try {
-        let query = supabase
-          .from("profiles")
-          .select("*, nd_user_group(group_name)", { count: "exact" })
-          .neq("user_type", "member")
-          .ilike("full_name", `%${searchTerm}%`)
-          .range((page - 1) * pageSize, page * pageSize - 1);
+      let query = supabase
+        .from("profiles")
+        .select("*, nd_user_group(group_name)", { count: "exact" })
+        .neq("user_type", "member")
+        .ilike("full_name", `%${searchTerm}%`)
+        .range((page - 1) * pageSize, page * pageSize - 1);
 
-        if (sortField && sortDirection) {
-          query = query.order(sortField, { ascending: sortDirection === "asc" });
-        } else {
-          query = query.order("created_at", { ascending: false });
-        }
-
-        const { data, error, count } = await query.returns<Profile[]>();
-
-        if (error) {
-          console.error("Error fetching users:", error);
-          throw error;
-        }
-
-        return { data: data || [], count: count || 0 };
-      } catch (e) {
-        console.error("Exception in query:", e);
-        return { data: [], count: 0 };
+      if (sortField && sortDirection) {
+        query = query.order(sortField, { ascending: sortDirection === "asc" });
+      } else {
+        query = query.order("created_at", { ascending: false });
       }
+
+      const { data, error, count } = await query.returns<Profile[]>();
+
+      if (error) {
+        console.error("Error fetching users:", error);
+        throw error;
+      }
+
+      return { data: data || [], count: count || 0 };
     },
     staleTime: 5000,
   });
 
-  // If there's an error, log it
-  useEffect(() => {
-    if (error) {
-      console.error("Query error:", error);
-    }
-  }, [error]);
-
   const totalUsers = usersData?.count || 0;
   const totalPages = Math.ceil(totalUsers / pageSize);
-  const users = usersData?.data || []; // Ensure users always has a value
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -194,12 +179,6 @@ const Users = () => {
     setIsCreateDialogOpen(true);
   };
 
-  // Add logging to help debug the issue
-  console.log("Users data:", usersData);
-  console.log("Users array:", users);
-  console.log("Is loading:", isLoading);
-  console.log("Page:", page, "Total pages:", totalPages);
-
   return (
     <DashboardLayout>
       <div className="container mx-auto max-w-6xl py-6">
@@ -242,7 +221,7 @@ const Users = () => {
                 </Button>
               </div>
               <UserTable
-                users={users}
+                users={usersData?.data || []}
                 isLoading={isLoading}
                 selectedUsers={selectedUsers}
                 onSelectAll={handleSelectAll}
