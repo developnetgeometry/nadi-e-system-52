@@ -66,12 +66,6 @@ verify_jwt = true
 import_map = "./functions/clock-out/deno.json"
 entrypoint = "./functions/clock-out/index.ts"
 
-[functions.backup-database]
-enabled = true
-verify_jwt = true
-import_map = "./functions/backup-database/deno.json"
-entrypoint = "./functions/backup-database/index.ts"
-
 [functions.validate-member]
 enabled = true
 verify_jwt = false
