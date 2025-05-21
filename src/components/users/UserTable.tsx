@@ -1,4 +1,3 @@
-
 import { Table, TableBody } from "@/components/ui/table";
 import { UserTableHeader } from "./UserTableHeader";
 import { UserTableRow } from "./UserTableRow";
@@ -22,6 +21,7 @@ interface UserTableProps {
   onSelectUser: (userId: string, checked: boolean) => void;
   onEditUser: (user: Profile) => void;
   onDeleteUser: (userId: string) => void;
+  onViewDetails: (user: Profile) => void;
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -39,6 +39,7 @@ export const UserTable = ({
   onSelectUser,
   onEditUser,
   onDeleteUser,
+  onViewDetails,
   currentPage,
   totalPages,
   onPageChange,
@@ -126,7 +127,7 @@ export const UserTable = ({
         <TableBody>
           {isLoading ? (
             <tr>
-              <td colSpan={10} className="text-center py-8">
+              <td colSpan={12} className="text-center py-8">
                 <div className="flex justify-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6E41E2]"></div>
                 </div>
@@ -135,7 +136,7 @@ export const UserTable = ({
             </tr>
           ) : users.length === 0 ? (
             <tr>
-              <td colSpan={10} className="text-center py-8">
+              <td colSpan={12} className="text-center py-8">
                 <p className="text-gray-500">No users found</p>
               </td>
             </tr>
@@ -148,6 +149,7 @@ export const UserTable = ({
                 onSelect={onSelectUser}
                 onEdit={onEditUser}
                 onDelete={onDeleteUser}
+                onViewDetails={onViewDetails}
                 rowIndex={((currentPage - 1) * 20) + index}
               />
             ))

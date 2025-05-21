@@ -1,9 +1,10 @@
+
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MoreVertical, UserCog, Trash2 } from "lucide-react";
+import { MoreVertical, UserCog, Trash2, Eye } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,7 @@ interface UserTableRowProps {
   onSelect: (userId: string, checked: boolean) => void;
   onEdit: (user: Profile) => void;
   onDelete: (userId: string) => void;
+  onViewDetails: (user: Profile) => void;
   rowIndex: number;
 }
 
@@ -27,6 +29,7 @@ export const UserTableRow = ({
   onSelect,
   onEdit,
   onDelete,
+  onViewDetails,
   rowIndex,
 }: UserTableRowProps) => {
   // Simulating additional fields since the current Profile type doesn't have them
@@ -86,19 +89,48 @@ export const UserTableRow = ({
           <span>{user.full_name}</span>
         </div>
       </TableCell>
-      <TableCell >{user.email}</TableCell>
-      <TableCell >{user.phone_number}</TableCell>
+      <TableCell>{user.email}</TableCell>
+      <TableCell>{user.phone_number}</TableCell>
       <TableCell>{getStatusBadge(mockData.status)}</TableCell>
-      <TableCell >{mockData.site}</TableCell>
-      <TableCell >{mockData.phase}</TableCell>
-      <TableCell >{mockData.state}</TableCell>
-      <TableCell >{user.user_type}</TableCell>
-      <TableCell >
+      <TableCell>{mockData.site}</TableCell>
+      <TableCell>{mockData.phase}</TableCell>
+      <TableCell>{mockData.state}</TableCell>
+      <TableCell>{user.user_type}</TableCell>
+      <TableCell>
         {new Date(user.created_at).toLocaleDateString("en-US", {
           year: "numeric",
           month: "2-digit",
           day: "2-digit",
         })}
+      </TableCell>
+      <TableCell>
+        <div className="flex justify-end space-x-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onViewDetails(user)}
+            title="View Details"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit(user)}
+            title="Edit User"
+          >
+            <UserCog className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onDelete(user.id)}
+            title="Delete User"
+            className="text-red-500 hover:text-red-700"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </TableCell>
     </TableRow>
   );

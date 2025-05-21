@@ -2,6 +2,7 @@
 project_id = "ruanewybqxrdfvrdyeqr"
 
 [api]
+enabled = true
 port = 54321
 schemas = ["public", "storage", "graphql_public"]
 extra_search_path = ["public", "extensions"]
@@ -13,17 +14,22 @@ shadow_port = 54320
 major_version = 15
 
 [studio]
+enabled = true
 port = 54323
+api_url = "http://localhost"
 
 [inbucket]
+enabled = true
 port = 54324
 smtp_port = 54325
 pop3_port = 54326
 
 [storage]
+enabled = true
 file_size_limit = "50MiB"
 
 [auth]
+enabled = true
 site_url = "http://localhost:3000"
 additional_redirect_urls = ["https://localhost:3000"]
 jwt_expiry = 3600
@@ -40,32 +46,37 @@ enable_confirmations = false
 enabled = false
 client_id = ""
 secret = ""
-redirect_uri = ""
-url = ""
+
+[auth.external.facebook]
+enabled = false
+client_id = ""
+secret = ""
 
 [auth.external.google]
 enabled = false
 client_id = ""
 secret = ""
-redirect_uri = ""
-url = ""
+
+[analytics]
+enabled = false
+port = 54327
+vector_port = 54328
+gcp_project_id = ""
+gcp_project_number = ""
+gcp_jwt_path = "supabase-gcp-key.json"
 
 [functions]
-[functions.create-user]
+port = 54329
+functions_dir = "./functions"
+
+[functions.delete-user]
 verify_jwt = true
 
 [functions.clock-in]
-enabled = true
 verify_jwt = true
-import_map = "./functions/clock-in/deno.json"
-entrypoint = "./functions/clock-in/index.ts"
 
 [functions.clock-out]
-enabled = true
 verify_jwt = true
-import_map = "./functions/clock-out/deno.json"
-entrypoint = "./functions/clock-out/index.ts"
 
 [functions.validate-member]
-enabled = true
 verify_jwt = false

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -26,6 +27,18 @@ import { UserTable } from "@/components/users/UserTable";
 import { SortDirection, SortField } from "@/hooks/use-user-management";
 import { UserFormDialog } from "@/components/users/UserFormDialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { UserDetailsDialog } from "@/components/users/UserDetailsDialog";
+import { deleteUsers } from "@/utils/users-utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,8 +48,12 @@ const Users = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState<Profile | undefined>(undefined);
+  const [userToView, setUserToView] = useState<Profile | null>(null);
   const [hasPermission, setHasPermission] = useState(true);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const pageSize = 20;
@@ -147,33 +164,65 @@ const Users = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (confirm("Are you sure you want to delete this user?")) {
-      try {
-        const { error } = await supabase
-          .from("profiles")
-          .delete()
-          .eq("id", userId);
-
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "User deleted successfully",
-        });
-        refetch();
-      } catch (error) {
-        console.error("Error deleting user:", error);
-        toast({
-          title: "Error",
-          description: "Failed to delete user",
-          variant: "destructive",
-        });
-      }
-    }
+  const handleViewUserDetails = (user: Profile) => {
+    setUserToView(user);
+    setIsUserDetailsDialogOpen(true);
   };
 
-  const handleDeleteSelectedUsers = async () => {
+  const deleteUserMutation = useMutation({
+    mutationFn: (userId: string) => deleteUsers([userId]),
+    onSuccess: () => {
+      toast({
+        title: "User deleted",
+        description: "The user has been successfully deleted."
+      });
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error) => {
+      console.error("Error deleting user:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleConfirmDelete = useCallback(() => {
+    if (userToDelete) {
+      deleteUserMutation.mutate(userToDelete);
+      setUserToDelete(null);
+      setIsDeleteAlertOpen(false);
+    }
+  }, [userToDelete, deleteUserMutation]);
+
+  const handleDeleteUser = (userId: string) => {
+    setUserToDelete(userId);
+    setIsDeleteAlertOpen(true);
+  };
+
+  const deleteSelectedUsersMutation = useMutation({
+    mutationFn: deleteUsers,
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: `${selectedUsers.length} users deleted successfully`,
+      });
+      setSelectedUsers([]);
+      refetch();
+    },
+    onError: (error) => {
+      console.error("Error deleting selected users:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete selected users",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteSelectedUsers = () => {
     if (selectedUsers.length === 0) {
       toast({
         title: "No users selected",
@@ -183,34 +232,7 @@ const Users = () => {
       return;
     }
 
-    if (
-      confirm(
-        `Are you sure you want to delete ${selectedUsers.length} selected users?`
-      )
-    ) {
-      try {
-        const { error } = await supabase
-          .from("profiles")
-          .delete()
-          .in("id", selectedUsers);
-
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Selected users deleted successfully",
-        });
-        setSelectedUsers([]);
-        refetch();
-      } catch (error) {
-        console.error("Error deleting selected users:", error);
-        toast({
-          title: "Error",
-          description: "Failed to delete selected users",
-          variant: "destructive",
-        });
-      }
-    }
+    deleteSelectedUsersMutation.mutate(selectedUsers);
   };
 
   const handleAddUser = () => {
@@ -279,9 +301,10 @@ const Users = () => {
                 <Button
                   onClick={handleDeleteSelectedUsers}
                   variant="destructive"
+                  disabled={selectedUsers.length === 0}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Selected
+                  Delete Selected ({selectedUsers.length})
                 </Button>
                 <Button onClick={handleAddUser}>
                   <UserPlus className="h-4 w-4 mr-2" />
@@ -296,6 +319,7 @@ const Users = () => {
                 onSelectUser={handleSelectUser}
                 onEditUser={handleEditUser}
                 onDeleteUser={handleDeleteUser}
+                onViewDetails={handleViewUserDetails}
                 currentPage={page}
                 totalPages={totalPages}
                 onPageChange={handlePageChange}
@@ -328,6 +352,34 @@ const Users = () => {
           refetch();
         }}
       />
+
+      {/* User Details Dialog */}
+      <UserDetailsDialog
+        open={isUserDetailsDialogOpen}
+        onOpenChange={setIsUserDetailsDialogOpen}
+        user={userToView}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action will permanently delete the user from both the application and the authentication system. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };
