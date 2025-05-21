@@ -4389,6 +4389,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           description: string | null
+          frequency: number | null
           id: number
           maintenance_date: string | null
           no_docket: string
@@ -4407,6 +4408,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          frequency?: number | null
           id?: number
           maintenance_date?: string | null
           no_docket: string
@@ -4425,6 +4427,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          frequency?: number | null
           id?: number
           maintenance_date?: string | null
           no_docket?: string

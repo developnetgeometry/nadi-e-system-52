@@ -1,16 +1,50 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { UserFormData } from "../types";
 import { Profile } from "@/types/auth";
 
+// Function to check if current user has permission to create/edit users
+async function hasUserManagementPermission() {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) return false;
+  
+  // Get the user's profile to check their user_type
+  const { data: userProfile } = await supabase
+    .from("profiles")
+    .select("user_type")
+    .eq("id", user.id)
+    .single();
+  
+  if (!userProfile) return false;
+  
+  // List of user types that can create/edit users
+  const allowedUserTypes = [
+    'tp_admin', 'tp_hr', 'dusp_admin', 'mcmc_admin', 
+    'sso_admin', 'vendor_admin', 'super_admin'
+  ];
+  
+  return allowedUserTypes.includes(userProfile.user_type);
+}
+
 export async function handleCreateUser(data: UserFormData) {
   try {
+    // Check if current user has permission
+    const hasPermission = await hasUserManagementPermission();
+    if (!hasPermission) {
+      throw new Error("You don't have permission to create users");
+    }
+    
     // Create user in Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: data.email,
       password: data.password || generateTemporaryPassword(),
       email_confirm: true,
-      user_metadata: { full_name: data.full_name },
+      user_metadata: { 
+        full_name: data.full_name,
+        user_type: data.user_type,
+        user_group: data.user_group,
+        ic_number: data.ic_number
+      },
     });
 
     if (authError) throw authError;
@@ -44,6 +78,12 @@ export async function handleCreateUser(data: UserFormData) {
 
 export async function handleUpdateUser(data: UserFormData, user: Profile) {
   try {
+    // Check if current user has permission
+    const hasPermission = await hasUserManagementPermission();
+    if (!hasPermission) {
+      throw new Error("You don't have permission to update users");
+    }
+    
     // Update profile in Supabase
     const { error: profileError } = await supabase
       .from("profiles")

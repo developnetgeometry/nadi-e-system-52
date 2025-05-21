@@ -122,6 +122,8 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
   >(user?.user_group?.toString());
   const { toast } = useToast();
   const { data: userGroups = [] } = useUserGroups();
+  // Add a state to track current user's permission
+  const [hasPermission, setHasPermission] = useState(true);
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
@@ -149,6 +151,43 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       nationality_id: "",
     },
   });
+
+  // Check user permission on component mount
+  useEffect(() => {
+    const checkPermission = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          setHasPermission(false);
+          return;
+        }
+        
+        const { data: userProfile } = await supabase
+          .from("profiles")
+          .select("user_type")
+          .eq("id", user.id)
+          .single();
+        
+        if (!userProfile) {
+          setHasPermission(false);
+          return;
+        }
+        
+        const allowedUserTypes = [
+          'tp_admin', 'tp_hr', 'dusp_admin', 'mcmc_admin', 
+          'sso_admin', 'vendor_admin', 'super_admin'
+        ];
+        
+        setHasPermission(allowedUserTypes.includes(userProfile.user_type));
+      } catch (error) {
+        console.error("Error checking permissions:", error);
+        setHasPermission(false);
+      }
+    };
+    
+    checkPermission();
+  }, []);
 
   // Fetch user profile data if editing
   const { data: profileData } = useQuery({
@@ -357,6 +396,15 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
   };
 
   const onSubmit = async (data: UserFormData) => {
+    if (!hasPermission) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to manage users.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
@@ -428,6 +476,34 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       setIsLoading(false);
     }
   };
+
+  // Show permission error if user doesn't have access
+  if (!hasPermission) {
+    return (
+      <Card className="border-0 shadow-none">
+        <CardContent className="p-0">
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Permission Denied</AlertTitle>
+            <AlertDescription>
+              You don't have permission to manage users. Only administrators
+              (tp_admin, tp_hr, dusp_admin, mcmc_admin, sso_admin, vendor_admin, super_admin)
+              can access this feature.
+            </AlertDescription>
+          </Alert>
+          <div className="flex justify-end gap-4 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+            >
+              Go Back
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-0 shadow-none">

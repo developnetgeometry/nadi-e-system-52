@@ -31,6 +31,55 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Get the authorization header
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Extract the token
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Verify the token and get the user
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Check if the user has the correct type to create users
+    const { data: userProfile, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select("user_type")
+      .eq("id", user.id)
+      .single();
+    
+    if (profileError || !userProfile) {
+      return new Response(
+        JSON.stringify({ error: "User profile not found" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // List of user types allowed to create users
+    const allowedUserTypes = [
+      'tp_admin', 'tp_hr', 'dusp_admin', 'mcmc_admin', 
+      'sso_admin', 'vendor_admin', 'super_admin'
+    ];
+    
+    if (!allowedUserTypes.includes(userProfile.user_type)) {
+      return new Response(
+        JSON.stringify({ error: "Permission denied. Only admin users can create new users." }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Parse the request body
     const body = await req.text(); // Get raw text first
     

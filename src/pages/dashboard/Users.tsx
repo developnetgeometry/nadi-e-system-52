@@ -25,6 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { UserTable } from "@/components/users/UserTable";
 import { SortDirection, SortField } from "@/hooks/use-user-management";
 import { UserFormDialog } from "@/components/users/UserFormDialog";
+import { Alert, AlertCircle, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,9 +36,46 @@ const Users = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState<Profile | undefined>(undefined);
+  const [hasPermission, setHasPermission] = useState(true);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const pageSize = 20;
+
+  useEffect(() => {
+    const checkPermission = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          setHasPermission(false);
+          return;
+        }
+        
+        const { data: userProfile } = await supabase
+          .from("profiles")
+          .select("user_type")
+          .eq("id", user.id)
+          .single();
+        
+        if (!userProfile) {
+          setHasPermission(false);
+          return;
+        }
+        
+        const allowedUserTypes = [
+          'tp_admin', 'tp_hr', 'dusp_admin', 'mcmc_admin', 
+          'sso_admin', 'vendor_admin', 'super_admin'
+        ];
+        
+        setHasPermission(allowedUserTypes.includes(userProfile.user_type));
+      } catch (error) {
+        console.error("Error checking permissions:", error);
+        setHasPermission(false);
+      }
+    };
+    
+    checkPermission();
+  }, []);
 
   const {
     data: usersData,
@@ -178,6 +216,36 @@ const Users = () => {
   const handleAddUser = () => {
     setIsCreateDialogOpen(true);
   };
+
+  if (!hasPermission) {
+    return (
+      <DashboardLayout>
+        <div className="container mx-auto max-w-6xl py-6">
+          <div className="flex items-center gap-3">
+            <UserCog className="h-8 w-8 text-primary" />
+            <h1 className="text-xl font-bold">User Management</h1>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Access Denied</CardTitle>
+              <CardDescription>You don't have permission to view this page.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Permission Error</AlertTitle>
+                <AlertDescription>
+                  Only administrators (tp_admin, tp_hr, dusp_admin, mcmc_admin, sso_admin, vendor_admin, super_admin)
+                  can access the user management section.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
