@@ -2239,15 +2239,7 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "nd_device_nd_staff_profile_fk"
-            columns: ["staff_id"]
-            isOneToOne: false
-            referencedRelation: "nd_staff_profile"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       nd_district: {
         Row: {
@@ -4391,6 +4383,7 @@ export type Database = {
           description: string | null
           frequency: number | null
           id: number
+          logs: Json | null
           maintenance_date: string | null
           no_docket: string
           priority_type_id: number | null
@@ -4410,6 +4403,7 @@ export type Database = {
           description?: string | null
           frequency?: number | null
           id?: number
+          logs?: Json | null
           maintenance_date?: string | null
           no_docket: string
           priority_type_id?: number | null
@@ -4429,6 +4423,7 @@ export type Database = {
           description?: string | null
           frequency?: number | null
           id?: number
+          logs?: Json | null
           maintenance_date?: string | null
           no_docket?: string
           priority_type_id?: number | null
@@ -7512,7 +7507,7 @@ export type Database = {
           is_active: boolean | null
           postcode: string | null
           remark: string | null
-          staff_id: number | null
+          staff_id: string | null
           state_id: number | null
           updated_at: string | null
           updated_by: string | null
@@ -7528,7 +7523,7 @@ export type Database = {
           is_active?: boolean | null
           postcode?: string | null
           remark?: string | null
-          staff_id?: number | null
+          staff_id?: string | null
           state_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -7544,7 +7539,7 @@ export type Database = {
           is_active?: boolean | null
           postcode?: string | null
           remark?: string | null
-          staff_id?: number | null
+          staff_id?: string | null
           state_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -7678,7 +7673,7 @@ export type Database = {
           id: number
           mobile_no: string | null
           relationship_id: number | null
-          staff_id: number | null
+          staff_id: string | null
           total_children: number | null
           updated_at: string | null
           updated_by: string | null
@@ -7691,7 +7686,7 @@ export type Database = {
           id: number
           mobile_no?: string | null
           relationship_id?: number | null
-          staff_id?: number | null
+          staff_id?: string | null
           total_children?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -7704,7 +7699,7 @@ export type Database = {
           id?: number
           mobile_no?: string | null
           relationship_id?: number | null
-          staff_id?: number | null
+          staff_id?: string | null
           total_children?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -7733,7 +7728,7 @@ export type Database = {
           remark: string | null
           site_id: number | null
           site_profile_id: number | null
-          staff_id: number | null
+          staff_id: string | null
           updated_at: string | null
           updated_by: string | null
           user_id: string | null
@@ -7751,7 +7746,7 @@ export type Database = {
           remark?: string | null
           site_id?: number | null
           site_profile_id?: number | null
-          staff_id?: number | null
+          staff_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
           user_id?: string | null
@@ -7769,7 +7764,7 @@ export type Database = {
           remark?: string | null
           site_id?: number | null
           site_profile_id?: number | null
-          staff_id?: number | null
+          staff_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
           user_id?: string | null
@@ -7780,6 +7775,13 @@ export type Database = {
             columns: ["contract_type"]
             isOneToOne: false
             referencedRelation: "nd_contract_type"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_staff_contract_nd_staff_profile_fk"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "nd_staff_profile"
             referencedColumns: ["id"]
           },
           {
@@ -7811,13 +7813,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "nd_staff_contract_staff_id_fkey"
-            columns: ["staff_id"]
-            isOneToOne: false
-            referencedRelation: "nd_staff_profile"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "nd_staff_contract_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -7836,7 +7831,7 @@ export type Database = {
           position_id: number | null
           resign_date: string | null
           site_id: number | null
-          staff_id: number | null
+          staff_id: string | null
           updated_at: string | null
           updated_by: string | null
         }
@@ -7849,7 +7844,7 @@ export type Database = {
           position_id?: number | null
           resign_date?: string | null
           site_id?: number | null
-          staff_id?: number | null
+          staff_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -7862,7 +7857,7 @@ export type Database = {
           position_id?: number | null
           resign_date?: string | null
           site_id?: number | null
-          staff_id?: number | null
+          staff_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -7879,6 +7874,13 @@ export type Database = {
             columns: ["site_id"]
             isOneToOne: false
             referencedRelation: "nd_site_profile_name"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_staff_job_nd_staff_profile_fk"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "nd_staff_profile"
             referencedColumns: ["id"]
           },
         ]
@@ -7929,20 +7931,20 @@ export type Database = {
           notes: string | null
           notify_email: boolean | null
           reminder_no: number | null
-          staff_id: number
+          staff_id: string | null
           updated_at: string | null
           updated_by: string | null
         }
         Insert: {
           created_at?: string | null
           created_by?: string | null
-          id: number
+          id?: number
           letter_date?: string | null
           letter_type?: string | null
           notes?: string | null
           notify_email?: boolean | null
           reminder_no?: number | null
-          staff_id: number
+          staff_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -7955,11 +7957,19 @@ export type Database = {
           notes?: string | null
           notify_email?: boolean | null
           reminder_no?: number | null
-          staff_id?: number
+          staff_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nd_staff_letter_nd_staff_profile_fk"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "nd_staff_profile"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nd_staff_pay_info: {
         Row: {
@@ -8074,13 +8084,6 @@ export type Database = {
             referencedRelation: "nd_staff_pay_info"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "nd_staff_payroll_nd_staff_profile_fk"
-            columns: ["staff_id"]
-            isOneToOne: false
-            referencedRelation: "nd_staff_profile"
-            referencedColumns: ["id"]
-          },
         ]
       }
       nd_staff_photo: {
@@ -8128,13 +8131,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nd_staff_photo_staff_id_fkey"
-            columns: ["staff_id"]
-            isOneToOne: false
-            referencedRelation: "nd_staff_profile"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "nd_staff_photo_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -8151,7 +8147,7 @@ export type Database = {
           fullname: string | null
           gender_id: number | null
           ic_no: string | null
-          id: number
+          id: string
           is_active: boolean | null
           job_id: number | null
           marital_status: number | null
@@ -8167,7 +8163,6 @@ export type Database = {
           staff_mcmc_id: string | null
           staff_pay_id: number | null
           staff_tp_id: string | null
-          status: number | null
           updated_at: string | null
           updated_by: string | null
           user_id: string | null
@@ -8180,7 +8175,7 @@ export type Database = {
           fullname?: string | null
           gender_id?: number | null
           ic_no?: string | null
-          id?: number
+          id?: string
           is_active?: boolean | null
           job_id?: number | null
           marital_status?: number | null
@@ -8196,7 +8191,6 @@ export type Database = {
           staff_mcmc_id?: string | null
           staff_pay_id?: number | null
           staff_tp_id?: string | null
-          status?: number | null
           updated_at?: string | null
           updated_by?: string | null
           user_id?: string | null
@@ -8209,7 +8203,7 @@ export type Database = {
           fullname?: string | null
           gender_id?: number | null
           ic_no?: string | null
-          id?: number
+          id?: string
           is_active?: boolean | null
           job_id?: number | null
           marital_status?: number | null
@@ -8225,7 +8219,6 @@ export type Database = {
           staff_mcmc_id?: string | null
           staff_pay_id?: number | null
           staff_tp_id?: string | null
-          status?: number | null
           updated_at?: string | null
           updated_by?: string | null
           user_id?: string | null
@@ -10229,6 +10222,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pc_activity_logs: {
+        Row: {
+          asset_id: string
+          created_at: string | null
+          created_by: string | null
+          data_log: Json
+          id: string
+          site_id: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string | null
+          created_by?: string | null
+          data_log: Json
+          id?: string
+          site_id: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          data_log?: Json
+          id?: string
+          site_id?: string
+        }
+        Relationships: []
+      }
+      pc_commands: {
+        Row: {
+          asset_id: string
+          command: string
+          created_at: string | null
+          executed: boolean | null
+          id: string
+        }
+        Insert: {
+          asset_id: string
+          command: string
+          created_at?: string | null
+          executed?: boolean | null
+          id?: string
+        }
+        Update: {
+          asset_id?: string
+          command?: string
+          created_at?: string | null
+          executed?: boolean | null
+          id?: string
+        }
+        Relationships: []
+      }
+      pc_state: {
+        Row: {
+          asset_id: string
+          created_by: string | null
+          id: string
+          site_id: string
+          state: string
+          timestamp: string | null
+        }
+        Insert: {
+          asset_id: string
+          created_by?: string | null
+          id?: string
+          site_id: string
+          state: string
+          timestamp?: string | null
+        }
+        Update: {
+          asset_id?: string
+          created_by?: string | null
+          id?: string
+          site_id?: string
+          state?: string
+          timestamp?: string | null
+        }
+        Relationships: []
       }
       permissions: {
         Row: {
