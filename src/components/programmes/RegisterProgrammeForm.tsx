@@ -97,13 +97,13 @@ const RegisterProgrammeForm: React.FC = () => {
     },
   });
 
-  // Query to fetch categories (only active ones)
+  // Query to fetch categories from nd_event_category table
   const { data: categories } = useQuery({
     queryKey: ["eventCategories"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("nd_event_category")
-        .select("*")
+        .select("id, name, is_active")
         .eq("is_active", true);
 
       if (error) {
@@ -122,7 +122,7 @@ const RegisterProgrammeForm: React.FC = () => {
 
       const { data, error } = await supabase
         .from("nd_event_subcategory")
-        .select("*")
+        .select("id, name, category_id, is_active")
         .eq("category_id", selectedCategory)
         .eq("is_active", true);
 
@@ -143,7 +143,7 @@ const RegisterProgrammeForm: React.FC = () => {
 
       const { data, error } = await supabase
         .from("nd_event_program")
-        .select("*")
+        .select("id, name, subcategory_id, is_active")
         .eq("subcategory_id", selectedSubcategory)
         .eq("is_active", true);
 
@@ -164,7 +164,7 @@ const RegisterProgrammeForm: React.FC = () => {
 
       const { data, error } = await supabase
         .from("nd_event_module")
-        .select("*")
+        .select("id, name, program_id, is_active")
         .eq("program_id", selectedProgram)
         .eq("is_active", true);
 
