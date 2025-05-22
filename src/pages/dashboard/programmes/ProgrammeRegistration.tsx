@@ -12,7 +12,7 @@ import RegisterProgrammeForm from "@/components/programmes/RegisterProgrammeForm
 const ProgrammeRegistration = () => {
   return (
     <DashboardLayout>
-      <PageContainer className="h-full overflow-hidden flex flex-col">
+      <PageContainer className="overflow-hidden">
         <div className="flex items-center mb-6">
           <Button variant="ghost" size="sm" asChild className="mr-4">
             <Link to="/programmes">
@@ -25,7 +25,7 @@ const ProgrammeRegistration = () => {
           title="Register New Programme"
           description="Create a new programme in the system"
         />
-        <ScrollArea className="flex-1 pr-4">
+        <ScrollArea className="flex-1 pr-2">
           <RegisterProgrammeForm />
         </ScrollArea>
       </PageContainer>
