@@ -57,53 +57,12 @@ const RegisterProgrammeForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [duration, setDuration] = useState("");
   
-  // Categories
-  const eventCategories = [
-    { value: "awareness", label: "Awareness" },
-    { value: "training", label: "Training" },
-    { value: "workshop", label: "Workshop" },
-    { value: "seminar", label: "Seminar" }
-  ];
-  
-  // Pillars
-  const pillars = [
-    { value: "digital-transformation", label: "Digital Transformation", categoryId: "training" },
-    { value: "digital-skills", label: "Digital Skills", categoryId: "training" },
-    { value: "digital-society", label: "Digital Society", categoryId: "awareness" },
-    { value: "digital-economy", label: "Digital Economy", categoryId: "seminar" },
-    { value: "digital-government", label: "Digital Government", categoryId: "workshop" }
-  ];
-  
-  // Programmes
-  const programmes = [
-    { value: "data-science", label: "Data Science", pillarId: "digital-skills" },
-    { value: "cybersecurity", label: "Cybersecurity", pillarId: "digital-skills" },
-    { value: "cloud-computing", label: "Cloud Computing", pillarId: "digital-transformation" },
-    { value: "ai", label: "Artificial Intelligence", pillarId: "digital-transformation" },
-    { value: "e-commerce", label: "E-Commerce", pillarId: "digital-economy" },
-    { value: "fintech", label: "Fintech", pillarId: "digital-economy" },
-    { value: "e-governance", label: "E-Governance", pillarId: "digital-government" },
-    { value: "community-outreach", label: "Community Outreach", pillarId: "digital-society" }
-  ];
-  
-  // Modules
-  const modules = [
-    { value: "intro-python", label: "Introduction to Python", programmeId: "data-science" },
-    { value: "data-visualization", label: "Data Visualization", programmeId: "data-science" },
-    { value: "ml-basics", label: "Machine Learning Basics", programmeId: "data-science" },
-    { value: "network-security", label: "Network Security", programmeId: "cybersecurity" },
-    { value: "ethical-hacking", label: "Ethical Hacking", programmeId: "cybersecurity" },
-    { value: "aws-essentials", label: "AWS Essentials", programmeId: "cloud-computing" },
-    { value: "azure-fundamentals", label: "Azure Fundamentals", programmeId: "cloud-computing" },
-    { value: "deep-learning", label: "Deep Learning", programmeId: "ai" },
-    { value: "nlp", label: "Natural Language Processing", programmeId: "ai" },
-    { value: "shopify", label: "Shopify", programmeId: "e-commerce" },
-    { value: "digital-marketing", label: "Digital Marketing", programmeId: "e-commerce" },
-    { value: "blockchain", label: "Blockchain", programmeId: "fintech" },
-    { value: "digital-payments", label: "Digital Payments", programmeId: "fintech" },
-    { value: "digital-services", label: "Digital Services", programmeId: "e-governance" },
-    { value: "digital-literacy", label: "Digital Literacy", programmeId: "community-outreach" }
-  ];
+  // States for database values
+  const [eventCategories, setEventCategories] = useState<{value: string, label: string}[]>([]);
+  const [pillars, setPillars] = useState<{value: string, label: string, categoryId: string}[]>([]);
+  const [programmes, setProgrammes] = useState<{value: string, label: string, pillarId: string}[]>([]);
+  const [modules, setModules] = useState<{value: string, label: string, programmeId: string}[]>([]);
+  const [targetParticipants, setTargetParticipants] = useState<{value: string, label: string}[]>([]);
   
   // Event types
   const eventTypes = [
@@ -114,18 +73,134 @@ const RegisterProgrammeForm = () => {
     { value: "meetup", label: "Meetup", color: "bg-red-500" }
   ];
   
-  // Target participants
-  const targetParticipants = [
-    { value: "beginners", label: "Beginners" },
-    { value: "intermediate", label: "Intermediate" },
-    { value: "advanced", label: "Advanced" },
-    { value: "professionals", label: "Professionals" },
-    { value: "students", label: "Students" },
-    { value: "seniors", label: "Seniors" },
-    { value: "entrepreneurs", label: "Entrepreneurs" },
-    { value: "public-servants", label: "Public Servants" }
-  ];
-
+  // Filtered options based on selections
+  const [filteredPillars, setFilteredPillars] = useState<{value: string, label: string, categoryId: string}[]>([]);
+  const [filteredProgrammes, setFilteredProgrammes] = useState<{value: string, label: string, pillarId: string}[]>([]);
+  const [filteredModules, setFilteredModules] = useState<{value: string, label: string, programmeId: string}[]>([]);
+  
+  // Fetch data from Supabase
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data: categoryData, error: categoryError } = await supabase
+          .from("nd_event_category")
+          .select("id, name")
+          .eq("is_active", true);
+        
+        if (categoryError) throw categoryError;
+        
+        const formattedCategories = categoryData.map(cat => ({
+          value: cat.id.toString(),
+          label: cat.name
+        }));
+        
+        setEventCategories(formattedCategories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    
+    const fetchPillars = async () => {
+      try {
+        const { data: pillarData, error: pillarError } = await supabase
+          .from("nd_event_subcategory")
+          .select("id, name, category_id")
+          .eq("is_active", true);
+        
+        if (pillarError) throw pillarError;
+        
+        const formattedPillars = pillarData.map(pillar => ({
+          value: pillar.id.toString(),
+          label: pillar.name,
+          categoryId: pillar.category_id.toString()
+        }));
+        
+        setPillars(formattedPillars);
+      } catch (error) {
+        console.error("Error fetching pillars:", error);
+      }
+    };
+    
+    const fetchProgrammes = async () => {
+      try {
+        const { data: programmeData, error: programmeError } = await supabase
+          .from("nd_event_program")
+          .select("id, name, subcategory_id")
+          .eq("is_active", true);
+        
+        if (programmeError) throw programmeError;
+        
+        const formattedProgrammes = programmeData.map(programme => ({
+          value: programme.id.toString(),
+          label: programme.name,
+          pillarId: programme.subcategory_id.toString()
+        }));
+        
+        setProgrammes(formattedProgrammes);
+      } catch (error) {
+        console.error("Error fetching programmes:", error);
+      }
+    };
+    
+    const fetchModules = async () => {
+      try {
+        const { data: moduleData, error: moduleError } = await supabase
+          .from("nd_event_module")
+          .select("id, name, program_id")
+          .eq("is_active", true);
+        
+        if (moduleError) throw moduleError;
+        
+        const formattedModules = moduleData.map(module => ({
+          value: module.id.toString(),
+          label: module.name,
+          programmeId: module.program_id.toString()
+        }));
+        
+        setModules(formattedModules);
+      } catch (error) {
+        console.error("Error fetching modules:", error);
+      }
+    };
+    
+    const fetchTargetParticipants = async () => {
+      try {
+        const { data: targetData, error: targetError } = await supabase
+          .from("nd_target_participant")
+          .select("id, name")
+          .eq("is_active", true);
+        
+        if (targetError) throw targetError;
+        
+        const formattedTargets = targetData.map(target => ({
+          value: target.id.toString(),
+          label: target.name
+        }));
+        
+        setTargetParticipants(formattedTargets);
+      } catch (error) {
+        console.error("Error fetching target participants:", error);
+        // Fallback to default values if database fetch fails
+        setTargetParticipants([
+          { value: "beginners", label: "Beginners" },
+          { value: "intermediate", label: "Intermediate" },
+          { value: "advanced", label: "Advanced" },
+          { value: "professionals", label: "Professionals" },
+          { value: "students", label: "Students" },
+          { value: "seniors", label: "Seniors" },
+          { value: "entrepreneurs", label: "Entrepreneurs" },
+          { value: "public-servants", label: "Public Servants" }
+        ]);
+      }
+    };
+    
+    fetchCategories();
+    fetchPillars();
+    fetchProgrammes();
+    fetchModules();
+    fetchTargetParticipants();
+  }, []);
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -150,11 +225,6 @@ const RegisterProgrammeForm = () => {
       is_active: true,
     },
   });
-  
-  // Filtered options based on selections
-  const [filteredPillars, setFilteredPillars] = useState(pillars);
-  const [filteredProgrammes, setFilteredProgrammes] = useState(programmes);
-  const [filteredModules, setFilteredModules] = useState(modules);
   
   // Watch form fields to calculate duration and filter options
   const watchCategory = form.watch("category");
@@ -196,7 +266,7 @@ const RegisterProgrammeForm = () => {
     } else {
       setFilteredPillars(pillars);
     }
-  }, [watchCategory, form]);
+  }, [watchCategory, pillars, form]);
 
   // Filter programmes based on selected pillar
   useEffect(() => {
@@ -208,7 +278,7 @@ const RegisterProgrammeForm = () => {
     } else {
       setFilteredProgrammes(programmes);
     }
-  }, [watchPillar, form]);
+  }, [watchPillar, programmes, form]);
 
   // Filter modules based on selected programme
   useEffect(() => {
@@ -219,7 +289,7 @@ const RegisterProgrammeForm = () => {
     } else {
       setFilteredModules(modules);
     }
-  }, [watchProgramme, form]);
+  }, [watchProgramme, modules, form]);
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
