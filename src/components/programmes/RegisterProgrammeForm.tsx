@@ -3,12 +3,13 @@ import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-
+import { useNavigate } from "react-router-dom";
+import { supabase, BUCKET_NAME_UTILITIES } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -16,644 +17,867 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useFileUpload } from "@/hooks/use-file-upload";
+import { useAuth } from "@/hooks/useAuth";
+import { Checkbox } from "@/components/ui/checkbox";
+import TimeInput from "@/components/ui/TimePicker";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { formatDuration } from "@/utils/date-utils";
 import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
 
-// Define form schema
+// Form validation schema
 const formSchema = z.object({
-  program_name: z.string().min(2, {
-    message: "Program name must be at least 2 characters.",
-  }),
+  title: z.string().min(1, { message: "Programme name is required" }),
   description: z.string().optional(),
-  location_event: z.string().optional(),
-  start_datetime: z.date(),
-  end_datetime: z.date(),
-  duration: z.string().optional(),
+  location: z.string().optional(),
+  start_date: z.string().min(1, { message: "Start date is required" }),
+  end_date: z.string().min(1, { message: "End date is required" }),
   trainer_name: z.string().optional(),
-  category_id: z.number(),
-  subcategory_id: z.number(),
-  program_id: z.string().optional(),
-  module_id: z.string().optional(),
-  program_mode: z.string().optional(),
+  files: z.any().optional(),
+  category: z.string().min(1, { message: "Category is required" }),
+  pillar: z.string().min(1, { message: "Pillar is required" }),
+  programme: z.string().min(1, { message: "Programme is required" }),
+  module: z.string().min(1, { message: "Module is required" }),
+  start_time: z.string().min(1, { message: "Start time is required" }),
+  end_time: z.string().min(1, { message: "End time is required" }),
+  event_type: z.string().min(1, { message: "Event type is required" }),
   is_group_event: z.boolean().default(false),
-  total_participant: z.number().optional(),
-  status_id: z.number(),
+  mode: z.enum(["Physical", "Online"]),
+  max_participants: z.string().optional(),
+  is_active: z.boolean().default(true),
 });
 
-// Define types for form
-type ProgrammeFormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
-// Define props interface to include defaultCategoryId
-interface RegisterProgrammeFormProps {
-  programmeData?: any;
-  isEditMode?: boolean;
-  defaultCategoryId?: number;
+interface ProgrammeData {
+  id: string;
+  program_name: string;
+  description: string | null;
+  location_event: string | null;
+  start_datetime: string;
+  end_datetime: string;
+  duration: number;
+  trainer_name: string;
+  category_id: string;
+  subcategory_id: string;
+  program_id: string;
+  module_id: string;
+  program_mode: number;
+  is_group_event: boolean;
+  total_participant: number | null;
+  status_id: number;
 }
 
-const RegisterProgrammeForm = ({ 
-  programmeData, 
-  isEditMode = false,
-  defaultCategoryId
-}: RegisterProgrammeFormProps) => {
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
-  const [statuses, setStatuses] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isStartDateOpen, setIsStartDateOpen] = useState(false);
-  const [isEndDateOpen, setIsEndDateOpen] = useState(false);
+interface RegisterProgrammeFormProps {
+  programmeData?: ProgrammeData | null;
+  isEditMode?: boolean;
+}
 
-  // Initialize form
-  const form = useForm<ProgrammeFormValues>({
+const RegisterProgrammeForm: React.FC<RegisterProgrammeFormProps> = ({ 
+  programmeData = null, 
+  isEditMode = false 
+}) => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { isUploading, uploadFile } = useFileUpload();
+  const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [duration, setDuration] = useState("");
+  
+  // States for database values
+  const [eventCategories, setEventCategories] = useState<{value: string, label: string}[]>([]);
+  const [pillars, setPillars] = useState<{value: string, label: string, categoryId: string}[]>([]);
+  const [programmes, setProgrammes] = useState<{value: string, label: string, pillarId: string}[]>([]);
+  const [modules, setModules] = useState<{value: string, label: string, programmeId: string}[]>([]);
+  const [existingAttachments, setExistingAttachments] = useState<{id: string, file_path: string}[]>([]);
+  
+  // Event types
+  const eventTypes = [
+    { value: "webinar", label: "Webinar", color: "bg-blue-500" },
+    { value: "workshop", label: "Workshop", color: "bg-green-500" },
+    { value: "conference", label: "Conference", color: "bg-purple-500" },
+    { value: "training", label: "Training", color: "bg-yellow-500" },
+    { value: "meetup", label: "Meetup", color: "bg-red-500" }
+  ];
+  
+  // Filtered options based on selections
+  const [filteredPillars, setFilteredPillars] = useState<{value: string, label: string, categoryId: string}[]>([]);
+  const [filteredProgrammes, setFilteredProgrammes] = useState<{value: string, label: string, pillarId: string}[]>([]);
+  const [filteredModules, setFilteredModules] = useState<{value: string, label: string, programmeId: string}[]>([]);
+  
+  // Initialize form with default values or existing programme data
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      program_name: programmeData?.program_name || "",
-      description: programmeData?.description || "",
-      location_event: programmeData?.location_event || "",
-      start_datetime: programmeData?.start_datetime ? new Date(programmeData.start_datetime) : new Date(),
-      end_datetime: programmeData?.end_datetime ? new Date(programmeData.end_datetime) : new Date(),
-      duration: programmeData?.duration || "",
-      trainer_name: programmeData?.trainer_name || "",
-      category_id: programmeData?.category_id || defaultCategoryId || 0,
-      subcategory_id: programmeData?.subcategory_id || 0,
-      program_id: programmeData?.program_id || "",
-      module_id: programmeData?.module_id || "",
-      program_mode: programmeData?.program_mode || "",
-      is_group_event: programmeData?.is_group_event || false,
-      total_participant: programmeData?.total_participant || 0,
-      status_id: programmeData?.status_id || 0,
+      title: "",
+      description: "",
+      location: "",
+      start_date: "",
+      end_date: "",
+      trainer_name: "",
+      files: undefined,
+      category: "",
+      pillar: "",
+      programme: "",
+      module: "",
+      start_time: "",
+      end_time: "",
+      event_type: "",
+      is_group_event: false,
+      mode: "Physical",
+      max_participants: "",
+      is_active: true,
     },
   });
-
-  // Fetch categories, subcategories and statuses on component mount
+  
+  // Fetch data from Supabase
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCategories = async () => {
       try {
-        // Fetch categories
         const { data: categoryData, error: categoryError } = await supabase
-          .from('nd_event_category')
-          .select('*')
-          .eq('is_active', true);
+          .from("nd_event_category")
+          .select("id, name")
+          .eq("is_active", true);
+        
         if (categoryError) throw categoryError;
-        setCategories(categoryData || []);
-
-        // Fetch subcategories (initially for the first category or the existing category)
-        const initialCategoryId = programmeData?.category_id || defaultCategoryId || categoryData?.[0]?.id;
-        if (initialCategoryId) {
-          setSelectedCategory(initialCategoryId);
-          const { data: subCategoryData, error: subCatError } = await supabase
-            .from('nd_event_subcategory')
-            .select('*')
-            .eq('category_id', initialCategoryId)
-            .eq('is_active', true);
-          if (subCatError) throw subCatError;
-          setSubCategories(subCategoryData || []);
-        }
-
-        // Fetch statuses
-        const { data: statusData, error: statusError } = await supabase
-          .from('nd_event_status')
-          .select('*');
-        if (statusError) throw statusError;
-        setStatuses(statusData || []);
+        
+        const formattedCategories = categoryData.map(cat => ({
+          value: cat.id.toString(),
+          label: cat.name
+        }));
+        
+        setEventCategories(formattedCategories);
       } catch (error) {
-        console.error("Error fetching data:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load data. Please try again.",
-          variant: "destructive",
-        });
+        console.error("Error fetching categories:", error);
       }
     };
+    
+    const fetchPillars = async () => {
+      try {
+        const { data: pillarData, error: pillarError } = await supabase
+          .from("nd_event_subcategory")
+          .select("id, name, category_id")
+          .eq("is_active", true);
+        
+        if (pillarError) throw pillarError;
+        
+        const formattedPillars = pillarData.map(pillar => ({
+          value: pillar.id.toString(),
+          label: pillar.name,
+          categoryId: pillar.category_id.toString()
+        }));
+        
+        setPillars(formattedPillars);
+      } catch (error) {
+        console.error("Error fetching pillars:", error);
+      }
+    };
+    
+    const fetchProgrammes = async () => {
+      try {
+        const { data: programmeData, error: programmeError } = await supabase
+          .from("nd_event_program")
+          .select("id, name, subcategory_id")
+          .eq("is_active", true);
+        
+        if (programmeError) throw programmeError;
+        
+        const formattedProgrammes = programmeData.map(programme => ({
+          value: programme.id.toString(),
+          label: programme.name,
+          pillarId: programme.subcategory_id.toString()
+        }));
+        
+        setProgrammes(formattedProgrammes);
+      } catch (error) {
+        console.error("Error fetching programmes:", error);
+      }
+    };
+    
+    const fetchModules = async () => {
+      try {
+        const { data: moduleData, error: moduleError } = await supabase
+          .from("nd_event_module")
+          .select("id, name, program_id")
+          .eq("is_active", true);
+        
+        if (moduleError) throw moduleError;
+        
+        const formattedModules = moduleData.map(module => ({
+          value: module.id.toString(),
+          label: module.name,
+          programmeId: module.program_id.toString()
+        }));
+        
+        setModules(formattedModules);
+      } catch (error) {
+        console.error("Error fetching modules:", error);
+      }
+    };
+    
+    fetchCategories();
+    fetchPillars();
+    fetchProgrammes();
+    fetchModules();
+  }, []);
 
-    fetchData();
-  }, [programmeData?.category_id, toast, defaultCategoryId]);
+  // Fetch attachments if in edit mode
+  useEffect(() => {
+    if (isEditMode && programmeData) {
+      const fetchAttachments = async () => {
+        try {
+          const { data, error } = await supabase
+            .from("nd_event_attachment")
+            .select("id, file_path")
+            .eq("event_id", programmeData.id);
 
-  // Handle category change
-  const handleCategoryChange = async (categoryId: number) => {
-    setSelectedCategory(categoryId);
-    try {
-      const { data: subCategories, error } = await supabase
-        .from('nd_event_subcategory')
-        .select('*')
-        .eq('category_id', categoryId)
-        .eq('is_active', true);
-      if (error) throw error;
-      setSubCategories(subCategories || []);
-      form.setValue("subcategory_id", subCategories?.[0]?.id || 0);
-    } catch (error) {
-      console.error("Error fetching subcategories:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load subcategories. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Handle form submission
-  const onSubmit = async (values: ProgrammeFormValues) => {
-    setIsSubmitting(true);
-    try {
-      const dataToSubmit = {
-        ...values,
-        category_id: selectedCategory,
-        start_datetime: format(values.start_datetime, 'yyyy-MM-dd HH:mm:ss'),
-        end_datetime: format(values.end_datetime, 'yyyy-MM-dd HH:mm:ss'),
-      };
-      
-      if (isEditMode && programmeData?.id) {
-        const { error } = await supabase
-          .from('nd_event')
-          .update(dataToSubmit)
-          .eq('id', programmeData.id);
-
-        if (error) {
-          console.error("Error updating programme:", error);
-          toast({
-            title: "Error",
-            description: "Failed to update programme. Please try again.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Success",
-            description: "Programme updated successfully!",
-          });
+          if (error) throw error;
+          setExistingAttachments(data || []);
+        } catch (error) {
+          console.error("Error fetching attachments:", error);
         }
-      } else {
-        const { error } = await supabase
-          .from('nd_event')
-          .insert([dataToSubmit]);
+      };
 
-        if (error) {
-          console.error("Error creating programme:", error);
-          toast({
-            title: "Error",
-            description: "Failed to create programme. Please try again.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Success",
-            description: "Programme created successfully!",
-          });
-          form.reset();
+      fetchAttachments();
+    }
+  }, [isEditMode, programmeData]);
+  
+  // Populate form with existing data if in edit mode
+  useEffect(() => {
+    if (isEditMode && programmeData) {
+      const startDateTime = new Date(programmeData.start_datetime);
+      const endDateTime = new Date(programmeData.end_datetime);
+
+      form.reset({
+        title: programmeData.program_name || "",
+        description: programmeData.description || "",
+        location: programmeData.location_event || "",
+        start_date: format(startDateTime, "yyyy-MM-dd"),
+        end_date: format(endDateTime, "yyyy-MM-dd"),
+        start_time: format(startDateTime, "HH:mm"),
+        end_time: format(endDateTime, "HH:mm"),
+        trainer_name: programmeData.trainer_name || "",
+        category: programmeData.category_id?.toString() || "",
+        pillar: programmeData.subcategory_id?.toString() || "",
+        programme: programmeData.program_id?.toString() || "",
+        module: programmeData.module_id?.toString() || "",
+        event_type: "webinar", // This would need to be mapped from your data if available
+        is_group_event: programmeData.is_group_event || false,
+        mode: programmeData.program_mode === 1 ? "Online" : "Physical",
+        max_participants: programmeData.total_participant?.toString() || "",
+        is_active: programmeData.status_id === 1, // Assuming status_id 1 is active
+      });
+
+      // Update filtered options based on loaded values
+      if (programmeData.category_id) {
+        const filteredPillars = pillars.filter(pillar => pillar.categoryId === programmeData.category_id.toString());
+        setFilteredPillars(filteredPillars);
+
+        if (programmeData.subcategory_id) {
+          const filteredProgrammes = programmes.filter(prog => prog.pillarId === programmeData.subcategory_id.toString());
+          setFilteredProgrammes(filteredProgrammes);
+
+          if (programmeData.program_id) {
+            const filteredModules = modules.filter(mod => mod.programmeId === programmeData.program_id.toString());
+            setFilteredModules(filteredModules);
+          }
         }
       }
+    }
+  }, [isEditMode, programmeData, pillars, programmes, modules, form]);
+  
+  // Watch form fields to calculate duration and filter options
+  const watchCategory = form.watch("category");
+  const watchPillar = form.watch("pillar");
+  const watchProgramme = form.watch("programme");
+  const watchStartDate = form.watch("start_date");
+  const watchEndDate = form.watch("end_date");
+  const watchStartTime = form.watch("start_time");
+  const watchEndTime = form.watch("end_time");
+
+  // Calculate duration when dates and times change
+  useEffect(() => {
+    if (watchStartDate && watchEndDate && watchStartTime && watchEndTime) {
+      const startDateTime = new Date(`${watchStartDate}T${watchStartTime}`);
+      const endDateTime = new Date(`${watchEndDate}T${watchEndTime}`);
+      
+      // Calculate duration in milliseconds
+      const durationMs = endDateTime.getTime() - startDateTime.getTime();
+      
+      // Convert to hours
+      const durationHours = durationMs / (1000 * 60 * 60);
+      
+      // Format the duration
+      const formattedDuration = formatDuration(durationHours);
+      setDuration(formattedDuration);
+    } else {
+      setDuration("");
+    }
+  }, [watchStartDate, watchEndDate, watchStartTime, watchEndTime]);
+
+  // Filter pillars based on selected category
+  useEffect(() => {
+    if (watchCategory) {
+      const filtered = pillars.filter(pillar => pillar.categoryId === watchCategory);
+      setFilteredPillars(filtered);
+      if (!isEditMode || !programmeData) {
+        form.setValue("pillar", "");
+        form.setValue("programme", "");
+        form.setValue("module", "");
+      }
+    } else {
+      setFilteredPillars(pillars);
+    }
+  }, [watchCategory, pillars, form, isEditMode, programmeData]);
+
+  // Filter programmes based on selected pillar
+  useEffect(() => {
+    if (watchPillar) {
+      const filtered = programmes.filter(programme => programme.pillarId === watchPillar);
+      setFilteredProgrammes(filtered);
+      if (!isEditMode || !programmeData) {
+        form.setValue("programme", "");
+        form.setValue("module", "");
+      }
+    } else {
+      setFilteredProgrammes(programmes);
+    }
+  }, [watchPillar, programmes, form, isEditMode, programmeData]);
+
+  // Filter modules based on selected programme
+  useEffect(() => {
+    if (watchProgramme) {
+      const filtered = modules.filter(module => module.programmeId === watchProgramme);
+      setFilteredModules(filtered);
+      if (!isEditMode || !programmeData) {
+        form.setValue("module", "");
+      }
+    } else {
+      setFilteredModules(modules);
+    }
+  }, [watchProgramme, modules, form, isEditMode, programmeData]);
+
+  const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
+    try {
+      // Calculate duration
+      const startDateTime = new Date(`${data.start_date}T${data.start_time}`);
+      const endDateTime = new Date(`${data.end_date}T${data.end_time}`);
+      const durationHours = (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60);
+      
+      // Prepare event data
+      const eventData = {
+        program_name: data.title,
+        description: data.description || "",
+        location_event: data.location || "",
+        start_datetime: startDateTime.toISOString(),
+        end_datetime: endDateTime.toISOString(),
+        duration: durationHours,
+        trainer_name: data.trainer_name || "",
+        created_by: user?.id,
+        requester_id: user?.id,
+        category_id: data.category,
+        subcategory_id: data.pillar,
+        program_id: data.programme,
+        module_id: data.module,
+        program_mode: data.mode === "Online" ? 1 : 2,  // Assuming 1=Online, 2=Physical
+        total_participant: data.max_participants ? parseInt(data.max_participants) : null,
+        status_id: data.is_active ? 1 : 2, // Assuming 1=Active, 2=Inactive
+        is_group_event: data.is_group_event,
+        updated_by: user?.id
+      };
+
+      let eventId;
+
+      if (isEditMode && programmeData) {
+        // Update existing event
+        const { data: updatedEvent, error: updateError } = await supabase
+          .from("nd_event")
+          .update(eventData)
+          .eq("id", programmeData.id)
+          .select();
+
+        if (updateError) throw updateError;
+        eventId = programmeData.id;
+        
+        toast({
+          title: "Success",
+          description: "Programme updated successfully",
+          variant: "default",
+        });
+      } else {
+        // Insert new event
+        const { data: newEvent, error: insertError } = await supabase
+          .from("nd_event")
+          .insert(eventData)
+          .select();
+
+        if (insertError) throw insertError;
+        eventId = newEvent?.[0]?.id;
+        
+        toast({
+          title: "Success",
+          description: "Programme registered successfully",
+          variant: "default",
+        });
+      }
+
+      // Handle file uploads if any files are present
+      const fileInput = document.getElementById("files") as HTMLInputElement;
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        // Upload all files and track their paths
+        const attachmentPromises = Array.from(fileInput.files).map(async (file) => {
+          const filePath = await uploadFile(
+            file,
+            "utilities-attachment", // Using the bucket name from constants
+            "program-attachments"
+          );
+
+          if (filePath) {
+            // Save attachment reference in nd_event_attachment table
+            return supabase.from("nd_event_attachment").insert({
+              event_id: eventId,
+              file_path: filePath,
+              created_by: user?.id,
+            });
+          }
+        });
+
+        // Wait for all attachment uploads to complete
+        await Promise.all(attachmentPromises);
+      }
+
+      // Redirect to programmes listing after successful submission
+      navigate("/programmes");
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
         title: "Error",
-        description: "Failed to submit form. Please try again.",
+        description: "Failed to register programme. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
-  // Initialize form with defaultCategoryId if it exists
-  useEffect(() => {
-    if (!isEditMode && defaultCategoryId) {
-      const initializeForm = async () => {
-        try {
-          // Set the selected category and update form value
-          setSelectedCategory(defaultCategoryId);
-          form.setValue("category_id", defaultCategoryId);
-          
-          // Fetch subcategories for this category
-          const { data: subCategories, error: subCatError } = await supabase
-            .from('nd_event_subcategory')
-            .select('*')
-            .eq('category_id', defaultCategoryId)
-            .eq('is_active', true);
-            
-          if (subCatError) throw subCatError;
-          setSubCategories(subCategories || []);
-          
-          // Set first subcategory as default if available
-          if (subCategories && subCategories.length > 0) {
-            form.setValue("subcategory_id", subCategories[0].id);
-          }
-        } catch (error) {
-          console.error("Error initializing form with default category:", error);
-        }
-      };
-      
-      initializeForm();
-    }
-  }, [isEditMode, defaultCategoryId, form]);
-  
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-10">
-        {/* Program Details Section */}
-        <div className="border rounded-lg p-6 space-y-4 bg-white dark:bg-gray-950">
-          <h2 className="text-xl font-semibold">Program Details</h2>
-          
-          {/* Category Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Category */}
-            <FormField
-              control={form.control}
-              name="category_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Program Category</FormLabel>
-                  <Select
-                    value={selectedCategory?.toString() || field.value?.toString()}
-                    onValueChange={(value) => handleCategoryChange(parseInt(value))}
-                    disabled={!!defaultCategoryId || isEditMode} // Disable if defaultCategoryId is provided
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id.toString()}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            {/* Subcategory */}
-            <FormField
-              control={form.control}
-              name="subcategory_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Program Subcategory</FormLabel>
-                  <Select
-                    value={field.value?.toString()}
-                    onValueChange={(value) => field.onChange(parseInt(value))}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select subcategory" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {subCategories.map((subCat) => (
-                        <SelectItem key={subCat.id} value={subCat.id.toString()}>
-                          {subCat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Program Name */}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="program_name"
+            name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Program Name</FormLabel>
+                <FormLabel>Programme Name*</FormLabel>
                 <FormControl>
-                  <Input placeholder="Program name" {...field} />
+                  <Input placeholder="Enter programme name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* Description */}
           <FormField
             control={form.control}
-            name="description"
+            name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description</FormLabel>
+                <FormLabel>Category*</FormLabel>
                 <FormControl>
-                  <Textarea
-                    placeholder="Program description"
-                    className="resize-none"
+                  <select 
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                     {...field}
+                  >
+                    <option value="">Select Category</option>
+                    {eventCategories.map(category => (
+                      <option key={category.value} value={category.value}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="pillar"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Pillar (Sub-category)*</FormLabel>
+                <FormControl>
+                  <select 
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    {...field}
+                    disabled={!watchCategory}
+                  >
+                    <option value="">Select Pillar</option>
+                    {filteredPillars.map(pillar => (
+                      <option key={pillar.value} value={pillar.value}>
+                        {pillar.label}
+                      </option>
+                    ))}
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="programme"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Programme*</FormLabel>
+                <FormControl>
+                  <select 
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    {...field}
+                    disabled={!watchPillar}
+                  >
+                    <option value="">Select Programme</option>
+                    {filteredProgrammes.map(programme => (
+                      <option key={programme.value} value={programme.value}>
+                        {programme.label}
+                      </option>
+                    ))}
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="module"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Module*</FormLabel>
+                <FormControl>
+                  <select 
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    {...field}
+                    disabled={!watchProgramme}
+                  >
+                    <option value="">Select Module</option>
+                    {filteredModules.map(module => (
+                      <option key={module.value} value={module.value}>
+                        {module.label}
+                      </option>
+                    ))}
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="start_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Start Date*</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="start_time"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Start Time*</FormLabel>
+                  <FormControl>
+                    <TimeInput 
+                      id="start_time" 
+                      value={field.value}
+                      onChange={field.onChange}
+                      disallowSameAsValue=""
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="end_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>End Date*</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="end_time"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>End Time*</FormLabel>
+                  <FormControl>
+                    <TimeInput 
+                      id="end_time" 
+                      value={field.value}
+                      onChange={field.onChange}
+                      disallowSameAsValue=""
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-1">
+            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Duration (Calculated)
+            </label>
+            <div className="h-10 px-3 py-2 rounded-md border border-input bg-background text-sm text-gray-500 flex items-center">
+              {duration || "Will be calculated"}
+            </div>
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="event_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Event Type*</FormLabel>
+                <FormControl>
+                  <select 
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    {...field}
+                  >
+                    <option value="">Select Event Type</option>
+                    {eventTypes.map(type => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="is_group_event"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-end space-x-2 space-y-0 mt-8">
+                <FormControl>
+                  <Checkbox 
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="font-normal">This is a group event</FormLabel>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="mode"
+            render={({ field }) => (
+              <FormItem className="space-y-3">
+                <FormLabel>Mode*</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    className="flex flex-row gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="Physical" id="physical" />
+                      <label htmlFor="physical" className="text-sm font-normal">Physical</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="Online" id="online" />
+                      <label htmlFor="online" className="text-sm font-normal">Online</label>
+                    </div>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Input placeholder="Programme location" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div>
+          <FormField
+            control={form.control}
+            name="max_participants"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Maximum Participants</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="Maximum number of participants"
+                    min="1"
+                    {...field} 
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
-          {/* Location */}
-          <FormField
-            control={form.control}
-            name="location_event"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Location</FormLabel>
-                <FormControl>
-                  <Input placeholder="Location" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Date and Time */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Start Date and Time */}
-            <FormField
-              control={form.control}
-              name="start_datetime"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Start Date and Time</FormLabel>
-                  <Popover open={isStartDateOpen} onOpenChange={setIsStartDateOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP p")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={(date) => {
-                          field.onChange(date);
-                          setIsStartDateOpen(false);
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* End Date and Time */}
-            <FormField
-              control={form.control}
-              name="end_datetime"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>End Date and Time</FormLabel>
-                  <Popover open={isEndDateOpen} onOpenChange={setIsEndDateOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP p")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={(date) => {
-                          field.onChange(date);
-                          setIsEndDateOpen(false);
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Duration */}
-          <FormField
-            control={form.control}
-            name="duration"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Duration</FormLabel>
-                <FormControl>
-                  <Input placeholder="Duration" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Trainer Name */}
-          <FormField
-            control={form.control}
-            name="trainer_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Trainer Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Trainer name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
-        {/* Additional Details Section */}
-        <div className="border rounded-lg p-6 space-y-4 bg-white dark:bg-gray-950">
-          <h2 className="text-xl font-semibold">Additional Details</h2>
+        <FormField
+          control={form.control}
+          name="trainer_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Trainer/Organization Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Trainer name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          {/* Program ID and Module ID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Program ID */}
-            <FormField
-              control={form.control}
-              name="program_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Program ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Program ID" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Enter programme description"
+                  className="resize-none h-32"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            {/* Module ID */}
-            <FormField
-              control={form.control}
-              name="module_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Module ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Module ID" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        {isEditMode && existingAttachments.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium">Existing Attachments</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {existingAttachments.map((attachment) => (
+                <div key={attachment.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                  <span className="text-sm truncate">
+                    {attachment.file_path.split('/').pop()}
+                  </span>
+                  <a 
+                    href={`${BUCKET_NAME_UTILITIES}/${attachment.file_path}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    View
+                  </a>
+                </div>
+              ))}
+            </div>
           </div>
+        )}
 
-          {/* Program Mode */}
-          <FormField
-            control={form.control}
-            name="program_mode"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Program Mode</FormLabel>
-                <FormControl>
-                  <Input placeholder="Program mode" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="files"
+          render={({ field: { onChange, onBlur, name, ref } }) => (
+            <FormItem>
+              <FormLabel>{isEditMode ? "Add More Attachments" : "Attachments"}</FormLabel>
+              <FormControl>
+                <Input
+                  id="files"
+                  type="file"
+                  multiple
+                  onChange={(e) => {
+                    onChange(e.target.files);
+                  }}
+                  onBlur={onBlur}
+                  name={name}
+                  ref={ref}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          {/* Is Group Event and Total Participants */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Is Group Event */}
-            <FormField
-              control={form.control}
-              name="is_group_event"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Is Group Event</FormLabel>
-                    <FormDescription>
-                      Check if this program is a group event.
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Input
-                      type="checkbox"
-                      checked={field.value}
-                      onChange={(e) => field.onChange(e.target.checked)}
-                      className="w-6 h-6"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={form.control}
+          name="is_active"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md">
+              <FormControl>
+                <Checkbox 
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel className="font-normal">
+                  This programme is active
+                </FormLabel>
+                <p className="text-sm text-muted-foreground">
+                  Active programmes will be visible to users and can be registered for.
+                </p>
+              </div>
+            </FormItem>
+          )}
+        />
 
-            {/* Total Participants */}
-            <FormField
-              control={form.control}
-              name="total_participant"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Total Participants</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Total participants"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value) || 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Status Section */}
-        <div className="border rounded-lg p-6 space-y-4 bg-white dark:bg-gray-950">
-          <h2 className="text-xl font-semibold">Status</h2>
-
-          {/* Status ID */}
-          <FormField
-            control={form.control}
-            name="status_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  value={field.value?.toString()}
-                  onValueChange={(value) => field.onChange(parseInt(value))}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {statuses.map((status) => (
-                      <SelectItem key={status.id} value={status.id.toString()}>
-                        {status.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end">
           <Button
-            type="button"
-            variant="outline"
-            onClick={() => window.history.back()}
-            disabled={isSubmitting}
+            type="submit"
+            disabled={isSubmitting || isUploading}
+            className="w-full md:w-auto"
           >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isEditMode ? "Updating..." : "Creating..."}
-              </>
-            ) : (
-              isEditMode ? "Update Programme" : "Create Programme"
-            )}
+            {isSubmitting || isUploading ? "Submitting..." : isEditMode ? "Update Programme" : "Register Programme"}
           </Button>
         </div>
       </form>

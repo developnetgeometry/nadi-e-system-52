@@ -4,7 +4,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/dashboard/PageHeader";
 import { PageContainer } from "@/components/ui/dashboard/PageContainer";
 import { Button } from "@/components/ui/button";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area-dashboard";
 import RegisterProgrammeForm from "@/components/programmes/RegisterProgrammeForm";
@@ -13,9 +13,6 @@ import { useToast } from "@/hooks/use-toast";
 
 const ProgrammeRegistration = () => {
   const { id } = useParams();
-  const [searchParams] = useSearchParams();
-  const categoryId = searchParams.get("categoryId") ? parseInt(searchParams.get("categoryId")) : undefined;
-  
   const [programme, setProgramme] = useState(null);
   const [loading, setLoading] = useState(!!id);
   const [error, setError] = useState(null);
@@ -128,11 +125,7 @@ const ProgrammeRegistration = () => {
           description={isEditMode ? "Update programme details" : "Create a new programme in the system"}
         />
         <ScrollArea className="flex-1 pr-4">
-          <RegisterProgrammeForm 
-            programmeData={programme} 
-            isEditMode={isEditMode}
-            defaultCategoryId={categoryId}
-          />
+          <RegisterProgrammeForm programmeData={programme} isEditMode={isEditMode} />
         </ScrollArea>
       </PageContainer>
     </DashboardLayout>

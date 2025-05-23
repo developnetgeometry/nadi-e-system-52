@@ -186,7 +186,7 @@ const SmartServicesNadi4U = () => {
               Smart Services NADI4U Programs
             </h1>
             <Button asChild>
-              <Link to="/programmes/register?categoryId=1">
+              <Link to="/programmes/register">
                 <Plus className="h-4 w-4 mr-2" /> 
                 Register New Program
               </Link>

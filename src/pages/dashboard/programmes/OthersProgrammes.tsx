@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -183,7 +184,7 @@ const OthersProgrammes = () => {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Other Programs</h1>
             <Button asChild>
-              <Link to="/programmes/register?categoryId=3">
+              <Link to="/programmes/register">
                 <Plus className="h-4 w-4 mr-2" /> 
                 Register New Program
               </Link>
