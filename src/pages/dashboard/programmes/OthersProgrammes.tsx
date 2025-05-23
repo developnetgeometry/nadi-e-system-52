@@ -23,10 +23,9 @@ import { ErrorBoundary } from "react-error-boundary";
 import { ErrorFallback } from "@/components/error/ErrorFallback";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/utils/date-utils";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import EventDetailsDialog from "@/components/programmes/EventDetailsDialog";
-import { Link } from "react-router-dom";
 
 const OthersProgrammes = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -181,15 +180,7 @@ const OthersProgrammes = () => {
     <DashboardLayout>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         <div className="container mx-auto py-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Other Programs</h1>
-            <Button asChild>
-              <Link to="/programmes/register">
-                <Plus className="h-4 w-4 mr-2" /> 
-                Register New Program
-              </Link>
-            </Button>
-          </div>
+          <h1 className="text-2xl font-bold mb-6">Other Programs</h1>
 
           <Card className="mb-8">
             <CardContent className="pt-6">

@@ -211,7 +211,9 @@ const ProgrammesDashboard = () => {
             </h1>
             <p className="text-muted-foreground">Welcome back, {userName}</p>
           </div>
-          {/* Register New Program button removed */}
+          <Button asChild>
+            <Link to="/programmes/register">Register New Program</Link>
+          </Button>
         </div>
 
         {/* Program Categories */}

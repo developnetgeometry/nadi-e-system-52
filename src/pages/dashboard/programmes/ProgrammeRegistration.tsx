@@ -9,24 +9,18 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area-dashboard";
 import RegisterProgrammeForm from "@/components/programmes/RegisterProgrammeForm";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 const ProgrammeRegistration = () => {
   const { id } = useParams();
   const [programme, setProgramme] = useState(null);
   const [loading, setLoading] = useState(!!id);
-  const [error, setError] = useState(null);
   const isEditMode = !!id;
-  const { toast } = useToast();
 
   useEffect(() => {
     const fetchProgramme = async () => {
       if (!id) return;
       
       try {
-        setLoading(true);
-        setError(null);
-        
         const { data, error } = await supabase
           .from('nd_event')
           .select(`
@@ -50,27 +44,17 @@ const ProgrammeRegistration = () => {
           .eq('id', id)
           .single();
         
-        if (error) {
-          setError(error.message);
-          toast({
-            title: "Error",
-            description: `Failed to load programme: ${error.message}`,
-            variant: "destructive",
-          });
-          return;
-        }
-        
+        if (error) throw error;
         setProgramme(data);
-      } catch (err) {
-        console.error("Error fetching programme details:", err);
-        setError(err.message);
+      } catch (error) {
+        console.error("Error fetching programme details:", error);
       } finally {
         setLoading(false);
       }
     };
     
     fetchProgramme();
-  }, [id, toast]);
+  }, [id]);
 
   if (loading) {
     return (
@@ -79,30 +63,6 @@ const ProgrammeRegistration = () => {
           <div className="flex flex-col items-center">
             <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
             <p className="text-muted-foreground">Loading programme details...</p>
-          </div>
-        </PageContainer>
-      </DashboardLayout>
-    );
-  }
-
-  if (error && isEditMode) {
-    return (
-      <DashboardLayout>
-        <PageContainer className="h-full">
-          <div className="flex items-center mb-6">
-            <Button variant="ghost" size="sm" asChild className="mr-4">
-              <Link to="/programmes">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Programmes
-              </Link>
-            </Button>
-          </div>
-          <div className="flex flex-col items-center justify-center h-[50vh]">
-            <h2 className="text-xl font-semibold mb-2">Error Loading Programme</h2>
-            <p className="text-muted-foreground mb-4">{error}</p>
-            <Button asChild>
-              <Link to="/programmes">Return to Programmes</Link>
-            </Button>
           </div>
         </PageContainer>
       </DashboardLayout>

@@ -1435,7 +1435,6 @@ export type Database = {
           created_by: string | null
           date_paid: string | null
           id: number
-          item_ids: number[] | null
           month: number | null
           payment_status: boolean | null
           phase_id: number | null
@@ -1453,7 +1452,6 @@ export type Database = {
           created_by?: string | null
           date_paid?: string | null
           id?: number
-          item_ids?: number[] | null
           month?: number | null
           payment_status?: boolean | null
           phase_id?: number | null
@@ -1471,7 +1469,6 @@ export type Database = {
           created_by?: string | null
           date_paid?: string | null
           id?: number
-          item_ids?: number[] | null
           month?: number | null
           payment_status?: boolean | null
           phase_id?: number | null
@@ -5524,38 +5521,26 @@ export type Database = {
       }
       nd_phases: {
         Row: {
-          contract_end: string | null
-          contract_start: string | null
           created_at: string | null
           created_by: string | null
           id: number
-          is_active: boolean | null
           name: string | null
-          remark: string | null
           updated_at: string | null
           updated_by: string | null
         }
         Insert: {
-          contract_end?: string | null
-          contract_start?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: never
-          is_active?: boolean | null
           name?: string | null
-          remark?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
         Update: {
-          contract_end?: string | null
-          contract_start?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: never
-          is_active?: boolean | null
           name?: string | null
-          remark?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -6116,7 +6101,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           deleted_at?: string | null
-          id?: number
+          id: number
           name?: string | null
           unit?: string | null
           updated_at?: string | null
@@ -8062,16 +8047,16 @@ export type Database = {
           basic_pay: number | null
           basic_rate: number | null
           created_at: string | null
-          created_by: string | null
+          created_by: string
           epf_deduction: number | null
           gross_pay: number | null
-          id: string
+          id: number
           net_pay: number | null
           pay_info_id: number | null
           payroll_date: string | null
           staff_eis: number | null
           staff_epf: number | null
-          staff_id: string | null
+          staff_id: number | null
           staff_socso: number | null
           updated_at: string | null
           updated_by: string | null
@@ -8080,16 +8065,16 @@ export type Database = {
           basic_pay?: number | null
           basic_rate?: number | null
           created_at?: string | null
-          created_by?: string | null
+          created_by: string
           epf_deduction?: number | null
           gross_pay?: number | null
-          id?: string
+          id: number
           net_pay?: number | null
           pay_info_id?: number | null
           payroll_date?: string | null
           staff_eis?: number | null
           staff_epf?: number | null
-          staff_id?: string | null
+          staff_id?: number | null
           staff_socso?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -8098,16 +8083,16 @@ export type Database = {
           basic_pay?: number | null
           basic_rate?: number | null
           created_at?: string | null
-          created_by?: string | null
+          created_by?: string
           epf_deduction?: number | null
           gross_pay?: number | null
-          id?: string
+          id?: number
           net_pay?: number | null
           pay_info_id?: number | null
           payroll_date?: string | null
           staff_eis?: number | null
           staff_epf?: number | null
-          staff_id?: string | null
+          staff_id?: number | null
           staff_socso?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -8118,13 +8103,6 @@ export type Database = {
             columns: ["pay_info_id"]
             isOneToOne: false
             referencedRelation: "nd_staff_pay_info"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nd_staff_payroll_nd_staff_profile_fk"
-            columns: ["staff_id"]
-            isOneToOne: false
-            referencedRelation: "nd_staff_profile"
             referencedColumns: ["id"]
           },
         ]
