@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -91,7 +92,7 @@ const RegisterProgrammeForm = ({
       end_datetime: programmeData?.end_datetime ? new Date(programmeData.end_datetime) : new Date(),
       duration: programmeData?.duration || "",
       trainer_name: programmeData?.trainer_name || "",
-      category_id: programmeData?.category_id || 0,
+      category_id: programmeData?.category_id || defaultCategoryId || 0,
       subcategory_id: programmeData?.subcategory_id || 0,
       program_id: programmeData?.program_id || "",
       module_id: programmeData?.module_id || "",
@@ -115,7 +116,7 @@ const RegisterProgrammeForm = ({
         setCategories(categoryData || []);
 
         // Fetch subcategories (initially for the first category or the existing category)
-        const initialCategoryId = programmeData?.category_id || categoryData?.[0]?.id || defaultCategoryId;
+        const initialCategoryId = programmeData?.category_id || defaultCategoryId || categoryData?.[0]?.id;
         if (initialCategoryId) {
           setSelectedCategory(initialCategoryId);
           const { data: subCategoryData, error: subCatError } = await supabase
@@ -157,7 +158,7 @@ const RegisterProgrammeForm = ({
         .eq('is_active', true);
       if (error) throw error;
       setSubCategories(subCategories || []);
-      form.setValue("subcategory_id", subCategories?.[0]?.id || 0); // Also set the subcategory_id in the form
+      form.setValue("subcategory_id", subCategories?.[0]?.id || 0);
     } catch (error) {
       console.error("Error fetching subcategories:", error);
       toast({
@@ -180,8 +181,7 @@ const RegisterProgrammeForm = ({
       };
       
       if (isEditMode && programmeData?.id) {
-        // Update existing programme
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('nd_event')
           .update(dataToSubmit)
           .eq('id', programmeData.id);
@@ -200,8 +200,7 @@ const RegisterProgrammeForm = ({
           });
         }
       } else {
-        // Create new programme
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('nd_event')
           .insert([dataToSubmit]);
 
@@ -234,22 +233,26 @@ const RegisterProgrammeForm = ({
   
   // Initialize form with defaultCategoryId if it exists
   useEffect(() => {
-    if (!isEditMode) {
+    if (!isEditMode && defaultCategoryId) {
       const initializeForm = async () => {
         try {
-          // If defaultCategoryId is provided, set it as the selected category
-          if (defaultCategoryId) {
-            setSelectedCategory(defaultCategoryId);
+          // Set the selected category and update form value
+          setSelectedCategory(defaultCategoryId);
+          form.setValue("category_id", defaultCategoryId);
+          
+          // Fetch subcategories for this category
+          const { data: subCategories, error: subCatError } = await supabase
+            .from('nd_event_subcategory')
+            .select('*')
+            .eq('category_id', defaultCategoryId)
+            .eq('is_active', true);
             
-            // Fetch subcategories for this category
-            const { data: subCategories, error: subCatError } = await supabase
-              .from('nd_event_subcategory')
-              .select('*')
-              .eq('category_id', defaultCategoryId)
-              .eq('is_active', true);
-              
-            if (subCatError) throw subCatError;
-            setSubCategories(subCategories || []);
+          if (subCatError) throw subCatError;
+          setSubCategories(subCategories || []);
+          
+          // Set first subcategory as default if available
+          if (subCategories && subCategories.length > 0) {
+            form.setValue("subcategory_id", subCategories[0].id);
           }
         } catch (error) {
           console.error("Error initializing form with default category:", error);
@@ -258,8 +261,7 @@ const RegisterProgrammeForm = ({
       
       initializeForm();
     }
-  }, [isEditMode, defaultCategoryId]);
-  
+  }, [isEditMode, defaultCategoryId, form]);
   
   return (
     <Form {...form}>
@@ -309,7 +311,7 @@ const RegisterProgrammeForm = ({
                   <FormLabel>Program Subcategory</FormLabel>
                   <Select
                     value={field.value?.toString()}
-                    onValueChange={field.onChange}
+                    onValueChange={(value) => field.onChange(parseInt(value))}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -394,7 +396,7 @@ const RegisterProgrammeForm = ({
                         <Button
                           variant={"outline"}
                           className={cn(
-                            "w-[240px] pl-3 text-left font-normal",
+                            "w-full pl-3 text-left font-normal",
                             !field.value && "text-muted-foreground"
                           )}
                         >
@@ -411,10 +413,10 @@ const RegisterProgrammeForm = ({
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date < new Date()
-                        }
+                        onSelect={(date) => {
+                          field.onChange(date);
+                          setIsStartDateOpen(false);
+                        }}
                         initialFocus
                       />
                     </PopoverContent>
@@ -437,7 +439,7 @@ const RegisterProgrammeForm = ({
                         <Button
                           variant={"outline"}
                           className={cn(
-                            "w-[240px] pl-3 text-left font-normal",
+                            "w-full pl-3 text-left font-normal",
                             !field.value && "text-muted-foreground"
                           )}
                         >
@@ -454,10 +456,10 @@ const RegisterProgrammeForm = ({
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date < new Date()
-                        }
+                        onSelect={(date) => {
+                          field.onChange(date);
+                          setIsEndDateOpen(false);
+                        }}
                         initialFocus
                       />
                     </PopoverContent>
@@ -570,6 +572,7 @@ const RegisterProgrammeForm = ({
                       type="checkbox"
                       checked={field.value}
                       onChange={(e) => field.onChange(e.target.checked)}
+                      className="w-6 h-6"
                     />
                   </FormControl>
                   <FormMessage />
@@ -589,6 +592,7 @@ const RegisterProgrammeForm = ({
                       type="number"
                       placeholder="Total participants"
                       {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -611,7 +615,7 @@ const RegisterProgrammeForm = ({
                 <FormLabel>Status</FormLabel>
                 <Select
                   value={field.value?.toString()}
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => field.onChange(parseInt(value))}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -636,7 +640,7 @@ const RegisterProgrammeForm = ({
           <Button
             type="button"
             variant="outline"
-            onClick={() => {}}
+            onClick={() => window.history.back()}
             disabled={isSubmitting}
           >
             Cancel

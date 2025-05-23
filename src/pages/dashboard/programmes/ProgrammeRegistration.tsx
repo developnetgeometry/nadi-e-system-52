@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 const ProgrammeRegistration = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
-  const categoryId = searchParams.get("categoryId");
+  const categoryId = searchParams.get("categoryId") ? parseInt(searchParams.get("categoryId")) : undefined;
   
   const [programme, setProgramme] = useState(null);
   const [loading, setLoading] = useState(!!id);
@@ -131,7 +131,7 @@ const ProgrammeRegistration = () => {
           <RegisterProgrammeForm 
             programmeData={programme} 
             isEditMode={isEditMode}
-            defaultCategoryId={categoryId ? parseInt(categoryId) : undefined}
+            defaultCategoryId={categoryId}
           />
         </ScrollArea>
       </PageContainer>
