@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -186,7 +185,7 @@ const SmartServicesNadi4U = () => {
               Smart Services NADI4U Programs
             </h1>
             <Button asChild>
-              <Link to="/programmes/register">
+              <Link to="/programmes/register?categoryId=1">
                 <Plus className="h-4 w-4 mr-2" /> 
                 Register New Program
               </Link>
