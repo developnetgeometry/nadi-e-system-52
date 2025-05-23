@@ -2513,6 +2513,7 @@ export type Database = {
           duration: number | null
           end_datetime: string | null
           id: string
+          is_group_event: boolean | null
           location_event: string | null
           module_id: number | null
           program_id: number | null
@@ -2527,6 +2528,7 @@ export type Database = {
           target_participant: number | null
           total_new_member: number | null
           total_participant: number | null
+          trainer_name: string
           trainer_organization: string | null
           updated_at: string | null
           updated_by: string | null
@@ -2539,6 +2541,7 @@ export type Database = {
           duration?: number | null
           end_datetime?: string | null
           id?: string
+          is_group_event?: boolean | null
           location_event?: string | null
           module_id?: number | null
           program_id?: number | null
@@ -2553,6 +2556,7 @@ export type Database = {
           target_participant?: number | null
           total_new_member?: number | null
           total_participant?: number | null
+          trainer_name: string
           trainer_organization?: string | null
           updated_at?: string | null
           updated_by?: string | null
@@ -2565,6 +2569,7 @@ export type Database = {
           duration?: number | null
           end_datetime?: string | null
           id?: string
+          is_group_event?: boolean | null
           location_event?: string | null
           module_id?: number | null
           program_id?: number | null
@@ -2579,6 +2584,7 @@ export type Database = {
           target_participant?: number | null
           total_new_member?: number | null
           total_participant?: number | null
+          trainer_name?: string
           trainer_organization?: string | null
           updated_at?: string | null
           updated_by?: string | null

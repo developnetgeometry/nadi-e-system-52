@@ -43,7 +43,6 @@ const formSchema = z.object({
   is_group_event: z.boolean().default(false),
   mode: z.enum(["Physical", "Online"]),
   max_participants: z.string().optional(),
-  target_participant: z.string().min(1, { message: "Target participant is required" }),
   is_active: z.boolean().default(true),
 });
 
@@ -62,18 +61,6 @@ const RegisterProgrammeForm = () => {
   const [pillars, setPillars] = useState<{value: string, label: string, categoryId: string}[]>([]);
   const [programmes, setProgrammes] = useState<{value: string, label: string, pillarId: string}[]>([]);
   const [modules, setModules] = useState<{value: string, label: string, programmeId: string}[]>([]);
-  
-  // Using dummy data for target participants
-  const targetParticipants = [
-    { value: "beginners", label: "Beginners" },
-    { value: "intermediate", label: "Intermediate" },
-    { value: "advanced", label: "Advanced" },
-    { value: "professionals", label: "Professionals" },
-    { value: "students", label: "Students" },
-    { value: "seniors", label: "Seniors" },
-    { value: "entrepreneurs", label: "Entrepreneurs" },
-    { value: "public-servants", label: "Public Servants" }
-  ];
   
   // Event types
   const eventTypes = [
@@ -200,7 +187,6 @@ const RegisterProgrammeForm = () => {
       is_group_event: false,
       mode: "Physical",
       max_participants: "",
-      target_participant: "",
       is_active: true,
     },
   });
@@ -294,7 +280,6 @@ const RegisterProgrammeForm = () => {
         program_id: data.programme,
         module_id: data.module,
         program_mode: data.mode === "Online" ? 1 : 2,  // Assuming 1=Online, 2=Physical
-        target_participant: data.target_participant,
         total_participant: data.max_participants ? parseInt(data.max_participants) : null,
         status_id: data.is_active ? 1 : 2, // Assuming 1=Active, 2=Inactive
         is_group_event: data.is_group_event
@@ -643,7 +628,7 @@ const RegisterProgrammeForm = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
           <FormField
             control={form.control}
             name="max_participants"
@@ -657,30 +642,6 @@ const RegisterProgrammeForm = () => {
                     min="1"
                     {...field} 
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="target_participant"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Target Participant*</FormLabel>
-                <FormControl>
-                  <select 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                    {...field}
-                  >
-                    <option value="">Select Target Participant</option>
-                    {targetParticipants.map(participant => (
-                      <option key={participant.value} value={participant.value}>
-                        {participant.label}
-                      </option>
-                    ))}
-                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
