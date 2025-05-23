@@ -2529,7 +2529,6 @@ export type Database = {
           total_new_member: number | null
           total_participant: number | null
           trainer_name: string
-          trainer_organization: string | null
           updated_at: string | null
           updated_by: string | null
         }
@@ -2557,7 +2556,6 @@ export type Database = {
           total_new_member?: number | null
           total_participant?: number | null
           trainer_name: string
-          trainer_organization?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -2585,7 +2583,6 @@ export type Database = {
           total_new_member?: number | null
           total_participant?: number | null
           trainer_name?: string
-          trainer_organization?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -2650,36 +2647,44 @@ export type Database = {
       }
       nd_event_attachment: {
         Row: {
-          created_at: string | null
+          created_at: string
           created_by: string | null
-          event_id: number | null
+          event_id: string | null
           file_path: string | null
-          id: number
+          id: string
           remarks: string | null
           updated_at: string | null
           updated_by: string | null
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           created_by?: string | null
-          event_id?: number | null
+          event_id?: string | null
           file_path?: string | null
-          id: number
+          id?: string
           remarks?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           created_by?: string | null
-          event_id?: number | null
+          event_id?: string | null
           file_path?: string | null
-          id?: number
+          id?: string
           remarks?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nd_event_attachment_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "nd_event"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nd_event_category: {
         Row: {
@@ -7837,6 +7842,7 @@ export type Database = {
           position_id: number | null
           resign_date: string | null
           site_id: number | null
+          site_refid_mcmc: string | null
           staff_id: string | null
           updated_at: string | null
           updated_by: string | null
@@ -7850,6 +7856,7 @@ export type Database = {
           position_id?: number | null
           resign_date?: string | null
           site_id?: number | null
+          site_refid_mcmc?: string | null
           staff_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
@@ -7863,11 +7870,19 @@ export type Database = {
           position_id?: number | null
           resign_date?: string | null
           site_id?: number | null
+          site_refid_mcmc?: string | null
           staff_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "nd_staff_job_nd_position_fk"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "nd_position"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "nd_staff_job_nd_site_profile_fk"
             columns: ["site_id"]
