@@ -23,6 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import TimeInput from "@/components/ui/TimePicker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { formatDuration } from "@/utils/date-utils";
+import { format } from "date-fns";
 
 // Form validation schema
 const formSchema = z.object({
@@ -48,7 +49,34 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const RegisterProgrammeForm = () => {
+interface ProgrammeData {
+  id: string;
+  program_name: string;
+  description: string | null;
+  location_event: string | null;
+  start_datetime: string;
+  end_datetime: string;
+  duration: number;
+  trainer_name: string;
+  category_id: string;
+  subcategory_id: string;
+  program_id: string;
+  module_id: string;
+  program_mode: number;
+  is_group_event: boolean;
+  total_participant: number | null;
+  status_id: number;
+}
+
+interface RegisterProgrammeFormProps {
+  programmeData?: ProgrammeData | null;
+  isEditMode?: boolean;
+}
+
+const RegisterProgrammeForm: React.FC<RegisterProgrammeFormProps> = ({ 
+  programmeData = null, 
+  isEditMode = false 
+}) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { isUploading, uploadFile } = useFileUpload();
@@ -61,6 +89,7 @@ const RegisterProgrammeForm = () => {
   const [pillars, setPillars] = useState<{value: string, label: string, categoryId: string}[]>([]);
   const [programmes, setProgrammes] = useState<{value: string, label: string, pillarId: string}[]>([]);
   const [modules, setModules] = useState<{value: string, label: string, programmeId: string}[]>([]);
+  const [existingAttachments, setExistingAttachments] = useState<{id: string, file_path: string}[]>([]);
   
   // Event types
   const eventTypes = [
@@ -75,6 +104,31 @@ const RegisterProgrammeForm = () => {
   const [filteredPillars, setFilteredPillars] = useState<{value: string, label: string, categoryId: string}[]>([]);
   const [filteredProgrammes, setFilteredProgrammes] = useState<{value: string, label: string, pillarId: string}[]>([]);
   const [filteredModules, setFilteredModules] = useState<{value: string, label: string, programmeId: string}[]>([]);
+  
+  // Initialize form with default values or existing programme data
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      location: "",
+      start_date: "",
+      end_date: "",
+      trainer_name: "",
+      files: undefined,
+      category: "",
+      pillar: "",
+      programme: "",
+      module: "",
+      start_time: "",
+      end_time: "",
+      event_type: "",
+      is_group_event: false,
+      mode: "Physical",
+      max_participants: "",
+      is_active: true,
+    },
+  });
   
   // Fetch data from Supabase
   useEffect(() => {
@@ -166,30 +220,71 @@ const RegisterProgrammeForm = () => {
     fetchProgrammes();
     fetchModules();
   }, []);
+
+  // Fetch attachments if in edit mode
+  useEffect(() => {
+    if (isEditMode && programmeData) {
+      const fetchAttachments = async () => {
+        try {
+          const { data, error } = await supabase
+            .from("nd_event_attachment")
+            .select("id, file_path")
+            .eq("event_id", programmeData.id);
+
+          if (error) throw error;
+          setExistingAttachments(data || []);
+        } catch (error) {
+          console.error("Error fetching attachments:", error);
+        }
+      };
+
+      fetchAttachments();
+    }
+  }, [isEditMode, programmeData]);
   
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      location: "",
-      start_date: "",
-      end_date: "",
-      trainer_name: "",
-      files: undefined,
-      category: "",
-      pillar: "",
-      programme: "",
-      module: "",
-      start_time: "",
-      end_time: "",
-      event_type: "",
-      is_group_event: false,
-      mode: "Physical",
-      max_participants: "",
-      is_active: true,
-    },
-  });
+  // Populate form with existing data if in edit mode
+  useEffect(() => {
+    if (isEditMode && programmeData) {
+      const startDateTime = new Date(programmeData.start_datetime);
+      const endDateTime = new Date(programmeData.end_datetime);
+
+      form.reset({
+        title: programmeData.program_name || "",
+        description: programmeData.description || "",
+        location: programmeData.location_event || "",
+        start_date: format(startDateTime, "yyyy-MM-dd"),
+        end_date: format(endDateTime, "yyyy-MM-dd"),
+        start_time: format(startDateTime, "HH:mm"),
+        end_time: format(endDateTime, "HH:mm"),
+        trainer_name: programmeData.trainer_name || "",
+        category: programmeData.category_id?.toString() || "",
+        pillar: programmeData.subcategory_id?.toString() || "",
+        programme: programmeData.program_id?.toString() || "",
+        module: programmeData.module_id?.toString() || "",
+        event_type: "webinar", // This would need to be mapped from your data if available
+        is_group_event: programmeData.is_group_event || false,
+        mode: programmeData.program_mode === 1 ? "Online" : "Physical",
+        max_participants: programmeData.total_participant?.toString() || "",
+        is_active: programmeData.status_id === 1, // Assuming status_id 1 is active
+      });
+
+      // Update filtered options based on loaded values
+      if (programmeData.category_id) {
+        const filteredPillars = pillars.filter(pillar => pillar.categoryId === programmeData.category_id.toString());
+        setFilteredPillars(filteredPillars);
+
+        if (programmeData.subcategory_id) {
+          const filteredProgrammes = programmes.filter(prog => prog.pillarId === programmeData.subcategory_id.toString());
+          setFilteredProgrammes(filteredProgrammes);
+
+          if (programmeData.program_id) {
+            const filteredModules = modules.filter(mod => mod.programmeId === programmeData.program_id.toString());
+            setFilteredModules(filteredModules);
+          }
+        }
+      }
+    }
+  }, [isEditMode, programmeData, pillars, programmes, modules, form]);
   
   // Watch form fields to calculate duration and filter options
   const watchCategory = form.watch("category");
@@ -225,36 +320,42 @@ const RegisterProgrammeForm = () => {
     if (watchCategory) {
       const filtered = pillars.filter(pillar => pillar.categoryId === watchCategory);
       setFilteredPillars(filtered);
-      form.setValue("pillar", "");
-      form.setValue("programme", "");
-      form.setValue("module", "");
+      if (!isEditMode || !programmeData) {
+        form.setValue("pillar", "");
+        form.setValue("programme", "");
+        form.setValue("module", "");
+      }
     } else {
       setFilteredPillars(pillars);
     }
-  }, [watchCategory, pillars, form]);
+  }, [watchCategory, pillars, form, isEditMode, programmeData]);
 
   // Filter programmes based on selected pillar
   useEffect(() => {
     if (watchPillar) {
       const filtered = programmes.filter(programme => programme.pillarId === watchPillar);
       setFilteredProgrammes(filtered);
-      form.setValue("programme", "");
-      form.setValue("module", "");
+      if (!isEditMode || !programmeData) {
+        form.setValue("programme", "");
+        form.setValue("module", "");
+      }
     } else {
       setFilteredProgrammes(programmes);
     }
-  }, [watchPillar, programmes, form]);
+  }, [watchPillar, programmes, form, isEditMode, programmeData]);
 
   // Filter modules based on selected programme
   useEffect(() => {
     if (watchProgramme) {
       const filtered = modules.filter(module => module.programmeId === watchProgramme);
       setFilteredModules(filtered);
-      form.setValue("module", "");
+      if (!isEditMode || !programmeData) {
+        form.setValue("module", "");
+      }
     } else {
       setFilteredModules(modules);
     }
-  }, [watchProgramme, modules, form]);
+  }, [watchProgramme, modules, form, isEditMode, programmeData]);
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
@@ -264,13 +365,13 @@ const RegisterProgrammeForm = () => {
       const endDateTime = new Date(`${data.end_date}T${data.end_time}`);
       const durationHours = (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60);
       
-      // 1. Save the programme details to nd_event table
+      // Prepare event data
       const eventData = {
         program_name: data.title,
         description: data.description || "",
         location_event: data.location || "",
-        start_datetime: new Date(`${data.start_date}T${data.start_time}`).toISOString(),
-        end_datetime: new Date(`${data.end_date}T${data.end_time}`).toISOString(),
+        start_datetime: startDateTime.toISOString(),
+        end_datetime: endDateTime.toISOString(),
         duration: durationHours,
         trainer_name: data.trainer_name || "",
         created_by: user?.id,
@@ -282,21 +383,46 @@ const RegisterProgrammeForm = () => {
         program_mode: data.mode === "Online" ? 1 : 2,  // Assuming 1=Online, 2=Physical
         total_participant: data.max_participants ? parseInt(data.max_participants) : null,
         status_id: data.is_active ? 1 : 2, // Assuming 1=Active, 2=Inactive
-        is_group_event: data.is_group_event
+        is_group_event: data.is_group_event,
+        updated_by: user?.id
       };
 
-      const { data: eventResult, error: eventError } = await supabase
-        .from("nd_event")
-        .insert(eventData)
-        .select();
+      let eventId;
 
-      if (eventError) {
-        throw eventError;
+      if (isEditMode && programmeData) {
+        // Update existing event
+        const { data: updatedEvent, error: updateError } = await supabase
+          .from("nd_event")
+          .update(eventData)
+          .eq("id", programmeData.id)
+          .select();
+
+        if (updateError) throw updateError;
+        eventId = programmeData.id;
+        
+        toast({
+          title: "Success",
+          description: "Programme updated successfully",
+          variant: "default",
+        });
+      } else {
+        // Insert new event
+        const { data: newEvent, error: insertError } = await supabase
+          .from("nd_event")
+          .insert(eventData)
+          .select();
+
+        if (insertError) throw insertError;
+        eventId = newEvent?.[0]?.id;
+        
+        toast({
+          title: "Success",
+          description: "Programme registered successfully",
+          variant: "default",
+        });
       }
 
-      const eventId = eventResult?.[0]?.id;
-
-      // 2. Handle file uploads if any files are present
+      // Handle file uploads if any files are present
       const fileInput = document.getElementById("files") as HTMLInputElement;
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
         // Upload all files and track their paths
@@ -320,12 +446,6 @@ const RegisterProgrammeForm = () => {
         // Wait for all attachment uploads to complete
         await Promise.all(attachmentPromises);
       }
-
-      toast({
-        title: "Success",
-        description: "Programme registered successfully",
-        variant: "default",
-      });
 
       // Redirect to programmes listing after successful submission
       navigate("/programmes");
@@ -595,7 +715,7 @@ const RegisterProgrammeForm = () => {
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                     className="flex flex-row gap-4"
                   >
                     <div className="flex items-center space-x-2">
@@ -681,12 +801,35 @@ const RegisterProgrammeForm = () => {
           )}
         />
 
+        {isEditMode && existingAttachments.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium">Existing Attachments</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {existingAttachments.map((attachment) => (
+                <div key={attachment.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                  <span className="text-sm truncate">
+                    {attachment.file_path.split('/').pop()}
+                  </span>
+                  <a 
+                    href={`${BUCKET_NAME_UTILITIES}/${attachment.file_path}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    View
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <FormField
           control={form.control}
           name="files"
           render={({ field: { onChange, onBlur, name, ref } }) => (
             <FormItem>
-              <FormLabel>Attachments</FormLabel>
+              <FormLabel>{isEditMode ? "Add More Attachments" : "Attachments"}</FormLabel>
               <FormControl>
                 <Input
                   id="files"
@@ -734,7 +877,7 @@ const RegisterProgrammeForm = () => {
             disabled={isSubmitting || isUploading}
             className="w-full md:w-auto"
           >
-            {isSubmitting || isUploading ? "Submitting..." : "Register Programme"}
+            {isSubmitting || isUploading ? "Submitting..." : isEditMode ? "Update Programme" : "Register Programme"}
           </Button>
         </div>
       </form>
