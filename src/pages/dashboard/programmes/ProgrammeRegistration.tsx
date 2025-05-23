@@ -4,7 +4,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/dashboard/PageHeader";
 import { PageContainer } from "@/components/ui/dashboard/PageContainer";
 import { Button } from "@/components/ui/button";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area-dashboard";
 import RegisterProgrammeForm from "@/components/programmes/RegisterProgrammeForm";
@@ -12,9 +12,14 @@ import { supabase } from "@/integrations/supabase/client";
 
 const ProgrammeRegistration = () => {
   const { id } = useParams();
+  const location = useLocation();
   const [programme, setProgramme] = useState(null);
   const [loading, setLoading] = useState(!!id);
   const isEditMode = !!id;
+
+  // Get category from the query params if available (for defaulting category based on origin page)
+  const searchParams = new URLSearchParams(location.search);
+  const categoryId = searchParams.get('category');
 
   useEffect(() => {
     const fetchProgramme = async () => {
@@ -85,7 +90,11 @@ const ProgrammeRegistration = () => {
           description={isEditMode ? "Update programme details" : "Create a new programme in the system"}
         />
         <ScrollArea className="flex-1 pr-4">
-          <RegisterProgrammeForm programmeData={programme} isEditMode={isEditMode} />
+          <RegisterProgrammeForm 
+            programmeData={programme} 
+            isEditMode={isEditMode} 
+            defaultCategoryId={categoryId ? parseInt(categoryId) : undefined} 
+          />
         </ScrollArea>
       </PageContainer>
     </DashboardLayout>
