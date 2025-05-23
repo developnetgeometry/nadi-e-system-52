@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/utils/date-utils";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import EventDetailsDialog from "@/components/programmes/EventDetailsDialog";
 
 const SmartServicesNadi2U = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,6 +33,8 @@ const SmartServicesNadi2U = () => {
   const [programmes, setProgrammes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statuses, setStatuses] = useState([]);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -126,6 +129,12 @@ const SmartServicesNadi2U = () => {
             Cancelled
           </Badge>
         );
+      case "postponed":
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+            Postponed
+          </Badge>
+        );
       default:
         return (
           <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">
@@ -148,6 +157,11 @@ const SmartServicesNadi2U = () => {
 
     return matchesSearch && matchesStatus;
   });
+
+  const handleViewDetails = (id: string) => {
+    setSelectedEventId(id);
+    setIsDetailsOpen(true);
+  };
 
   if (loading) {
     return (
@@ -215,18 +229,31 @@ const SmartServicesNadi2U = () => {
                       </TableRow>
                     ) : (
                       filteredProgrammes.map((programme) => (
-                        <TableRow key={programme.id}>
-                          <TableCell className="font-medium">
+                        <TableRow key={programme.id} className="cursor-pointer hover:bg-gray-50">
+                          <TableCell 
+                            className="font-medium"
+                            onClick={() => handleViewDetails(programme.id)}
+                          >
                             {programme.title}
                           </TableCell>
-                          <TableCell>{programme.location}</TableCell>
-                          <TableCell>{formatDate(programme.date)}</TableCell>
-                          <TableCell>{programme.createdBy}</TableCell>
-                          <TableCell>
+                          <TableCell onClick={() => handleViewDetails(programme.id)}>
+                            {programme.location}
+                          </TableCell>
+                          <TableCell onClick={() => handleViewDetails(programme.id)}>
+                            {formatDate(programme.date)}
+                          </TableCell>
+                          <TableCell onClick={() => handleViewDetails(programme.id)}>
+                            {programme.createdBy}
+                          </TableCell>
+                          <TableCell onClick={() => handleViewDetails(programme.id)}>
                             {getStatusBadge(programme.status)}
                           </TableCell>
                           <TableCell>
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleViewDetails(programme.id)}
+                            >
                               View Details
                             </Button>
                           </TableCell>
@@ -238,6 +265,12 @@ const SmartServicesNadi2U = () => {
               </div>
             </CardContent>
           </Card>
+          
+          <EventDetailsDialog 
+            eventId={selectedEventId}
+            open={isDetailsOpen}
+            onClose={() => setIsDetailsOpen(false)}
+          />
         </div>
       </ErrorBoundary>
     </DashboardLayout>

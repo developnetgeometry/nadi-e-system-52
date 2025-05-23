@@ -45,6 +45,16 @@ export const programmeRoutes = [
         ),
     },
     {
+        path: "/programmes/edit/:id",
+        element: (
+            <Suspense fallback={<LoadingSpinner />}>
+                {/* <ProtectedRoute requiredPermission=""> */}
+                <ProgrammeRegistration />
+                {/* </ProtectedRoute> */}
+            </Suspense>
+        ),
+    },
+    {
         path: "/programmes/nadi4u",
         element: (
             <Suspense fallback={<LoadingSpinner />}>
