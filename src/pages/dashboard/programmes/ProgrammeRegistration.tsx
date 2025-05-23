@@ -9,6 +9,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area-dashboard";
 import RegisterProgrammeForm from "@/components/programmes/RegisterProgrammeForm";
 import { supabase } from "@/integrations/supabase/client";
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 
 const ProgrammeRegistration = () => {
   const { id } = useParams();
@@ -65,10 +66,7 @@ const ProgrammeRegistration = () => {
     return (
       <DashboardLayout>
         <PageContainer className="h-full flex items-center justify-center">
-          <div className="flex flex-col items-center">
-            <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-            <p className="text-muted-foreground">Loading programme details...</p>
-          </div>
+          <LoadingSpinner />
         </PageContainer>
       </DashboardLayout>
     );
