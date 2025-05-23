@@ -62,7 +62,18 @@ const RegisterProgrammeForm = () => {
   const [pillars, setPillars] = useState<{value: string, label: string, categoryId: string}[]>([]);
   const [programmes, setProgrammes] = useState<{value: string, label: string, pillarId: string}[]>([]);
   const [modules, setModules] = useState<{value: string, label: string, programmeId: string}[]>([]);
-  const [targetParticipants, setTargetParticipants] = useState<{value: string, label: string}[]>([]);
+  
+  // Using dummy data for target participants
+  const targetParticipants = [
+    { value: "beginners", label: "Beginners" },
+    { value: "intermediate", label: "Intermediate" },
+    { value: "advanced", label: "Advanced" },
+    { value: "professionals", label: "Professionals" },
+    { value: "students", label: "Students" },
+    { value: "seniors", label: "Seniors" },
+    { value: "entrepreneurs", label: "Entrepreneurs" },
+    { value: "public-servants", label: "Public Servants" }
+  ];
   
   // Event types
   const eventTypes = [
@@ -163,42 +174,10 @@ const RegisterProgrammeForm = () => {
       }
     };
     
-    const fetchTargetParticipants = async () => {
-      try {
-        const { data: targetData, error: targetError } = await supabase
-          .from("nd_target_participant")
-          .select("id, name")
-          .eq("is_active", true);
-        
-        if (targetError) throw targetError;
-        
-        const formattedTargets = targetData.map(target => ({
-          value: target.id.toString(),
-          label: target.name
-        }));
-        
-        setTargetParticipants(formattedTargets);
-      } catch (error) {
-        console.error("Error fetching target participants:", error);
-        // Fallback to default values if database fetch fails
-        setTargetParticipants([
-          { value: "beginners", label: "Beginners" },
-          { value: "intermediate", label: "Intermediate" },
-          { value: "advanced", label: "Advanced" },
-          { value: "professionals", label: "Professionals" },
-          { value: "students", label: "Students" },
-          { value: "seniors", label: "Seniors" },
-          { value: "entrepreneurs", label: "Entrepreneurs" },
-          { value: "public-servants", label: "Public Servants" }
-        ]);
-      }
-    };
-    
     fetchCategories();
     fetchPillars();
     fetchProgrammes();
     fetchModules();
-    fetchTargetParticipants();
   }, []);
   
   const form = useForm<FormValues>({
