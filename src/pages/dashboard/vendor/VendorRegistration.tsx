@@ -77,8 +77,23 @@ const VendorRegistration = () => {
         throw new Error("User not authenticated");
       }
 
-      // Prepare vendor profile data with proper types
+      // First, get the next available ID for the vendor profile
+      const { data: maxIdResult, error: maxIdError } = await supabase
+        .from("nd_vendor_profile")
+        .select("id")
+        .order("id", { ascending: false })
+        .limit(1);
+
+      if (maxIdError) {
+        console.error("Error getting max ID:", maxIdError);
+        throw new Error(`Failed to get next ID: ${maxIdError.message}`);
+      }
+
+      const nextId = (maxIdResult && maxIdResult.length > 0) ? maxIdResult[0].id + 1 : 1;
+
+      // Prepare vendor profile data with explicit ID
       const vendorProfileData = {
+        id: nextId,
         business_name: data.business_name,
         registration_number: data.registration_number,
         business_type: data.business_type,
@@ -92,7 +107,7 @@ const VendorRegistration = () => {
 
       console.log("Inserting vendor profile:", vendorProfileData);
 
-      // Insert vendor profile - let the database auto-generate the ID
+      // Insert vendor profile with explicit ID
       const { data: vendorProfile, error: profileError } = await supabase
         .from("nd_vendor_profile")
         .insert(vendorProfileData)
