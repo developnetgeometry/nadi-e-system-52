@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -134,13 +133,11 @@ const VendorContractDialog: React.FC<VendorContractDialogProps> = ({
 
       let result;
       if (existingContract) {
-        // Update existing contract
         result = await supabase
           .from("nd_vendor_contract")
           .update(contractData)
           .eq("id", existingContract.id);
       } else {
-        // Create new contract
         result = await supabase
           .from("nd_vendor_contract")
           .insert({
@@ -229,7 +226,6 @@ const VendorContractDialog: React.FC<VendorContractDialogProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Contract Status */}
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div>
               <Label className="text-sm font-medium text-gray-700">Current Status</Label>
@@ -248,7 +244,6 @@ const VendorContractDialog: React.FC<VendorContractDialogProps> = ({
             )}
           </div>
 
-          {/* Contract Form */}
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -283,7 +278,6 @@ const VendorContractDialog: React.FC<VendorContractDialogProps> = ({
               />
             </div>
 
-            {/* Contract Details Display */}
             {existingContract && (
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h4 className="font-medium text-blue-900 mb-2">Contract Information</h4>
@@ -311,7 +305,7 @@ const VendorContractDialog: React.FC<VendorContractDialogProps> = ({
                     <p className="text-blue-800">{existingContract.duration || 0} months</p>
                   </div>
                   <div>
-                    <span className="text-blue-700 font-medium">Auto Status:</span>
+                    <span className="text-blue-700 font-medium">Status:</span>
                     <p className="text-blue-800">
                       {existingContract.is_active ? "Active" : "Inactive"}
                     </p>
