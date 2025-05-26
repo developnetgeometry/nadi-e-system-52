@@ -110,7 +110,7 @@ const TeamFormDialog: React.FC<TeamFormDialogProps> = ({
         .select("id")
         .eq("vendor_team_id", team.id);
 
-      if (error) throw error;
+      if (error) throw teamError;
       
       const staffIds = teamStaff?.map(ts => ts.id) || [];
       setCurrentTeamStaff(staffIds);
@@ -165,8 +165,17 @@ const TeamFormDialog: React.FC<TeamFormDialogProps> = ({
           if (staffError) throw staffError;
         }
       } else {
-        // Create new team
+        // Create new team - generate ID using nextval
+        const { data: idResult, error: idError } = await supabase
+          .rpc('get_next_vendor_team_id');
+
+        if (idError) {
+          console.error("Error getting next ID:", idError);
+          // Fallback: let the database generate the ID
+        }
+
         const teamData = {
+          ...(idResult && { id: idResult }),
           name: data.name,
           registration_number: vendorProfile.registration_number,
           created_by: user.id,

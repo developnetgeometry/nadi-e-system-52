@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import TeamFormDialog from "@/components/vendor/TeamFormDialog";
 import TeamViewDialog from "@/components/vendor/TeamViewDialog";
+import VendorStaffCard from "@/components/vendor/VendorStaffCard";
 
 interface Team {
   id: number;
@@ -170,82 +171,88 @@ const VendorTeamManagement = () => {
           </div>
         </div>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center space-x-2 mb-6">
-              <Search className="h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search teams..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="max-w-sm"
-              />
-            </div>
+        <div className="space-y-6">
+          {/* Team Management Card */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center space-x-2 mb-6">
+                <Search className="h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search teams..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="max-w-sm"
+                />
+              </div>
 
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Team Name</TableHead>
-                  <TableHead>Staff Count</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      Loading teams...
-                    </TableCell>
+                    <TableHead>Team Name</TableHead>
+                    <TableHead>Staff Count</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created Date</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ) : filteredTeams.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      No teams found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredTeams.map((team) => (
-                    <TableRow key={team.id}>
-                      <TableCell className="font-medium">
-                        {team.name}
-                      </TableCell>
-                      <TableCell>{team.staff_count}</TableCell>
-                      <TableCell>
-                        <Badge variant={team.status === 'on_duty' ? 'default' : 'secondary'}>
-                          {team.status === 'on_duty' ? 'On Duty' : 'Out For Duty'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(team.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleViewTeam(team)}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEditTeam(team)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit Team
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8">
+                        Loading teams...
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                  ) : filteredTeams.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8">
+                        No teams found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredTeams.map((team) => (
+                      <TableRow key={team.id}>
+                        <TableCell className="font-medium">
+                          {team.name}
+                        </TableCell>
+                        <TableCell>{team.staff_count}</TableCell>
+                        <TableCell>
+                          <Badge variant={team.status === 'on_duty' ? 'default' : 'secondary'}>
+                            {team.status === 'on_duty' ? 'On Duty' : 'Out For Duty'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(team.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleViewTeam(team)}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEditTeam(team)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Team
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Staff Members Card */}
+          {vendorProfile && <VendorStaffCard vendorProfile={vendorProfile} />}
+        </div>
 
         {/* Team Form Dialog */}
         <TeamFormDialog
