@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUserMetadata } from "./use-user-metadata";
 

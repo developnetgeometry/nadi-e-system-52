@@ -55,6 +55,7 @@ export function EditAnnouncementDialog({
   const [uploading, setUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const { uploadFile } = useFileUpload();
+
   const form = useForm({
     defaultValues: {
       title: announcement.title,
@@ -110,6 +111,7 @@ export function EditAnnouncementDialog({
           path: filePath,
           size: file.size,
           type: file.type,
+          url: publicUrl,
         });
       }
     }
@@ -149,7 +151,8 @@ export function EditAnnouncementDialog({
           user_types: data.user_types,
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
-          attachments: updatedAttachments as any, // Type cast to any to bypass the type checking
+          attachments:
+            updatedAttachments.length > 0 ? updatedAttachments : null,
         })
         .eq("id", announcement.id);
 
@@ -297,6 +300,7 @@ export function EditAnnouncementDialog({
               >
                 Add New Attachments
               </FileUpload>
+
               {selectedFiles.length > 0 && (
                 <div className="mt-2">
                   <p className="text-sm font-medium">Selected files:</p>

@@ -1,11 +1,17 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Building2, Save } from "lucide-react";
@@ -23,7 +29,9 @@ interface VendorCompanySetupProps {
   onComplete: () => void;
 }
 
-const VendorCompanySetup: React.FC<VendorCompanySetupProps> = ({ onComplete }) => {
+const VendorCompanySetup: React.FC<VendorCompanySetupProps> = ({
+  onComplete,
+}) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -34,44 +42,46 @@ const VendorCompanySetup: React.FC<VendorCompanySetupProps> = ({ onComplete }) =
       business_type: "",
       phone_number: "",
       service_detail: "",
-      bank_account_number: ""
-    }
+      bank_account_number: "",
+    },
   });
 
   const onSubmit = async (data: VendorSetupFormData) => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) throw new Error("User not authenticated");
 
       // Insert vendor profile
       const { error: profileError } = await supabase
-        .from('nd_vendor_profile')
+        .from("nd_vendor_profile")
         .insert({
           business_name: data.business_name,
           registration_number: data.registration_number,
           business_type: data.business_type,
           phone_number: data.phone_number,
           service_detail: data.service_detail,
-          bank_account_number: parseInt(data.bank_account_number)
+          bank_account_number: parseInt(data.bank_account_number),
         });
 
       if (profileError) throw profileError;
 
       // Update vendor staff record with registration number
       const { error: staffError } = await supabase
-        .from('nd_vendor_staff')
+        .from("nd_vendor_staff")
         .update({
-          registration_number: parseInt(data.registration_number)
+          registration_number: parseInt(data.registration_number),
         })
-        .eq('user_id', user.id);
+        .eq("user_id", user.id);
 
       if (staffError) throw staffError;
 
       toast({
         title: "Success",
-        description: "Vendor company profile completed successfully"
+        description: "Vendor company profile completed successfully",
       });
 
       onComplete();
@@ -80,7 +90,7 @@ const VendorCompanySetup: React.FC<VendorCompanySetupProps> = ({ onComplete }) =
       toast({
         title: "Error",
         description: "Failed to complete vendor company setup",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -95,14 +105,20 @@ const VendorCompanySetup: React.FC<VendorCompanySetupProps> = ({ onComplete }) =
             <div className="mx-auto mb-4 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
               <Building2 className="h-6 w-6 text-blue-600" />
             </div>
-            <CardTitle className="text-2xl">Complete Your Company Profile</CardTitle>
+            <CardTitle className="text-2xl">
+              Complete Your Company Profile
+            </CardTitle>
             <p className="text-gray-600 mt-2">
-              Welcome! Please complete your vendor company information to continue.
+              Welcome! Please complete your vendor company information to
+              continue.
             </p>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -125,7 +141,10 @@ const VendorCompanySetup: React.FC<VendorCompanySetupProps> = ({ onComplete }) =
                       <FormItem>
                         <FormLabel>Registration Number *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter registration number" />
+                          <Input
+                            {...field}
+                            placeholder="Enter registration number"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -141,7 +160,10 @@ const VendorCompanySetup: React.FC<VendorCompanySetupProps> = ({ onComplete }) =
                       <FormItem>
                         <FormLabel>Business Type *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="e.g., Technology Services" />
+                          <Input
+                            {...field}
+                            placeholder="e.g., Technology Services"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -170,8 +192,8 @@ const VendorCompanySetup: React.FC<VendorCompanySetupProps> = ({ onComplete }) =
                     <FormItem>
                       <FormLabel>Service Details</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          {...field} 
+                        <Textarea
+                          {...field}
                           placeholder="Describe the services provided by your company"
                           rows={3}
                         />
@@ -188,7 +210,10 @@ const VendorCompanySetup: React.FC<VendorCompanySetupProps> = ({ onComplete }) =
                     <FormItem>
                       <FormLabel>Bank Account Number</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Enter bank account number" />
+                        <Input
+                          {...field}
+                          placeholder="Enter bank account number"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -197,7 +222,7 @@ const VendorCompanySetup: React.FC<VendorCompanySetupProps> = ({ onComplete }) =
 
                 <Button type="submit" disabled={loading} className="w-full">
                   <Save className="mr-2 h-4 w-4" />
-                  {loading ? 'Saving...' : 'Complete Setup'}
+                  {loading ? "Saving..." : "Complete Setup"}
                 </Button>
               </form>
             </Form>

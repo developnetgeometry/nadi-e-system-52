@@ -7,25 +7,19 @@ interface UserTypeChipsProps {
   limit?: number;
 }
 
-export const UserTypeChips = ({
-  userTypes = [],
-  limit = 3
-}: UserTypeChipsProps) => {
+export const UserTypeChips = ({ userTypes = [], limit = 3 }: UserTypeChipsProps) => {
   if (!userTypes || userTypes.length === 0) {
     return <span className="text-muted-foreground text-sm italic">No user types assigned</span>;
   }
-  
+
   const displayedTypes = userTypes.slice(0, limit);
   const remainingCount = userTypes.length - limit;
-  
+
   return (
     <div className="flex flex-wrap gap-1">
-      {displayedTypes.map(type => (
+      {displayedTypes.map((type) => (
         <Badge key={type} variant="outline" className="text-xs">
-          {type
-            .split("_")
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ")}
+          {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
         </Badge>
       ))}
       {remainingCount > 0 && (

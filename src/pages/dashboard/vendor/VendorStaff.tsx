@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/dashboard/PageHeader";
@@ -6,7 +5,14 @@ import { PageContainer } from "@/components/ui/dashboard/PageContainer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -35,8 +41,7 @@ const VendorStaff = () => {
 
   const fetchStaff = async () => {
     try {
-      const { data: staffData, error } = await supabase
-        .from('nd_vendor_staff')
+      const { data: staffData, error } = await supabase.from("nd_vendor_staff")
         .select(`
           id,
           fullname,
@@ -54,14 +59,14 @@ const VendorStaff = () => {
       const staffWithCompanies = await Promise.all(
         (staffData || []).map(async (member) => {
           const { data: companyData } = await supabase
-            .from('nd_vendor_profile')
-            .select('business_name')
-            .eq('registration_number', member.registration_number)
+            .from("nd_vendor_profile")
+            .select("business_name")
+            .eq("registration_number", member.registration_number)
             .single();
 
           return {
             ...member,
-            vendor_company: companyData?.business_name || 'Unknown'
+            vendor_company: companyData?.business_name || "Unknown",
           };
         })
       );
@@ -74,14 +79,15 @@ const VendorStaff = () => {
     }
   };
 
-  const filteredStaff = staff.filter(member =>
-    member.fullname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.work_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.vendor_company?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredStaff = staff.filter(
+    (member) =>
+      member.fullname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.work_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.vendor_company?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <DashboardLayout>
+    <div>
       <PageContainer>
         <div className="flex justify-between items-center mb-6">
           <PageHeader
@@ -144,10 +150,10 @@ const VendorStaff = () => {
                       <TableCell>{member.work_email}</TableCell>
                       <TableCell>{member.vendor_company}</TableCell>
                       <TableCell>
-                        <Badge 
-                          variant={member.is_active ? 'default' : 'secondary'}
+                        <Badge
+                          variant={member.is_active ? "default" : "secondary"}
                         >
-                          {member.is_active ? 'Active' : 'Inactive'}
+                          {member.is_active ? "Active" : "Inactive"}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -166,7 +172,7 @@ const VendorStaff = () => {
           </CardContent>
         </Card>
       </PageContainer>
-    </DashboardLayout>
+    </div>
   );
 };
 

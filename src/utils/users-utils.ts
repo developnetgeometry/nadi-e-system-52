@@ -1,4 +1,3 @@
-
 import { Profile } from "@/types/auth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -28,24 +27,9 @@ export const fetchUsers = async (
 };
 
 export const deleteUsers = async (userIds: string[]) => {
-  try {
-    // Call the edge function to delete users from both auth.users and profiles
-    const { error } = await supabase.functions.invoke('delete-user', {
-      body: { userIds },
-    });
-    
-    if (error) throw error;
-  } catch (error) {
-    console.error("Error calling delete-user function:", error);
-    
-    // Fallback: If edge function fails, try deleting just from profiles
-    const { error: profilesError } = await supabase
-      .from("profiles")
-      .delete()
-      .in("id", userIds);
-      
-    if (profilesError) throw profilesError;
-  }
+  const { error } = await supabase.from("profiles").delete().in("id", userIds);
+
+  if (error) throw error;
 };
 
 export const exportUsersToCSV = (users: Profile[]) => {

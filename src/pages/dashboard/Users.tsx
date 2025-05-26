@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -15,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Profile } from "@/types/auth";
-import { Plus, User, UserPlus, UserCog, Trash2, AlertCircle } from "lucide-react";
+import { Plus, User, UserPlus, UserCog, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,19 +25,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { UserTable } from "@/components/users/UserTable";
 import { SortDirection, SortField } from "@/hooks/use-user-management";
 import { UserFormDialog } from "@/components/users/UserFormDialog";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { UserDetailsDialog } from "@/components/users/UserDetailsDialog";
-import { deleteUsers } from "@/utils/users-utils";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,51 +34,10 @@ const Users = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState<Profile | undefined>(undefined);
-  const [userToView, setUserToView] = useState<Profile | null>(null);
-  const [hasPermission, setHasPermission] = useState(true);
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const pageSize = 20;
-
-  useEffect(() => {
-    const checkPermission = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-          setHasPermission(false);
-          return;
-        }
-        
-        const { data: userProfile } = await supabase
-          .from("profiles")
-          .select("user_type")
-          .eq("id", user.id)
-          .single();
-        
-        if (!userProfile) {
-          setHasPermission(false);
-          return;
-        }
-        
-        const allowedUserTypes = [
-          'tp_admin', 'tp_hr', 'dusp_admin', 'mcmc_admin', 
-          'sso_admin', 'vendor_admin', 'super_admin'
-        ];
-        
-        setHasPermission(allowedUserTypes.includes(userProfile.user_type));
-      } catch (error) {
-        console.error("Error checking permissions:", error);
-        setHasPermission(false);
-      }
-    };
-    
-    checkPermission();
-  }, []);
 
   const {
     data: usersData,
@@ -164,65 +109,33 @@ const Users = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleViewUserDetails = (user: Profile) => {
-    setUserToView(user);
-    setIsUserDetailsDialogOpen(true);
+  const handleDeleteUser = async (userId: string) => {
+    if (confirm("Are you sure you want to delete this user?")) {
+      try {
+        const { error } = await supabase
+          .from("profiles")
+          .delete()
+          .eq("id", userId);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "User deleted successfully",
+        });
+        refetch();
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete user",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
-  const deleteUserMutation = useMutation({
-    mutationFn: (userId: string) => deleteUsers([userId]),
-    onSuccess: () => {
-      toast({
-        title: "User deleted",
-        description: "The user has been successfully deleted."
-      });
-      refetch();
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-    },
-    onError: (error) => {
-      console.error("Error deleting user:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete user. Please try again.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleConfirmDelete = useCallback(() => {
-    if (userToDelete) {
-      deleteUserMutation.mutate(userToDelete);
-      setUserToDelete(null);
-      setIsDeleteAlertOpen(false);
-    }
-  }, [userToDelete, deleteUserMutation]);
-
-  const handleDeleteUser = (userId: string) => {
-    setUserToDelete(userId);
-    setIsDeleteAlertOpen(true);
-  };
-
-  const deleteSelectedUsersMutation = useMutation({
-    mutationFn: deleteUsers,
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: `${selectedUsers.length} users deleted successfully`,
-      });
-      setSelectedUsers([]);
-      refetch();
-    },
-    onError: (error) => {
-      console.error("Error deleting selected users:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete selected users",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleDeleteSelectedUsers = () => {
+  const handleDeleteSelectedUsers = async () => {
     if (selectedUsers.length === 0) {
       toast({
         title: "No users selected",
@@ -232,46 +145,43 @@ const Users = () => {
       return;
     }
 
-    deleteSelectedUsersMutation.mutate(selectedUsers);
+    if (
+      confirm(
+        `Are you sure you want to delete ${selectedUsers.length} selected users?`
+      )
+    ) {
+      try {
+        const { error } = await supabase
+          .from("profiles")
+          .delete()
+          .in("id", selectedUsers);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Selected users deleted successfully",
+        });
+        setSelectedUsers([]);
+        refetch();
+      } catch (error) {
+        console.error("Error deleting selected users:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete selected users",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const handleAddUser = () => {
     setIsCreateDialogOpen(true);
   };
 
-  if (!hasPermission) {
-    return (
-      <DashboardLayout>
-        <div className="container mx-auto max-w-6xl py-6">
-          <div className="flex items-center gap-3">
-            <UserCog className="h-8 w-8 text-primary" />
-            <h1 className="text-xl font-bold">User Management</h1>
-          </div>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Access Denied</CardTitle>
-              <CardDescription>You don't have permission to view this page.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Permission Error</AlertTitle>
-                <AlertDescription>
-                  Only administrators (tp_admin, tp_hr, dusp_admin, mcmc_admin, sso_admin, vendor_admin, super_admin)
-                  can access the user management section.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   return (
-    <DashboardLayout>
-      <div className="container mx-auto max-w-6xl py-6">
+    <div>
+      <div className="space-y-1">
         <div className="flex items-center gap-3">
           <UserCog className="h-8 w-8 text-primary" />
           <h1 className="text-xl font-bold">User Management</h1>
@@ -301,10 +211,9 @@ const Users = () => {
                 <Button
                   onClick={handleDeleteSelectedUsers}
                   variant="destructive"
-                  disabled={selectedUsers.length === 0}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Selected ({selectedUsers.length})
+                  Delete Selected
                 </Button>
                 <Button onClick={handleAddUser}>
                   <UserPlus className="h-4 w-4 mr-2" />
@@ -319,7 +228,6 @@ const Users = () => {
                 onSelectUser={handleSelectUser}
                 onEditUser={handleEditUser}
                 onDeleteUser={handleDeleteUser}
-                onViewDetails={handleViewUserDetails}
                 currentPage={page}
                 totalPages={totalPages}
                 onPageChange={handlePageChange}
@@ -352,35 +260,7 @@ const Users = () => {
           refetch();
         }}
       />
-
-      {/* User Details Dialog */}
-      <UserDetailsDialog
-        open={isUserDetailsDialogOpen}
-        onOpenChange={setIsUserDetailsDialogOpen}
-        user={userToView}
-      />
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action will permanently delete the user from both the application and the authentication system. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </DashboardLayout>
+    </div>
   );
 };
 

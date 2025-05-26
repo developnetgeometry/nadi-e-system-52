@@ -64,6 +64,7 @@ export const exportSelectedPayrollToCSV = (
     console.error("No records selected for export");
     return false;
   }
+
   const formattedData = preparePayrollDataForExport(selectedRecords);
   exportToCSV(formattedData, filename);
   return true;
@@ -145,6 +146,7 @@ export const filterStaffPayrollByDate = (
         matchesDate = matchesDate && recordDate.getFullYear() === year;
       }
     }
+
     return matchesSearch && matchesDate;
   });
 };

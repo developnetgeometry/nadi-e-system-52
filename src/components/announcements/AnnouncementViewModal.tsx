@@ -37,6 +37,7 @@ export const AnnouncementViewModal: React.FC<AnnouncementViewModalProps> = ({
   onOpenChange,
 }) => {
   if (!announcement) return null;
+
   const isAnnouncementExpired = (endDate: string) => {
     return new Date(endDate) < new Date();
   };
@@ -74,10 +75,12 @@ export const AnnouncementViewModal: React.FC<AnnouncementViewModalProps> = ({
             </span>
           </div>
         </DialogHeader>
+
         <div className="mt-4 space-y-4">
           <div className="prose prose-sm dark:prose-invert max-w-none">
             <p className="whitespace-pre-line">{announcement.message}</p>
           </div>
+
           <AnnouncementAttachment attachments={announcement.attachments} />
         </div>
       </DialogContent>

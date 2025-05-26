@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { DynamicDashboard } from "@/components/dashboard/DynamicDashboard";
 import { ErrorBoundary } from "react-error-boundary";
@@ -9,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AnnouncementCarousel } from "@/components/announcements/AnnouncementCarousel";
 import { AttachmentFile } from "@/components/announcements/AnnouncementAttachment";
-import { ScreenshotButton } from "@/components/ui/screenshot-button";
 
 interface Announcement {
   id: string;
@@ -27,13 +25,11 @@ const Dashboard = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  
   useEffect(() => {
     if (user) {
       fetchAnnouncements();
     }
   }, [user]);
-  
   const fetchAnnouncements = async () => {
     try {
       setLoading(true);
@@ -82,19 +78,13 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
-  
   return (
-    <DashboardLayout>
+    <div>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         {/* Announcement Banner */}
-        <Card className="mb-2" id="announcements-card">
-          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+        <Card className="mb-2">
+          <CardHeader className="pb-2">
             <CardTitle>Announcements</CardTitle>
-            <ScreenshotButton 
-              targetId="announcements-card" 
-              filename="announcements.png" 
-              variant="outline"
-            />
           </CardHeader>
           <CardContent>
             <AnnouncementCarousel
@@ -105,8 +95,7 @@ const Dashboard = () => {
         </Card>
         <DynamicDashboard />
       </ErrorBoundary>
-    </DashboardLayout>
+    </div>
   );
 };
-
 export default Dashboard;

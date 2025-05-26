@@ -8,7 +8,7 @@ import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import MemberLogin from "@/pages/auth/MemberLogin";
 import { dashboardRoutes, DashboardRoutes } from "@/routes/dashboard.routes";
-import { memberRoutes } from "@/routes/module.member.routes";
+import { memberRoutes } from "@/routes/module-routes/module.member.routes";
 import { moduleRoutes } from "@/routes/module.routes";
 import UIComponents from "@/pages/UIComponents";
 import OrganizationDetails from "@/pages/dashboard/OrganizationDetails";
@@ -20,20 +20,12 @@ import NoAccess from "@/pages/NoAccess";
 import HomeExample from "@/pages/examples/HomeExample";
 import DetailExample from "@/pages/examples/DetailExample";
 import SettingsExample from "@/pages/examples/SettingsExample";
-import Announcements from "@/pages/dashboard/Announcements";
-import AnnouncementSettings from "@/pages/dashboard/AnnouncementSettings";
-import CreateAnnouncement from "@/pages/demo/CreateAnnouncement";
-import Takwim from "@/pages/dashboard/Takwim";
-import Notifications from "@/pages/dashboard/Notifications";
-
-// Import HR pages
-import Employees from "@/pages/dashboard/hr/Employees";
-import SiteStaff from "@/pages/dashboard/hr/SiteStaff";
-import StaffDetail from "@/pages/dashboard/hr/StaffDetail";
-import StaffEdit from "@/pages/dashboard/hr/StaffEdit";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
+import Dashboard from "./pages/dashboard/Dashboard";
 
 const queryClient = new QueryClient();
 
+// Loading component for Suspense fallback
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
@@ -53,49 +45,19 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/ui-components" element={<UIComponents />} />
 
+              {/* Example Pages */}
               <Route path="/examples/home" element={<HomeExample />} />
               <Route path="/examples/detail" element={<DetailExample />} />
               <Route path="/examples/settings" element={<SettingsExample />} />
 
-              {/* HR Routes */}
-              <Route path="/dashboard/hr/employees" element={<Employees />} />
-              <Route path="/dashboard/hr/site-staff" element={<SiteStaff />} />
-              <Route path="/dashboard/hr/staff/:id" element={<StaffDetail />} />
-              <Route
-                path="/dashboard/hr/staff/:id/edit"
-                element={<StaffEdit />}
-              />
-
-              {/* Dashboard Routes */}
-              {dashboardRoutes.map((route, index) => (
-                <Route
-                  key={`dashboard-${index}`}
-                  path={route.path}
-                  element={route.element}
-                />
-              ))}
-
-              {/* Member Routes */}
-              {memberRoutes.map((route, index) => (
-                <Route
-                  key={`member-${index}`}
-                  path={route.path}
-                  element={route.element}
-                />
-              ))}
-
-              {/* Module Routes */}
-              {moduleRoutes.map((route, index) => (
-                <Route
-                  key={`module-${index}`}
-                  path={route.path}
-                  element={route.element}
-                />
-              ))}
-
+              {/* Add organization details route */}
               <Route
                 path="/admin/organizations/:id"
-                element={<OrganizationDetails />}
+                element={
+                  <DashboardLayout>
+                    <OrganizationDetails />
+                  </DashboardLayout>
+                }
               />
 
               <Route path="/under-development" element={<UnderDevelopment />} />
@@ -108,22 +70,30 @@ function App() {
                   key={route.path}
                   path={route.path}
                   element={
-                    <Suspense fallback={<LoadingSpinner />}>
-                      {route.element}
-                    </Suspense>
+                    <DashboardLayout>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        {route.element}
+                      </Suspense>
+                    </DashboardLayout>
                   }
                 />
               ))}
 
-              <Route path="/demo/announcements" element={<Announcements />} />
-              <Route
-                path="/demo/announcements/create"
-                element={<CreateAnnouncement />}
-              />
-              <Route
-                path="/demo/announcement-settings"
-                element={<AnnouncementSettings />}
-              />
+              {/* Member routes */}
+              {Array.isArray(memberRoutes) &&
+                memberRoutes.map((route) => (
+                  <Route
+                    key={route.path}
+                    path={route.path}
+                    element={
+                      <DashboardLayout>
+                        <Suspense fallback={<LoadingSpinner />}>
+                          {route.element}
+                        </Suspense>
+                      </DashboardLayout>
+                    }
+                  />
+                ))}
 
               {/* Module routes */}
               {Array.isArray(moduleRoutes) &&
@@ -132,9 +102,11 @@ function App() {
                     key={route.path}
                     path={route.path}
                     element={
-                      <Suspense fallback={<LoadingSpinner />}>
-                        {route.element}
-                      </Suspense>
+                      <DashboardLayout>
+                        <Suspense fallback={<LoadingSpinner />}>
+                          {route.element}
+                        </Suspense>
+                      </DashboardLayout>
                     }
                   />
                 ))}

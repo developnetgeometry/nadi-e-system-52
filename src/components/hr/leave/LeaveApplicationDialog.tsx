@@ -99,6 +99,7 @@ export function LeaveApplicationDialog({
   const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { leaveTypes, isLoading: isLoadingLeaveTypes } = useLeaveType();
+
   const form = useForm<z.infer<typeof leaveSchema>>({
     resolver: zodResolver(leaveSchema),
     defaultValues: {

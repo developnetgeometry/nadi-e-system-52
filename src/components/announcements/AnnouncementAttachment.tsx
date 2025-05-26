@@ -54,6 +54,7 @@ export const AnnouncementAttachment: React.FC<AnnouncementAttachmentProps> = ({
       a.download = fileName;
       document.body.appendChild(a);
       a.click();
+
       // Clean up
       URL.revokeObjectURL(url);
       document.body.removeChild(a);

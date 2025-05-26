@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageContainer } from "@/components/ui/dashboard/PageContainer";
@@ -13,7 +12,7 @@ import { Loader2 } from "lucide-react";
 const ProgrammesDashboard = () => {
   const { user } = useAuth();
   const userName = user?.user_metadata?.full_name || user?.email || "user";
-  
+
   // State for storing data
   const [loading, setLoading] = useState(true);
   const [categoryData, setCategoryData] = useState([
@@ -29,50 +28,53 @@ const ProgrammesDashboard = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // Fetch program counts by category
         const { data: eventData, error: eventError } = await supabase
-          .from('nd_event')
-          .select('category_id');
-          
+          .from("nd_event")
+          .select("category_id");
+
         if (eventError) throw eventError;
-        
+
         // Count programs by category
         const categoryCounts = { 1: 0, 2: 0, 3: 0 };
-        eventData.forEach(event => {
-          if (event.category_id && categoryCounts[event.category_id] !== undefined) {
+        eventData.forEach((event) => {
+          if (
+            event.category_id &&
+            categoryCounts[event.category_id] !== undefined
+          ) {
             categoryCounts[event.category_id]++;
           }
         });
-        
+
         // Update category data with counts
-        setCategoryData(prevData => 
-          prevData.map(cat => ({
+        setCategoryData((prevData) =>
+          prevData.map((cat) => ({
             ...cat,
-            count: categoryCounts[cat.id] || 0
+            count: categoryCounts[cat.id] || 0,
           }))
         );
-        
+
         // Fetch status data
         const { data: statusData, error: statusError } = await supabase
-          .from('nd_event_status')
-          .select('id, name');
-        
+          .from("nd_event_status")
+          .select("id, name");
+
         if (statusError) throw statusError;
-        
+
         // Fetch count for each status
         const statusWithCounts = await Promise.all(
           statusData.map(async (status) => {
             const { count, error: countError } = await supabase
-              .from('nd_event')
-              .select('*', { count: 'exact', head: true })
-              .eq('status_id', status.id);
-              
+              .from("nd_event")
+              .select("*", { count: "exact", head: true })
+              .eq("status_id", status.id);
+
             if (countError) throw countError;
-            
+
             // Determine color based on status name
             let color = "bg-gray-200 text-gray-700";
-            switch(status.name?.toLowerCase()) {
+            switch (status.name?.toLowerCase()) {
               case "draft":
                 color = "bg-gray-200 text-gray-700";
                 break;
@@ -95,41 +97,43 @@ const ProgrammesDashboard = () => {
               default:
                 color = "bg-gray-200 text-gray-700";
             }
-            
+
             return {
               status: status.name,
               count: count || 0,
-              color
+              color,
             };
           })
         );
-        
+
         setStatusData(statusWithCounts);
-        
+
         // Fetch recent programs
         const { data: recentData, error: recentError } = await supabase
-          .from('nd_event')
-          .select(`
+          .from("nd_event")
+          .select(
+            `
             id, 
             program_name,
             location_event,
             nd_event_category:category_id(name),
             nd_event_status:status_id(name)
-          `)
-          .order('created_at', { ascending: false })
+          `
+          )
+          .order("created_at", { ascending: false })
           .limit(5);
-          
+
         if (recentError) throw recentError;
-        
+
         // Format recent programs data
-        const formattedRecentData = recentData.map(item => ({
+        const formattedRecentData = recentData.map((item) => ({
           id: item.id,
           title: item.program_name || "Untitled Program",
           location: item.location_event || "No location specified",
           category: item.nd_event_category?.name || "Uncategorized",
-          status: item.nd_event_status?.name || "Unknown Status"
+          status: item.nd_event_status?.name || "Unknown Status",
         }));
-        
+
         setRecentProgrammes(formattedRecentData);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -144,7 +148,7 @@ const ProgrammesDashboard = () => {
   // Helper function to get badge for status
   const getStatusBadge = (status) => {
     if (!status) return <Badge>Unknown</Badge>;
-    
+
     switch (status.toLowerCase()) {
       case "draft":
         return (
@@ -190,19 +194,19 @@ const ProgrammesDashboard = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <div>
         <PageContainer>
           <div className="flex items-center justify-center h-96">
             <Loader2 className="w-8 h-8 animate-spin" />
             <span className="ml-2">Loading dashboard data...</span>
           </div>
         </PageContainer>
-      </DashboardLayout>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
+    <div>
       <PageContainer>
         <div className="flex justify-between items-start mb-8">
           <div>
@@ -211,9 +215,7 @@ const ProgrammesDashboard = () => {
             </h1>
             <p className="text-muted-foreground">Welcome back, {userName}</p>
           </div>
-          <Button asChild>
-            <Link to="/programmes/register">Register New Program</Link>
-          </Button>
+          {/* Register New Program button removed */}
         </div>
 
         {/* Program Categories */}
@@ -226,7 +228,15 @@ const ProgrammesDashboard = () => {
                   <div className="flex justify-between items-center mt-2">
                     <span className="text-3xl font-bold">{category.count}</span>
                     <Button variant="link" className="text-sm" asChild>
-                      <Link to={`/programmes/${category.id === 1 ? 'nadi4u' : category.id === 2 ? 'nadi2u' : 'others'}`}>
+                      <Link
+                        to={`/programmes/${
+                          category.id === 1
+                            ? "nadi4u"
+                            : category.id === 2
+                            ? "nadi2u"
+                            : "others"
+                        }`}
+                      >
                         View All
                       </Link>
                     </Button>
@@ -270,7 +280,9 @@ const ProgrammesDashboard = () => {
               <h3 className="text-lg font-medium mb-4">Recent Programs</h3>
               <div className="space-y-4">
                 {recentProgrammes.length === 0 ? (
-                  <p className="text-muted-foreground">No recent programs found</p>
+                  <p className="text-muted-foreground">
+                    No recent programs found
+                  </p>
                 ) : (
                   recentProgrammes.map((program) => (
                     <div
@@ -319,7 +331,7 @@ const ProgrammesDashboard = () => {
           </CardContent>
         </Card>
       </PageContainer>
-    </DashboardLayout>
+    </div>
   );
 };
 

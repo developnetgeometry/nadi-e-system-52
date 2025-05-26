@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/dashboard/PageHeader";
@@ -14,7 +13,7 @@ const VendorManagement = () => {
     totalVendors: 0,
     totalStaff: 0,
     activeContracts: 0,
-    pendingReports: 0
+    pendingReports: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -22,18 +21,22 @@ const VendorManagement = () => {
     const fetchStats = async () => {
       try {
         // Fetch vendor statistics
-        const [vendorsRes, staffRes, contractsRes, reportsRes] = await Promise.all([
-          supabase.from('nd_vendor_profile').select('id', { count: 'exact' }),
-          supabase.from('nd_vendor_staff').select('id', { count: 'exact' }),
-          supabase.from('nd_vendor_contract').select('id', { count: 'exact' }).eq('is_active', true),
-          supabase.from('nd_vendor_report').select('id', { count: 'exact' })
-        ]);
+        const [vendorsRes, staffRes, contractsRes, reportsRes] =
+          await Promise.all([
+            supabase.from("nd_vendor_profile").select("id", { count: "exact" }),
+            supabase.from("nd_vendor_staff").select("id", { count: "exact" }),
+            supabase
+              .from("nd_vendor_contract")
+              .select("id", { count: "exact" })
+              .eq("is_active", true),
+            supabase.from("nd_vendor_report").select("id", { count: "exact" }),
+          ]);
 
         setStats({
           totalVendors: vendorsRes.count || 0,
           totalStaff: staffRes.count || 0,
           activeContracts: contractsRes.count || 0,
-          pendingReports: reportsRes.count || 0
+          pendingReports: reportsRes.count || 0,
         });
       } catch (error) {
         console.error("Error fetching vendor stats:", error);
@@ -50,30 +53,30 @@ const VendorManagement = () => {
       title: "Total Vendors",
       value: stats.totalVendors,
       icon: Building2,
-      color: "bg-blue-500"
+      color: "bg-blue-500",
     },
     {
       title: "Total Staff",
       value: stats.totalStaff,
       icon: Users,
-      color: "bg-green-500"
+      color: "bg-green-500",
     },
     {
       title: "Active Contracts",
       value: stats.activeContracts,
       icon: FileText,
-      color: "bg-purple-500"
+      color: "bg-purple-500",
     },
     {
       title: "Pending Reports",
       value: stats.pendingReports,
       icon: MapPin,
-      color: "bg-orange-500"
-    }
+      color: "bg-orange-500",
+    },
   ];
 
   return (
-    <DashboardLayout>
+    <div>
       <PageContainer>
         <div className="flex justify-between items-center mb-6">
           <PageHeader
@@ -96,7 +99,9 @@ const VendorManagement = () => {
                 <CardTitle className="text-sm font-medium">
                   {stat.title}
                 </CardTitle>
-                <stat.icon className={`h-4 w-4 text-white rounded p-1 ${stat.color}`} />
+                <stat.icon
+                  className={`h-4 w-4 text-white rounded p-1 ${stat.color}`}
+                />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -161,7 +166,7 @@ const VendorManagement = () => {
           </Card>
         </div>
       </PageContainer>
-    </DashboardLayout>
+    </div>
   );
 };
 

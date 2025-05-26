@@ -1,4 +1,4 @@
-
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,43 +7,51 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Download, FileText, FileSpreadsheet } from "lucide-react";
-import { exportToCSV } from "@/utils/export-utils";
+import { exportMembersToPDF, exportMembersToCSV } from "@/utils/export-utils";
 
 interface ExportButtonProps {
   data: any[];
-  filename?: string;
-  title?: string; // Added for backward compatibility
+  title?: string;
 }
 
-const ExportButton = ({ data, filename = "members-data", title }: ExportButtonProps) => {
-  // Use title for filename if provided (for backward compatibility)
-  const actualFilename = title || filename;
-  
-  const handleCSVExport = () => {
-    // Format the data for CSV export
-    const formattedData = data.map(member => ({
-      'Full Name': member.fullname || '',
-      'Email': member.email || '',
-      'Phone Number': member.phone_number || '',
-      'Registration Date': member.created_at ? new Date(member.created_at).toLocaleDateString() : '',
-      'Status': member.status || ''
-    }));
-    
-    exportToCSV(formattedData, actualFilename);
+const ExportButton = ({
+  data,
+  title = "HR Members Report",
+}: ExportButtonProps) => {
+  const handleExportPDF = () => {
+    exportMembersToPDF(data, title);
+  };
+
+  const handleExportCSV = () => {
+    exportMembersToCSV(data, title);
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="flex gap-2 items-center">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1 bg-white"
+        >
           <Download size={16} />
           Export
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem onClick={handleCSVExport} className="flex gap-2 items-center">
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          onClick={handleExportPDF}
+          className="flex items-center gap-2 cursor-pointer"
+        >
+          <FileText size={16} />
+          <span>Export as PDF</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={handleExportCSV}
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <FileSpreadsheet size={16} />
-          <span>Export to CSV</span>
+          <span>Export as CSV</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

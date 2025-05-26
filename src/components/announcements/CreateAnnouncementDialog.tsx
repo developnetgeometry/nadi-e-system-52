@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -80,7 +79,7 @@ export const CreateAnnouncementDialog = () => {
       const { error } = await supabase.from("announcements").insert({
         title: data.title,
         message: data.message,
-        attachments: attachments as any, // Type cast to any to avoid type issues
+        attachments: attachments,
       });
 
       if (error) {

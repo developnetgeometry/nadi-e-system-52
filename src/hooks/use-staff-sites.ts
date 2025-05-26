@@ -102,6 +102,7 @@ export const useStaffSites = () => {
             .select("id, sitename")
             .eq("is_active", true)
             .order("sitename");
+
           if (error) throw error;
           return data as StaffSite[];
         }

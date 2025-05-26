@@ -94,6 +94,7 @@ export const useStaffData = (user: any, organizationInfo: OrganizationInfo) => {
         const { data: techPartners, error: tpError } = await supabase
           .from("nd_tech_partner")
           .select("id, name");
+
         if (tpError) throw tpError;
 
         // For TP staff, get the ones directly associated with the organization
@@ -184,6 +185,7 @@ export const useStaffData = (user: any, organizationInfo: OrganizationInfo) => {
 
     setStaffList((prevStaff) => [staffMember, ...prevStaff]);
   };
+
   const updateStaffMember = (updatedStaff: StaffMember) => {
     setStaffList((prevList) =>
       prevList.map((staff) =>

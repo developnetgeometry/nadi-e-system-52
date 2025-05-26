@@ -1,105 +1,362 @@
 import { supabase } from "@/integrations/supabase/client";
-import { UserFormData } from "../types";
 import { Profile } from "@/types/auth";
+import { UserFormData } from "../types";
 
-// Function to check if current user has permission to create/edit users
-async function hasUserManagementPermission() {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) return false;
-  
-  // Get the user's profile to check their user_type
-  const { data: userProfile } = await supabase
-    .from("profiles")
-    .select("user_type")
-    .eq("id", user.id)
-    .single();
-  
-  if (!userProfile) return false;
-  
-  // List of user types that can create/edit users
-  const allowedUserTypes = [
-    'tp_admin', 'tp_hr', 'dusp_admin', 'mcmc_admin', 
-    'sso_admin', 'vendor_admin', 'super_admin'
-  ];
-  
-  return allowedUserTypes.includes(userProfile.user_type);
-}
-
-export async function handleCreateUser(data: UserFormData) {
+/**
+ * Handle the creation of a new user
+ * @param data Form data
+ * @returns Created user
+ */
+export const handleCreateUser = async (data: UserFormData): Promise<any> => {
   try {
-    // Check if current user has permission
-    const hasPermission = await hasUserManagementPermission();
-    if (!hasPermission) {
-      throw new Error("You don't have permission to create users");
+    // First, create the user account
+    const { data: userData, error: createError } =
+      await supabase.functions.invoke("create-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: {
+          email: data.email,
+          fullName: data.full_name,
+          userType: data.user_type,
+          userGroup: data.user_group || null,
+          phoneNumber: data.phone_number || null,
+          icNumber: data.ic_number,
+          password: data.password!,
+        },
+      });
+
+    if (createError) throw createError;
+    if (!userData) throw new Error("Failed to create user");
+
+    // Create profile in the corresponding table based on user group
+    if (data.user_group) {
+      switch (data.user_group) {
+        case "1": // MCMC
+          if (data.position_id) {
+            await supabase.from("nd_mcmc_profile").insert({
+              user_id: userData.id,
+              fullname: data.full_name,
+              work_email: data.email,
+              mobile_no: data.phone_number,
+              ic_no: data.ic_number,
+              position_id: data.position_id,
+              is_active: true,
+            });
+          }
+          break;
+
+        case "3": // TP (Tech Partner)
+          await supabase.from("nd_tech_partner_profile").insert({
+            user_id: userData.id,
+            fullname: data.full_name,
+            work_email: data.email,
+            mobile_no: data.phone_number,
+            ic_no: data.ic_number,
+            personal_email: data.personal_email,
+            join_date: data.join_date || null,
+            qualification: data.qualification || null,
+            dob: data.dob || null,
+            place_of_birth: data.place_of_birth || null,
+            marital_status: data.marital_status || null,
+            race_id: data.race_id || null,
+            religion_id: data.religion_id || null,
+            nationality_id: data.nationality_id || null,
+            is_active: true,
+          });
+          break;
+
+        case "2": // DUSP
+          if (data.position_id) {
+            await supabase.from("nd_dusp_profile").insert({
+              user_id: userData.id,
+              fullname: data.full_name,
+              work_email: data.email,
+              mobile_no: data.phone_number,
+              ic_no: data.ic_number,
+              position_id: data.position_id,
+              is_active: true,
+            });
+          }
+          break;
+
+        case "4": // SSO
+          if (data.position_id) {
+            await supabase.from("nd_sso_profile").insert({
+              user_id: userData.id,
+              fullname: data.full_name,
+              work_email: data.email,
+              mobile_no: data.phone_number,
+              ic_no: data.ic_number,
+              position_id: data.position_id,
+              is_active: true,
+            });
+          }
+          break;
+
+        case "6": // Site Staff
+          // Create staff profile with all the additional fields
+          await supabase.from("nd_staff_profile").insert({
+            user_id: userData.id,
+            fullname: data.full_name,
+            work_email: data.email,
+            mobile_no: data.phone_number,
+            ic_no: data.ic_number,
+            personal_email: data.personal_email,
+            dob: data.dob,
+            gender_id: data.gender_id,
+            place_of_birth: data.place_of_birth,
+            marital_status: data.marital_status,
+            race_id: data.race_id,
+            religion_id: data.religion_id,
+            nationality_id: data.nationality_id,
+            is_active: true,
+          });
+
+          // Add address information if provided
+          if (data.permanent_address1) {
+            await supabase.from("nd_staff_address").insert({
+              staff_id: userData.id,
+              address1: data.permanent_address1,
+              address2: data.permanent_address2 || null,
+              postcode: data.permanent_postcode || null,
+              city: data.permanent_city || null,
+              state_id: data.permanent_state || null,
+              is_active: true,
+              remark: "permanent",
+            });
+          }
+
+          // Add correspondence address if it's different from permanent
+          if (!data.same_as_permanent && data.correspondence_address1) {
+            await supabase.from("nd_staff_address").insert({
+              staff_id: userData.id,
+              address1: data.correspondence_address1,
+              address2: data.correspondence_address2 || null,
+              postcode: data.correspondence_postcode || null,
+              city: data.correspondence_city || null,
+              state_id: data.correspondence_state || null,
+              is_active: true,
+              remark: "correspondence",
+            });
+          }
+
+          // Add work info if provided
+          if (
+            data.epf_no ||
+            data.socso_no ||
+            data.income_tax_no ||
+            data.bank_account_no
+          ) {
+            await supabase.from("nd_staff_pay_info").insert({
+              staff_id: userData.id,
+              epf_no: data.epf_no || null,
+              socso_no: data.socso_no || null,
+              tax_no: data.income_tax_no || null,
+              bank_acc_no: data.bank_account_no || null,
+              bank_id: data.bank_name || null,
+            });
+          }
+          break;
+
+        default:
+          break;
+      }
     }
-    
-    // Create user in Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email: data.email,
-      password: data.password || generateTemporaryPassword(),
-      email_confirm: true,
-      user_metadata: { 
-        full_name: data.full_name,
-        user_type: data.user_type,
-        user_group: data.user_group,
-        ic_number: data.ic_number
-      },
-    });
 
-    if (authError) throw authError;
-    if (!authData.user) throw new Error("Failed to create user");
+    // If organization_id is provided, add user to organization_users table
+    if (data.organization_id && data.organization_role) {
+      await supabase.from("organization_users").insert({
+        user_id: userData.id,
+        organization_id: data.organization_id,
+        role: data.organization_role,
+      });
+    }
 
-    const userId = authData.user.id;
-
-    // Update profile in Supabase
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .update({
-        full_name: data.full_name,
-        user_type: data.user_type as any,
-        phone_number: data.phone_number || null,
-        ic_number: data.ic_number,
-        user_group: data.user_group ? parseInt(data.user_group) : null,
-      })
-      .eq("id", userId);
-
-    if (profileError) throw profileError;
-
-    // Create type-specific profile based on user_group
-    await createUserTypeSpecificProfile(userId, data);
-
-    return { id: userId };
-  } catch (error) {
+    return userData;
+  } catch (error: any) {
     console.error("Error creating user:", error);
-    throw error;
+    throw new Error(error.message || "Failed to create user");
   }
-}
+};
 
-export async function handleUpdateUser(data: UserFormData, user: Profile) {
+/**
+ * Handle the update of an existing user
+ * @param data Form data
+ * @param user Existing user profile
+ * @returns Updated user
+ */
+export const handleUpdateUser = async (
+  data: UserFormData,
+  user: Profile
+): Promise<Profile> => {
   try {
-    // Check if current user has permission
-    const hasPermission = await hasUserManagementPermission();
-    if (!hasPermission) {
-      throw new Error("You don't have permission to update users");
-    }
-    
-    // Update profile in Supabase
+    // Update the profile table
     const { error: profileError } = await supabase
       .from("profiles")
       .update({
         full_name: data.full_name,
-        user_type: data.user_type as any,
-        phone_number: data.phone_number || null,
+        phone_number: data.phone_number,
         ic_number: data.ic_number,
+        user_type: data.user_type,
         user_group: data.user_group ? parseInt(data.user_group) : null,
       })
       .eq("id", user.id);
 
     if (profileError) throw profileError;
 
+    // Update the specific profile table based on user group
+    if (data.user_group) {
+      switch (data.user_group) {
+        case "1": // MCMC
+          const { data: existingMcmc } = await supabase
+            .from("nd_mcmc_profile")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("is_active", true)
+            .maybeSingle();
+
+          if (existingMcmc) {
+            await supabase
+              .from("nd_mcmc_profile")
+              .update({
+                fullname: data.full_name,
+                work_email: data.email,
+                mobile_no: data.phone_number,
+                ic_no: data.ic_number,
+                position_id: data.position_id || null,
+              })
+              .eq("id", existingMcmc.id);
+          } else if (data.position_id) {
+            await supabase.from("nd_mcmc_profile").insert({
+              user_id: user.id,
+              fullname: data.full_name,
+              work_email: data.email,
+              mobile_no: data.phone_number,
+              ic_no: data.ic_number,
+              position_id: data.position_id,
+              is_active: true,
+            });
+          }
+          break;
+
+        case "3": // TP (Tech Partner)
+          const { data: existingTp } = await supabase
+            .from("nd_tech_partner_profile")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("is_active", true)
+            .maybeSingle();
+
+          if (existingTp) {
+            await supabase
+              .from("nd_tech_partner_profile")
+              .update({
+                fullname: data.full_name,
+                work_email: data.email,
+                mobile_no: data.phone_number,
+                ic_no: data.ic_number,
+                personal_email: data.personal_email || null,
+                join_date: data.join_date || null,
+                qualification: data.qualification || null,
+                dob: data.dob || null,
+                place_of_birth: data.place_of_birth || null,
+                marital_status: data.marital_status || null,
+                race_id: data.race_id || null,
+                religion_id: data.religion_id || null,
+                nationality_id: data.nationality_id || null,
+              })
+              .eq("id", existingTp.id);
+          } else {
+            await supabase.from("nd_tech_partner_profile").insert({
+              user_id: user.id,
+              fullname: data.full_name,
+              work_email: data.email,
+              mobile_no: data.phone_number,
+              ic_no: data.ic_number,
+              personal_email: data.personal_email || null,
+              join_date: data.join_date || null,
+              qualification: data.qualification || null,
+              dob: data.dob || null,
+              place_of_birth: data.place_of_birth || null,
+              marital_status: data.marital_status || null,
+              race_id: data.race_id || null,
+              religion_id: data.religion_id || null,
+              nationality_id: data.nationality_id || null,
+              is_active: true,
+            });
+          }
+          break;
+
+        case "2": // DUSP
+          const { data: existingDusp } = await supabase
+            .from("nd_dusp_profile")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("is_active", true)
+            .maybeSingle();
+
+          if (existingDusp) {
+            await supabase
+              .from("nd_dusp_profile")
+              .update({
+                fullname: data.full_name,
+                work_email: data.email,
+                mobile_no: data.phone_number,
+                ic_no: data.ic_number,
+                position_id: data.position_id || null,
+              })
+              .eq("id", existingDusp.id);
+          } else if (data.position_id) {
+            await supabase.from("nd_dusp_profile").insert({
+              user_id: user.id,
+              fullname: data.full_name,
+              work_email: data.email,
+              mobile_no: data.phone_number,
+              ic_no: data.ic_number,
+              position_id: data.position_id,
+              is_active: true,
+            });
+          }
+          break;
+
+        case "4": // SSO
+          const { data: existingSso } = await supabase
+            .from("nd_sso_profile")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("is_active", true)
+            .maybeSingle();
+
+          if (existingSso) {
+            await supabase
+              .from("nd_sso_profile")
+              .update({
+                fullname: data.full_name,
+                work_email: data.email,
+                mobile_no: data.phone_number,
+                ic_no: data.ic_number,
+                position_id: data.position_id || null,
+              })
+              .eq("id", existingSso.id);
+          } else if (data.position_id) {
+            await supabase.from("nd_sso_profile").insert({
+              user_id: user.id,
+              fullname: data.full_name,
+              work_email: data.email,
+              mobile_no: data.phone_number,
+              ic_no: data.ic_number,
+              position_id: data.position_id,
+              is_active: true,
+            });
+          }
+          break;
+      }
+    }
+
     // Update password if provided
-    if (data.password && data.password === data.confirm_password) {
+    if (data.password && data.password.trim()) {
       const { error: passwordError } = await supabase.auth.admin.updateUserById(
         user.id,
         { password: data.password }
@@ -108,299 +365,18 @@ export async function handleUpdateUser(data: UserFormData, user: Profile) {
       if (passwordError) throw passwordError;
     }
 
-    // Update type-specific profile based on user_group
-    await updateUserTypeSpecificProfile(user.id, data);
-
-    return { success: true };
-  } catch (error) {
+    // Return the updated user
+    return {
+      ...user,
+      full_name: data.full_name,
+      email: data.email,
+      phone_number: data.phone_number,
+      ic_number: data.ic_number,
+      user_type: data.user_type as any,
+      user_group: data.user_group ? parseInt(data.user_group) : null,
+    };
+  } catch (error: any) {
     console.error("Error updating user:", error);
-    throw error;
+    throw new Error(error.message || "Failed to update user");
   }
-}
-
-async function createUserTypeSpecificProfile(userId: string, data: UserFormData) {
-  try {
-    const userGroup = data.user_group;
-    
-    if (!userGroup) return;
-
-    // Find the group info to determine which profile table to use
-    const { data: groupInfo } = await supabase
-      .from("nd_user_group")
-      .select("group_name")
-      .eq("id", userGroup)
-      .single();
-
-    const groupName = groupInfo?.group_name?.toLowerCase();
-
-    if (groupName?.includes("mcmc")) {
-      // Create MCMC profile
-      await supabase.from("nd_mcmc_profile").insert({
-        user_id: userId,
-        fullname: data.full_name,
-        ic_no: data.ic_number,
-        mobile_no: data.phone_number,
-        work_email: data.email,
-        position_id: data.position_id ? parseInt(data.position_id) : null,
-        is_active: true,
-      });
-    } else if (groupName?.includes("tp") || groupName?.includes("tech partner")) {
-      // Create Tech Partner profile
-      const techPartnerInsert = {
-        user_id: userId,
-        fullname: data.full_name,
-        ic_no: data.ic_number,
-        mobile_no: data.phone_number,
-        work_email: data.email,
-        tech_partner_id: data.organization_id ? parseInt(data.organization_id) : null,
-        position_id: data.position_id ? parseInt(data.position_id) : null,
-        personal_email: data.personal_email || null,
-        join_date: data.join_date || null,
-        qualification: data.qualification || null,
-        dob: data.dob || null,
-        place_of_birth: data.place_of_birth || null,
-        marital_status: data.marital_status ? parseInt(data.marital_status) : null,
-        race_id: data.race_id ? parseInt(data.race_id) : null,
-        religion_id: data.religion_id ? parseInt(data.religion_id) : null,
-        nationality_id: data.nationality_id ? parseInt(data.nationality_id) : null,
-        is_active: true,
-      };
-      
-      await supabase.from("nd_tech_partner_profile").insert(techPartnerInsert);
-      
-      // For tp_site users, assign them to a specific site
-      if (data.user_type === "tp_site" && data.assigned_site_id) {
-        await supabase.from("nd_site_user").insert({
-          user_id: userId,
-          fullname: data.full_name,
-          ic_no: data.ic_number,
-          mobile_no: data.phone_number,
-          work_email: data.email,
-          tech_partner_id: data.organization_id ? parseInt(data.organization_id) : null,
-          site_profile_id: parseInt(data.assigned_site_id),
-          is_active: true,
-        });
-      }
-    } else if (groupName?.includes("dusp")) {
-      // Create DUSP profile
-      await supabase.from("nd_dusp_profile").insert({
-        user_id: userId,
-        fullname: data.full_name,
-        ic_no: data.ic_number,
-        mobile_no: data.phone_number,
-        work_email: data.email,
-        position_id: data.position_id ? parseInt(data.position_id) : null,
-        is_active: true,
-      });
-    } else if (groupName?.includes("sso")) {
-      // Create SSO profile
-      await supabase.from("nd_sso_profile").insert({
-        user_id: userId,
-        fullname: data.full_name,
-        ic_no: data.ic_number,
-        mobile_no: data.phone_number,
-        work_email: data.email,
-        position_id: data.position_id ? parseInt(data.position_id) : null,
-        is_active: true,
-      });
-    } else if (groupName?.includes("vendor")) {
-      // Create Vendor profile logic here
-    }
-  } catch (error) {
-    console.error("Error creating type-specific profile:", error);
-    throw error;
-  }
-}
-
-async function updateUserTypeSpecificProfile(userId: string, data: UserFormData) {
-  try {
-    const userGroup = data.user_group;
-    
-    if (!userGroup) return;
-
-    // Find the group info to determine which profile table to use
-    const { data: groupInfo } = await supabase
-      .from("nd_user_group")
-      .select("group_name")
-      .eq("id", userGroup)
-      .single();
-
-    const groupName = groupInfo?.group_name?.toLowerCase();
-
-    if (groupName?.includes("mcmc")) {
-      // Check if MCMC profile exists
-      const { data: existingProfile } = await supabase
-        .from("nd_mcmc_profile")
-        .select("id")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (existingProfile) {
-        // Update existing profile
-        await supabase.from("nd_mcmc_profile").update({
-          fullname: data.full_name,
-          ic_no: data.ic_number,
-          mobile_no: data.phone_number,
-          work_email: data.email,
-          position_id: data.position_id ? parseInt(data.position_id) : null,
-        }).eq("user_id", userId);
-      } else {
-        // Create new profile
-        await supabase.from("nd_mcmc_profile").insert({
-          user_id: userId,
-          fullname: data.full_name,
-          ic_no: data.ic_number,
-          mobile_no: data.phone_number,
-          work_email: data.email,
-          position_id: data.position_id ? parseInt(data.position_id) : null,
-          is_active: true,
-        });
-      }
-    } else if (groupName?.includes("tp") || groupName?.includes("tech partner")) {
-      // Check if TP profile exists
-      const { data: existingProfile } = await supabase
-        .from("nd_tech_partner_profile")
-        .select("id")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      const tpProfileData = {
-        fullname: data.full_name,
-        ic_no: data.ic_number,
-        mobile_no: data.phone_number,
-        work_email: data.email,
-        tech_partner_id: data.organization_id ? parseInt(data.organization_id) : null,
-        position_id: data.position_id ? parseInt(data.position_id) : null,
-        personal_email: data.personal_email || null,
-        join_date: data.join_date || null,
-        qualification: data.qualification || null,
-        dob: data.dob || null,
-        place_of_birth: data.place_of_birth || null,
-        marital_status: data.marital_status ? parseInt(data.marital_status) : null,
-        race_id: data.race_id ? parseInt(data.race_id) : null,
-        religion_id: data.religion_id ? parseInt(data.religion_id) : null,
-        nationality_id: data.nationality_id ? parseInt(data.nationality_id) : null,
-      };
-
-      if (existingProfile) {
-        // Update existing profile
-        await supabase
-          .from("nd_tech_partner_profile")
-          .update(tpProfileData)
-          .eq("user_id", userId);
-      } else {
-        // Create new profile
-        await supabase.from("nd_tech_partner_profile").insert({
-          ...tpProfileData,
-          user_id: userId,
-          is_active: true,
-        });
-      }
-      
-      // For tp_site users, update or create site assignment
-      if (data.user_type === "tp_site" && data.assigned_site_id) {
-        // Check if site user exists
-        const { data: existingSiteUser } = await supabase
-          .from("nd_site_user")
-          .select("id")
-          .eq("user_id", userId)
-          .maybeSingle();
-          
-        const siteUserData = {
-          fullname: data.full_name,
-          ic_no: data.ic_number,
-          mobile_no: data.phone_number,
-          work_email: data.email,
-          tech_partner_id: data.organization_id ? parseInt(data.organization_id) : null,
-          site_profile_id: parseInt(data.assigned_site_id),
-        };
-        
-        if (existingSiteUser) {
-          // Update existing site user
-          await supabase
-            .from("nd_site_user")
-            .update(siteUserData)
-            .eq("user_id", userId);
-        } else {
-          // Create new site user
-          await supabase.from("nd_site_user").insert({
-            ...siteUserData,
-            user_id: userId,
-            is_active: true,
-          });
-        }
-      }
-    } else if (groupName?.includes("dusp")) {
-      // Update DUSP profile
-      const { data: existingProfile } = await supabase
-        .from("nd_dusp_profile")
-        .select("id")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (existingProfile) {
-        await supabase.from("nd_dusp_profile").update({
-          fullname: data.full_name,
-          ic_no: data.ic_number,
-          mobile_no: data.phone_number,
-          work_email: data.email,
-          position_id: data.position_id ? parseInt(data.position_id) : null,
-        }).eq("user_id", userId);
-      } else {
-        await supabase.from("nd_dusp_profile").insert({
-          user_id: userId,
-          fullname: data.full_name,
-          ic_no: data.ic_number,
-          mobile_no: data.phone_number,
-          work_email: data.email,
-          position_id: data.position_id ? parseInt(data.position_id) : null,
-          is_active: true,
-        });
-      }
-    } else if (groupName?.includes("sso")) {
-      // Update SSO profile
-      const { data: existingProfile } = await supabase
-        .from("nd_sso_profile")
-        .select("id")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (existingProfile) {
-        await supabase.from("nd_sso_profile").update({
-          fullname: data.full_name,
-          ic_no: data.ic_number,
-          mobile_no: data.phone_number,
-          work_email: data.email,
-          position_id: data.position_id ? parseInt(data.position_id) : null,
-        }).eq("user_id", userId);
-      } else {
-        await supabase.from("nd_sso_profile").insert({
-          user_id: userId,
-          fullname: data.full_name,
-          ic_no: data.ic_number,
-          mobile_no: data.phone_number,
-          work_email: data.email,
-          position_id: data.position_id ? parseInt(data.position_id) : null,
-          is_active: true,
-        });
-      }
-    } else if (groupName?.includes("vendor")) {
-      // Update Vendor profile logic here
-    }
-  } catch (error) {
-    console.error("Error updating type-specific profile:", error);
-    throw error;
-  }
-}
-
-function generateTemporaryPassword() {
-  // Simple random password generator
-  const length = 12;
-  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
-  let password = "";
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * charset.length);
-    password += charset[randomIndex];
-  }
-  return password;
-}
+};

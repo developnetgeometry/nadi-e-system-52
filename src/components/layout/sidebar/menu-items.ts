@@ -7,7 +7,6 @@ export const menuItems = [
   { title: "Roles & Permissions", path: "/admin/roles" },
   { title: "Menu Visibility", path: "/admin/menu-visibility" },
   { title: "Activity Log", path: "/admin/activity" },
-  { title: "Announcements", path: "/admin/announcements" },
   {
     title: "State Holidays",
     path: "/admin/state-holidays",

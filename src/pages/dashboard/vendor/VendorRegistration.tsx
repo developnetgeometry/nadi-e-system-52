@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -8,8 +7,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Save } from "lucide-react";
@@ -49,8 +61,8 @@ const VendorRegistration = () => {
       city: "",
       postcode: "",
       state_id: 0,
-      district_id: 0
-    }
+      district_id: 0,
+    },
   });
 
   const onSubmit = async (data: VendorFormData) => {
@@ -58,14 +70,14 @@ const VendorRegistration = () => {
     try {
       // Insert vendor profile
       const { data: vendorProfile, error: profileError } = await supabase
-        .from('nd_vendor_profile')
+        .from("nd_vendor_profile")
         .insert({
           business_name: data.business_name,
           registration_number: data.registration_number,
           business_type: data.business_type,
           phone_number: data.phone_number,
           service_detail: data.service_detail,
-          bank_account_number: parseInt(data.bank_account_number)
+          bank_account_number: parseInt(data.bank_account_number),
         })
         .select()
         .single();
@@ -74,7 +86,7 @@ const VendorRegistration = () => {
 
       // Insert vendor address
       const { error: addressError } = await supabase
-        .from('nd_vendor_address')
+        .from("nd_vendor_address")
         .insert({
           registration_number: data.registration_number,
           address1: data.address1,
@@ -83,23 +95,23 @@ const VendorRegistration = () => {
           postcode: data.postcode,
           state_id: data.state_id,
           district_id: data.district_id,
-          is_active: true
+          is_active: true,
         });
 
       if (addressError) throw addressError;
 
       toast({
         title: "Success",
-        description: "Vendor company registered successfully"
+        description: "Vendor company registered successfully",
       });
 
-      navigate('/vendor/companies');
+      navigate("/vendor/companies");
     } catch (error) {
       console.error("Error registering vendor:", error);
       toast({
         title: "Error",
         description: "Failed to register vendor company",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -107,7 +119,7 @@ const VendorRegistration = () => {
   };
 
   return (
-    <DashboardLayout>
+    <div>
       <PageContainer>
         <div className="flex items-center mb-6">
           <Button variant="ghost" size="sm" asChild className="mr-4">
@@ -124,7 +136,7 @@ const VendorRegistration = () => {
         />
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-1">
             {/* Company Information */}
             <Card>
               <CardHeader>
@@ -153,7 +165,10 @@ const VendorRegistration = () => {
                       <FormItem>
                         <FormLabel>Registration Number *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter registration number" />
+                          <Input
+                            {...field}
+                            placeholder="Enter registration number"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -169,7 +184,10 @@ const VendorRegistration = () => {
                       <FormItem>
                         <FormLabel>Business Type *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="e.g., Technology Services" />
+                          <Input
+                            {...field}
+                            placeholder="e.g., Technology Services"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -198,8 +216,8 @@ const VendorRegistration = () => {
                     <FormItem>
                       <FormLabel>Service Details</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          {...field} 
+                        <Textarea
+                          {...field}
                           placeholder="Describe the services provided by this vendor"
                           rows={3}
                         />
@@ -216,7 +234,10 @@ const VendorRegistration = () => {
                     <FormItem>
                       <FormLabel>Bank Account Number</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Enter bank account number" />
+                        <Input
+                          {...field}
+                          placeholder="Enter bank account number"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -252,7 +273,10 @@ const VendorRegistration = () => {
                     <FormItem>
                       <FormLabel>Address Line 2</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Enter additional address details" />
+                        <Input
+                          {...field}
+                          placeholder="Enter additional address details"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -294,7 +318,11 @@ const VendorRegistration = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>State *</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                        <Select
+                          onValueChange={(value) =>
+                            field.onChange(parseInt(value))
+                          }
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select state" />
@@ -334,13 +362,13 @@ const VendorRegistration = () => {
               </Button>
               <Button type="submit" disabled={loading}>
                 <Save className="mr-2 h-4 w-4" />
-                {loading ? 'Registering...' : 'Register Company'}
+                {loading ? "Registering..." : "Register Company"}
               </Button>
             </div>
           </form>
         </Form>
       </PageContainer>
-    </DashboardLayout>
+    </div>
   );
 };
 

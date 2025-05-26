@@ -1,4 +1,3 @@
-
 import {
   FormControl,
   FormField,
@@ -18,7 +17,6 @@ import { UserFormData } from "../types";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect, useMemo } from "react";
 
 interface UserTypeFieldProps {
   form: UseFormReturn<UserFormData>;
@@ -31,8 +29,6 @@ export function UserTypeField({
   isLoading,
   required = true,
 }: UserTypeFieldProps) {
-  const selectedUserGroup = form.watch("user_group");
-
   const { data: userTypes, isLoading: isLoadingTypes } = useQuery({
     queryKey: ["user-types"],
     queryFn: async () => {
@@ -46,58 +42,6 @@ export function UserTypeField({
     },
   });
 
-  const { data: selectedGroupInfo } = useQuery({
-    queryKey: ["user-group-info", selectedUserGroup],
-    queryFn: async () => {
-      if (!selectedUserGroup) return null;
-      
-      const { data, error } = await supabase
-        .from("nd_user_group")
-        .select("group_name")
-        .eq("id", selectedUserGroup)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!selectedUserGroup,
-  });
-  
-  // Filter user types based on the selected user group
-  const filteredUserTypes = useMemo(() => {
-    if (!userTypes || !selectedGroupInfo?.group_name) return userTypes;
-    
-    const groupName = selectedGroupInfo.group_name.toLowerCase();
-    let keyword = "";
-    
-    if (groupName.includes("mcmc")) {
-      keyword = "mcmc";
-    } else if (groupName.includes("dusp")) {
-      keyword = "dusp";
-    } else if (groupName.includes("sso")) {
-      keyword = "sso";
-    } else if (groupName.includes("tp") || groupName.includes("tech partner")) {
-      keyword = "tp";
-    } else if (groupName.includes("vendor")) {
-      keyword = "vendor";
-    }
-    
-    // If keyword is empty, return all user types
-    if (!keyword) return userTypes;
-    
-    // Filter user types that include the keyword
-    return userTypes.filter(type => 
-      type.name.toLowerCase().includes(keyword)
-    );
-  }, [userTypes, selectedGroupInfo]);
-
-  // Reset user type when user group changes
-  useEffect(() => {
-    if (selectedUserGroup) {
-      form.setValue("user_type", "");
-    }
-  }, [selectedUserGroup, form]);
-
   return (
     <FormField
       control={form.control}
@@ -109,21 +53,17 @@ export function UserTypeField({
             <Skeleton className="h-10 w-full" />
           ) : (
             <Select
-              disabled={isLoading || !selectedUserGroup}
+              disabled={isLoading}
               onValueChange={field.onChange}
               value={field.value}
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder={
-                    !selectedUserGroup 
-                      ? "Please select a user group first" 
-                      : "Select a user type"
-                  } />
+                  <SelectValue placeholder="Select a user type" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {filteredUserTypes?.map((type) => (
+                {userTypes?.map((type) => (
                   <SelectItem key={type.name} value={type.name}>
                     {type.name}{" "}
                     {type.description ? `- ${type.description}` : ""}

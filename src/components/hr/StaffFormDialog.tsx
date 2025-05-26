@@ -450,6 +450,7 @@ export function StaffFormDialog({
       if (isNaN(siteLocationId)) {
         throw new Error("Invalid site location format");
       }
+
       // Parse organization ID from user metadata if available
       let parsedOrganizationId = organizationId;
       if (userMetadataString) {
@@ -670,6 +671,7 @@ export function StaffFormDialog({
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="email"
@@ -1028,6 +1030,7 @@ export function StaffFormDialog({
                     )}
                   />
                 </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}

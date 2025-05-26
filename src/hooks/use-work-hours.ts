@@ -39,6 +39,7 @@ export const useWorkHours = (siteId: string | null) => {
     queryKey: ["workHours", siteId],
     queryFn: async () => {
       if (!siteId) return [];
+
       const { data, error } = await supabase
         .from("nd_work_hour_config")
         .select("*")

@@ -1,126 +1,122 @@
 
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SortDirection, SortField } from "@/hooks/use-user-management";
 
 interface UserTableHeaderProps {
   onSelectAll: (checked: boolean) => void;
   allSelected: boolean;
-  showRowNumbers: boolean;
+  showRowNumbers?: boolean;
   onSort: (field: SortField) => void;
   sortField: SortField;
   sortDirection: SortDirection;
 }
 
-export const UserTableHeader = ({
-  onSelectAll,
+export const UserTableHeader = ({ 
+  onSelectAll, 
   allSelected,
-  showRowNumbers,
+  showRowNumbers = true,
   onSort,
   sortField,
-  sortDirection,
+  sortDirection
 }: UserTableHeaderProps) => {
   const renderSortIcon = (field: SortField) => {
-    if (field !== sortField) return <ArrowUpDown className="ml-2 h-4 w-4" />;
-    if (sortDirection === "asc") return <ArrowUp className="ml-2 h-4 w-4" />;
-    return <ArrowDown className="ml-2 h-4 w-4" />;
+    if (sortField !== field) return <ArrowUpDown className="ml-2 h-4 w-4" />;
+    return sortDirection === "asc" ? 
+      <ArrowUp className="ml-2 h-4 w-4" /> : 
+      <ArrowDown className="ml-2 h-4 w-4" />;
   };
 
   return (
     <TableHeader>
       <TableRow>
-        <TableHead className="w-[50px]">
-          <Checkbox
-            checked={allSelected}
-            onCheckedChange={(checked) => onSelectAll(!!checked)}
-            title="Select all users"
-          />
+        <TableHead className="w-[50px] pl-4">
+          <Checkbox checked={allSelected} onCheckedChange={onSelectAll} />
         </TableHead>
-        <TableHead className="w-[60px] text-center">No.</TableHead>
+        <TableHead className="w-[60px]">ID</TableHead>
         <TableHead>
-          <Button
-            variant="ghost"
-            className="p-0 font-semibold hover:bg-transparent flex items-center"
+          <Button 
+            variant="ghost" 
             onClick={() => onSort("name")}
+            className="p-0 hover:bg-transparent font-medium flex items-center"
           >
-            Name {renderSortIcon("name")}
+            Name{renderSortIcon("name")}
           </Button>
         </TableHead>
         <TableHead>
-          <Button
-            variant="ghost"
-            className="p-0 font-semibold hover:bg-transparent flex items-center"
+          <Button 
+            variant="ghost" 
             onClick={() => onSort("email")}
+            className="p-0 hover:bg-transparent font-medium flex items-center"
           >
-            Email {renderSortIcon("email")}
+            Email{renderSortIcon("email")}
           </Button>
         </TableHead>
         <TableHead>
-          <Button
-            variant="ghost"
-            className="p-0 font-semibold hover:bg-transparent flex items-center"
+          <Button 
+            variant="ghost" 
             onClick={() => onSort("phone")}
+            className="p-0 hover:bg-transparent font-medium flex items-center"
           >
-            Phone {renderSortIcon("phone")}
+            Phone{renderSortIcon("phone")}
           </Button>
         </TableHead>
         <TableHead>
-          <Button
-            variant="ghost"
-            className="p-0 font-semibold hover:bg-transparent flex items-center"
+          <Button 
+            variant="ghost" 
             onClick={() => onSort("status")}
+            className="p-0 hover:bg-transparent font-medium flex items-center"
           >
-            Status {renderSortIcon("status")}
+            Status{renderSortIcon("status")}
           </Button>
         </TableHead>
         <TableHead>
-          <Button
-            variant="ghost"
-            className="p-0 font-semibold hover:bg-transparent flex items-center"
+          <Button 
+            variant="ghost" 
             onClick={() => onSort("site")}
+            className="p-0 hover:bg-transparent font-medium flex items-center"
           >
-            Site {renderSortIcon("site")}
+            Site{renderSortIcon("site")}
           </Button>
         </TableHead>
         <TableHead>
-          <Button
-            variant="ghost"
-            className="p-0 font-semibold hover:bg-transparent flex items-center"
+          <Button 
+            variant="ghost" 
             onClick={() => onSort("phase")}
+            className="p-0 hover:bg-transparent font-medium flex items-center"
           >
-            Phase {renderSortIcon("phase")}
+            Phase{renderSortIcon("phase")}
           </Button>
         </TableHead>
         <TableHead>
-          <Button
-            variant="ghost"
-            className="p-0 font-semibold hover:bg-transparent flex items-center"
+          <Button 
+            variant="ghost" 
             onClick={() => onSort("state")}
+            className="p-0 hover:bg-transparent font-medium flex items-center"
           >
-            State {renderSortIcon("state")}
+            State{renderSortIcon("state")}
           </Button>
         </TableHead>
         <TableHead>
-          <Button
-            variant="ghost"
-            className="p-0 font-semibold hover:bg-transparent flex items-center"
+          <Button 
+            variant="ghost" 
             onClick={() => onSort("role")}
+            className="p-0 hover:bg-transparent font-medium flex items-center"
           >
-            Role {renderSortIcon("role")}
+            Role{renderSortIcon("role")}
           </Button>
         </TableHead>
-        <TableHead>
-          <Button
-            variant="ghost"
-            className="p-0 font-semibold hover:bg-transparent flex items-center"
+        <TableHead className="text-right">
+          <Button 
+            variant="ghost" 
             onClick={() => onSort("created_at")}
+            className="p-0 hover:bg-transparent font-medium flex items-center justify-end w-full"
           >
-            Created At {renderSortIcon("created_at")}
+            Reg. Date{renderSortIcon("created_at")}
           </Button>
         </TableHead>
-        <TableHead className="text-right">Actions</TableHead>
       </TableRow>
     </TableHeader>
   );

@@ -212,8 +212,6 @@ export const useNotifications = ({
     }
   };
 
-  // Removed redundant handleMarkAllAsRead function
-
   return {
     notifications,
     isLoading: isLoading || fetchLoading,

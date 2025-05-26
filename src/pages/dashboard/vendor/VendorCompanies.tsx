@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/dashboard/PageHeader";
@@ -6,7 +5,14 @@ import { PageContainer } from "@/components/ui/dashboard/PageContainer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -33,9 +39,9 @@ const VendorCompanies = () => {
 
   const fetchCompanies = async () => {
     try {
-      const { data: vendorData, error } = await supabase
-        .from('nd_vendor_profile')
-        .select(`
+      const { data: vendorData, error } = await supabase.from(
+        "nd_vendor_profile"
+      ).select(`
           id,
           business_name,
           registration_number,
@@ -49,20 +55,20 @@ const VendorCompanies = () => {
       const companiesWithStats = await Promise.all(
         (vendorData || []).map(async (vendor) => {
           const { count: staffCount } = await supabase
-            .from('nd_vendor_staff')
-            .select('id', { count: 'exact' })
-            .eq('registration_number', vendor.registration_number);
+            .from("nd_vendor_staff")
+            .select("id", { count: "exact" })
+            .eq("registration_number", vendor.registration_number);
 
           const { data: contractData } = await supabase
-            .from('nd_vendor_contract')
-            .select('is_active')
-            .eq('registration_number', vendor.registration_number)
+            .from("nd_vendor_contract")
+            .select("is_active")
+            .eq("registration_number", vendor.registration_number)
             .single();
 
           return {
             ...vendor,
             staff_count: staffCount || 0,
-            contract_status: contractData?.is_active ? 'Active' : 'Inactive'
+            contract_status: contractData?.is_active ? "Active" : "Inactive",
           };
         })
       );
@@ -75,13 +81,18 @@ const VendorCompanies = () => {
     }
   };
 
-  const filteredCompanies = companies.filter(company =>
-    company.business_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    company.registration_number?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredCompanies = companies.filter(
+    (company) =>
+      company.business_name
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      company.registration_number
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase())
   );
 
   return (
-    <DashboardLayout>
+    <div>
       <PageContainer>
         <div className="flex justify-between items-center mb-6">
           <PageHeader
@@ -144,8 +155,12 @@ const VendorCompanies = () => {
                       <TableCell>{company.phone_number}</TableCell>
                       <TableCell>{company.staff_count}</TableCell>
                       <TableCell>
-                        <Badge 
-                          variant={company.contract_status === 'Active' ? 'default' : 'secondary'}
+                        <Badge
+                          variant={
+                            company.contract_status === "Active"
+                              ? "default"
+                              : "secondary"
+                          }
                         >
                           {company.contract_status}
                         </Badge>
@@ -166,7 +181,7 @@ const VendorCompanies = () => {
           </CardContent>
         </Card>
       </PageContainer>
-    </DashboardLayout>
+    </div>
   );
 };
 

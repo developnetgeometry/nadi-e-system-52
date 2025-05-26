@@ -74,6 +74,7 @@ export function SendNotificationForm({ onSuccess }: SendNotificationFormProps) {
           if (!userGroupId) {
             throw new Error("User Group ID is required");
           }
+
           // Fetch users in the group
           const { data: groupUsers, error: groupError } = await supabase
             .from("profiles")
@@ -97,6 +98,7 @@ export function SendNotificationForm({ onSuccess }: SendNotificationFormProps) {
           if (!userType) {
             throw new Error("User Type is required");
           }
+
           // Fetch users of the specified type
           const { data: typeUsers, error: typeError } = await supabase
             .from("profiles")
@@ -120,6 +122,7 @@ export function SendNotificationForm({ onSuccess }: SendNotificationFormProps) {
           if (!organizationId) {
             throw new Error("Organization ID is required");
           }
+
           // Fetch users in the organization
           const { data: orgUsers, error: orgError } = await supabase
             .from("organization_users")
@@ -139,14 +142,17 @@ export function SendNotificationForm({ onSuccess }: SendNotificationFormProps) {
           }
           break;
       }
+
       toast({
         title: "Success",
         description: "Notification sent successfully",
       });
+
       // Reset form
       setTitle("");
       setMessage("");
       setType("info");
+
       if (onSuccess) {
         onSuccess();
       }
@@ -161,6 +167,7 @@ export function SendNotificationForm({ onSuccess }: SendNotificationFormProps) {
       setIsLoading(false);
     }
   };
+
   return (
     <Card>
       <CardHeader>
@@ -277,6 +284,7 @@ export function SendNotificationForm({ onSuccess }: SendNotificationFormProps) {
               </TabsContent>
             </Tabs>
           </div>
+
           <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading ? "Sending..." : "Send Notification"}
           </Button>

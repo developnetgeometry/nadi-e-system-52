@@ -1,4 +1,3 @@
-import { MaintenanceFormDialog } from "@/components/assets/MaintenanceFormDialog";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,8 +32,8 @@ const AssetDetails = () => {
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <div>
+      <div className="space-y-1">
         <div className="flex items-center gap-2">
           <Link to="/asset">
             <ArrowLeft className="h-6 w-6" />
@@ -130,12 +129,7 @@ const AssetDetails = () => {
           </Button>
         </div>
       </div>
-      <MaintenanceFormDialog
-        open={isMaintenanceDialogOpen}
-        onOpenChange={setIsMaintenanceDialogOpen}
-        asset={asset}
-      />
-    </DashboardLayout>
+    </div>
   );
 };
 
