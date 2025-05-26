@@ -8,13 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Form,
   FormControl,
   FormField,
@@ -33,8 +26,6 @@ interface VendorStaffFormData {
   ic_no: string;
   mobile_no: string;
   work_email: string;
-  position_id: number;
-  user_type: "vendor_admin" | "vendor_staff";
   password: string;
 }
 
@@ -50,8 +41,6 @@ const VendorStaffRegistration = () => {
       ic_no: "",
       mobile_no: "",
       work_email: "",
-      position_id: 0,
-      user_type: "vendor_staff",
       password: "",
     },
   });
@@ -59,7 +48,7 @@ const VendorStaffRegistration = () => {
   const onSubmit = async (data: VendorStaffFormData) => {
     setLoading(true);
     try {
-      console.log("Submitting vendor staff registration:", data);
+      console.log("Submitting vendor admin registration:", data);
 
       // Validate required fields
       if (!data.fullname || !data.ic_no || !data.work_email || !data.password) {
@@ -88,6 +77,23 @@ const VendorStaffRegistration = () => {
         throw new Error("Vendor registration number not found. Please ensure you are registered as a vendor admin.");
       }
 
+      // Check if vendor admin already exists for this company
+      const { data: existingAdmin, error: adminCheckError } = await supabase
+        .from("nd_vendor_staff")
+        .select("id")
+        .eq("registration_number", vendorData.registration_number)
+        .neq("user_id", vendorID)
+        .maybeSingle();
+
+      if (adminCheckError) {
+        console.error("Admin check error:", adminCheckError);
+        throw new Error(`Failed to check existing admin: ${adminCheckError.message}`);
+      }
+
+      if (existingAdmin) {
+        throw new Error("A vendor admin already exists for this company. Only one admin per company is allowed.");
+      }
+
       console.log("Using registration number:", vendorData.registration_number);
 
       // Create user account using the edge function
@@ -95,7 +101,7 @@ const VendorStaffRegistration = () => {
         body: {
           email: data.work_email,
           fullName: data.fullname,
-          userType: data.user_type,
+          userType: "vendor_admin", // Fixed to vendor_admin only
           userGroup: 5, // vendor group
           phoneNumber: data.mobile_no,
           icNumber: data.ic_no,
@@ -114,14 +120,14 @@ const VendorStaffRegistration = () => {
 
       console.log("User created with ID:", authData.id);
 
-      // Insert vendor staff record
+      // Insert vendor staff record with fixed position_id = 1 (Admin)
       const staffData = {
         user_id: authData.id,
         fullname: data.fullname,
         ic_no: data.ic_no,
         mobile_no: data.mobile_no,
         work_email: data.work_email,
-        position_id: data.position_id || null,
+        position_id: 1, // Fixed to Admin position
         registration_number: BigInt(vendorData.registration_number),
         is_active: true,
         created_by: currentUser.id,
@@ -142,15 +148,15 @@ const VendorStaffRegistration = () => {
 
       toast({
         title: "Success",
-        description: "Vendor staff registered successfully",
+        description: "Vendor admin registered successfully",
       });
 
       navigate("/vendor/staff");
     } catch (error: any) {
-      console.error("Error registering vendor staff:", error);
+      console.error("Error registering vendor admin:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to register vendor staff",
+        description: error.message || "Failed to register vendor admin",
         variant: "destructive",
       });
     } finally {
@@ -171,17 +177,24 @@ const VendorStaffRegistration = () => {
         </div>
 
         <PageHeader
-          title="Register Vendor Staff"
-          description="Register a new vendor staff member"
+          title="Register Vendor Admin"
+          description="Register a new vendor admin for the company"
         />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-1">
             <Card>
               <CardHeader>
-                <CardTitle>Staff Information</CardTitle>
+                <CardTitle>Admin Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>Note:</strong> This form will create a Vendor Admin user with Admin position. 
+                    Only one admin per company is allowed.
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -247,63 +260,21 @@ const VendorStaffRegistration = () => {
                   />
                 </div>
 
+                {/* Fixed User Type and Position Display */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="user_type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>User Type *</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select user type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="vendor_admin">
-                              Vendor Admin
-                            </SelectItem>
-                            <SelectItem value="vendor_staff">
-                              Vendor Staff
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">User Type</label>
+                    <div className="p-3 bg-gray-50 border rounded-md">
+                      <span className="text-sm text-gray-600">Vendor Admin (Fixed)</span>
+                    </div>
+                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name="position_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Position</FormLabel>
-                        <Select
-                          onValueChange={(value) =>
-                            field.onChange(value ? parseInt(value) : null)
-                          }
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select position" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="1">Manager</SelectItem>
-                            <SelectItem value="2">Executive</SelectItem>
-                            <SelectItem value="3">Officer</SelectItem>
-                            <SelectItem value="4">Assistant</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Position</label>
+                    <div className="p-3 bg-gray-50 border rounded-md">
+                      <span className="text-sm text-gray-600">Admin (Fixed)</span>
+                    </div>
+                  </div>
                 </div>
 
                 <FormField
@@ -333,7 +304,7 @@ const VendorStaffRegistration = () => {
               </Button>
               <Button type="submit" disabled={loading}>
                 <Save className="mr-2 h-4 w-4" />
-                {loading ? "Registering..." : "Register Staff"}
+                {loading ? "Registering..." : "Register Admin"}
               </Button>
             </div>
           </form>
