@@ -6032,8 +6032,9 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           id: number
+          item_id: string | null
           member_id: number | null
-          padi_amount: number | null
+          paid_amount: number | null
           parcel_deliverd_type_id: number | null
           pudo_provider_id: number | null
           site_profile_id: number | null
@@ -6046,8 +6047,9 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: number
+          item_id?: string | null
           member_id?: number | null
-          padi_amount?: number | null
+          paid_amount?: number | null
           parcel_deliverd_type_id?: number | null
           pudo_provider_id?: number | null
           site_profile_id?: number | null
@@ -6060,8 +6062,9 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: number
+          item_id?: string | null
           member_id?: number | null
-          padi_amount?: number | null
+          paid_amount?: number | null
           parcel_deliverd_type_id?: number | null
           pudo_provider_id?: number | null
           site_profile_id?: number | null
