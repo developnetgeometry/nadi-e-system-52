@@ -6060,7 +6060,43 @@ export type Database = {
           updated_by?: string | null
           weight?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nd_pudo_record_nd_member_profile_fk"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "nd_member_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_pudo_record_nd_parcel_delivered_type_fk"
+            columns: ["parcel_deliverd_type_id"]
+            isOneToOne: false
+            referencedRelation: "nd_parcel_delivered_type"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_pudo_record_nd_pudo_provider_fk"
+            columns: ["pudo_provider_id"]
+            isOneToOne: false
+            referencedRelation: "nd_pudo_provider"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_pudo_record_nd_site_profile_fk"
+            columns: ["site_profile_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_pudo_record_nd_site_profile_fk"
+            columns: ["site_profile_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile_name"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nd_races: {
         Row: {

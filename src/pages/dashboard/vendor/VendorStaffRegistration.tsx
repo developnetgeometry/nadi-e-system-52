@@ -134,7 +134,7 @@ const VendorStaffRegistration = () => {
         mobile_no: data.mobile_no,
         work_email: data.work_email,
         position_id: 1, // Fixed to Admin position
-        registration_number: BigInt(registrationNumber),
+        registration_number: registrationNumber, // Keep as string/varchar, not BigInt
         is_active: true,
         created_by: currentUser.id,
         created_at: new Date().toISOString(),

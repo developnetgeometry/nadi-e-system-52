@@ -84,7 +84,7 @@ const VendorRegistration = () => {
         business_type: data.business_type,
         phone_number: data.phone_number,
         service_detail: data.service_detail,
-        bank_account_number: data.bank_account_number ? BigInt(data.bank_account_number) : null,
+        bank_account_number: data.bank_account_number || null, // Keep as string
         created_by: user.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
