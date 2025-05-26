@@ -19,7 +19,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Save } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import usevendorID from "@/hooks/use-vendor-id";
 
 interface VendorStaffFormData {
   fullname: string;
@@ -33,7 +32,6 @@ const VendorStaffRegistration = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { vendorID } = usevendorID();
 
   const form = useForm<VendorStaffFormData>({
     defaultValues: {
@@ -61,28 +59,38 @@ const VendorStaffRegistration = () => {
         throw new Error("You must be logged in to register staff");
       }
 
-      // Get vendor registration number from current vendor admin
-      const { data: vendorData, error: vendorError } = await supabase
-        .from("nd_vendor_staff")
+      // First try to get registration number from vendor profile created by current user
+      const { data: vendorProfile, error: vendorProfileError } = await supabase
+        .from("nd_vendor_profile")
         .select("registration_number")
-        .eq("user_id", vendorID)
+        .eq("created_by", currentUser.id)
         .maybeSingle();
 
-      if (vendorError) {
-        console.error("Vendor lookup error:", vendorError);
-        throw new Error(`Failed to fetch vendor data: ${vendorError.message}`);
+      let registrationNumber = vendorProfile?.registration_number;
+
+      // If not found in vendor profile, try to get from vendor staff records
+      if (!registrationNumber) {
+        const { data: vendorStaff, error: vendorStaffError } = await supabase
+          .from("nd_vendor_staff")
+          .select("registration_number")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        registrationNumber = vendorStaff?.registration_number;
       }
 
-      if (!vendorData?.registration_number) {
-        throw new Error("Vendor registration number not found. Please ensure you are registered as a vendor admin.");
+      if (!registrationNumber) {
+        throw new Error("No vendor company found. Please register a vendor company first before adding staff.");
       }
+
+      console.log("Using registration number:", registrationNumber);
 
       // Check if vendor admin already exists for this company
       const { data: existingAdmin, error: adminCheckError } = await supabase
         .from("nd_vendor_staff")
         .select("id")
-        .eq("registration_number", vendorData.registration_number)
-        .neq("user_id", vendorID)
+        .eq("registration_number", registrationNumber)
+        .eq("position_id", 1) // Admin position
         .maybeSingle();
 
       if (adminCheckError) {
@@ -93,8 +101,6 @@ const VendorStaffRegistration = () => {
       if (existingAdmin) {
         throw new Error("A vendor admin already exists for this company. Only one admin per company is allowed.");
       }
-
-      console.log("Using registration number:", vendorData.registration_number);
 
       // Create user account using the edge function
       const { data: authData, error: authError } = await supabase.functions.invoke("create-user", {
@@ -128,7 +134,7 @@ const VendorStaffRegistration = () => {
         mobile_no: data.mobile_no,
         work_email: data.work_email,
         position_id: 1, // Fixed to Admin position
-        registration_number: BigInt(vendorData.registration_number),
+        registration_number: BigInt(registrationNumber),
         is_active: true,
         created_by: currentUser.id,
         created_at: new Date().toISOString(),
