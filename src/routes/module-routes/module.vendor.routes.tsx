@@ -5,6 +5,8 @@ import VendorCompanies from "@/pages/dashboard/vendor/VendorCompanies";
 import VendorStaff from "@/pages/dashboard/vendor/VendorStaff";
 import VendorRegistration from "@/pages/dashboard/vendor/VendorRegistration";
 import VendorStaffRegistration from "@/pages/dashboard/vendor/VendorStaffRegistration";
+import VendorContracts from "@/pages/dashboard/vendor/VendorContracts";
+import VendorReports from "@/pages/dashboard/vendor/VendorReports";
 
 export const vendorRoutes: RouteObject[] = [
   {
@@ -26,5 +28,13 @@ export const vendorRoutes: RouteObject[] = [
   {
     path: "/vendor/staff/new",
     element: <VendorStaffRegistration />,
+  },
+  {
+    path: "/vendor/contracts",
+    element: <VendorContracts />,
+  },
+  {
+    path: "/vendor/reports",
+    element: <VendorReports />,
   },
 ];
