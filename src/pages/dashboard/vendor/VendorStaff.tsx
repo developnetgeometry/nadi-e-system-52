@@ -173,12 +173,27 @@ const VendorStaff = () => {
   };
 
   const getStatusBadge = (member: VendorStaffMember) => {
-    if (!member.contract_status?.is_active) {
+    const contractActive = member.contract_status?.is_active;
+    const userActive = member.is_active;
+    
+    if (!contractActive) {
       return <Badge variant="destructive">Contract Inactive</Badge>;
     }
-    return member.is_active ? 
-      <Badge className="bg-green-100 text-green-800">Active</Badge> : 
-      <Badge variant="secondary">Inactive</Badge>;
+    
+    if (contractActive && userActive) {
+      return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Active</Badge>;
+    }
+    
+    if (contractActive && !userActive) {
+      return <Badge variant="secondary">Inactive</Badge>;
+    }
+    
+    return <Badge variant="secondary">Inactive</Badge>;
+  };
+
+  const canToggleUserStatus = (member: VendorStaffMember) => {
+    // Can only toggle user status if contract is active
+    return member.contract_status?.is_active === true;
   };
 
   const filteredStaff = staff.filter(
@@ -224,20 +239,21 @@ const VendorStaff = () => {
                   <TableHead>Email</TableHead>
                   <TableHead>Company</TableHead>
                   <TableHead>Business Type</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>Contract Status</TableHead>
+                  <TableHead>User Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       Loading staff...
                     </TableCell>
                   </TableRow>
                 ) : filteredStaff.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       No staff found
                     </TableCell>
                   </TableRow>
@@ -256,7 +272,16 @@ const VendorStaff = () => {
                         </div>
                       </TableCell>
                       <TableCell>{member.vendor_company?.business_type}</TableCell>
-                      <TableCell>{getStatusBadge(member)}</TableCell>
+                      <TableCell>
+                        <Badge variant={member.contract_status?.is_active ? "default" : "destructive"}>
+                          {member.contract_status?.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={member.is_active ? "default" : "secondary"}>
+                          {member.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -273,16 +298,19 @@ const VendorStaff = () => {
                               <Edit className="mr-2 h-4 w-4" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleToggleActive(member)}>
+                            <DropdownMenuItem 
+                              onClick={() => handleToggleActive(member)}
+                              disabled={!canToggleUserStatus(member)}
+                            >
                               {member.is_active ? (
                                 <>
                                   <ToggleLeft className="mr-2 h-4 w-4" />
-                                  Deactivate
+                                  Deactivate User
                                 </>
                               ) : (
                                 <>
                                   <ToggleRight className="mr-2 h-4 w-4" />
-                                  Activate
+                                  Activate User
                                 </>
                               )}
                             </DropdownMenuItem>

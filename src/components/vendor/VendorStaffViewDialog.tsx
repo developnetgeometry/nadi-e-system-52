@@ -49,6 +49,23 @@ const VendorStaffViewDialog: React.FC<VendorStaffViewDialogProps> = ({
     return new Date(dateString).toLocaleDateString();
   };
 
+  const getOverallStatus = () => {
+    const contractActive = staff.contract_status?.is_active;
+    const userActive = staff.is_active;
+    
+    if (!contractActive) {
+      return { label: "Contract Inactive", variant: "destructive" as const };
+    }
+    
+    if (contractActive && userActive) {
+      return { label: "Active", variant: "default" as const };
+    }
+    
+    return { label: "User Inactive", variant: "secondary" as const };
+  };
+
+  const overallStatus = getOverallStatus();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -57,6 +74,18 @@ const VendorStaffViewDialog: React.FC<VendorStaffViewDialogProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Overall Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Overall Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Badge variant={overallStatus.variant} className="text-sm">
+                {overallStatus.label}
+              </Badge>
+            </CardContent>
+          </Card>
+
           {/* Personal Information */}
           <Card>
             <CardHeader>
@@ -87,7 +116,7 @@ const VendorStaffViewDialog: React.FC<VendorStaffViewDialogProps> = ({
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Status</label>
+                  <label className="text-sm font-medium text-gray-700">User Status</label>
                   <div>
                     <Badge variant={staff.is_active ? "default" : "secondary"}>
                       {staff.is_active ? "Active" : "Inactive"}
@@ -138,6 +167,20 @@ const VendorStaffViewDialog: React.FC<VendorStaffViewDialogProps> = ({
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Status Rules */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Status Rules</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-gray-600 space-y-2">
+                <p>• User can only be activated if the vendor company contract is active</p>
+                <p>• If contract becomes inactive, user access will be restricted</p>
+                <p>• User status can be toggled independently when contract is active</p>
+              </div>
             </CardContent>
           </Card>
         </div>
