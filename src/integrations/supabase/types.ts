@@ -4463,6 +4463,7 @@ export type Database = {
           priority_type_id: number | null
           requester_by: string | null
           sla_id: number | null
+          space_id: number | null
           status: Database["public"]["Enums"]["maintenance_status"] | null
           type_id: number | null
           updated_at: string | null
@@ -4483,6 +4484,7 @@ export type Database = {
           priority_type_id?: number | null
           requester_by?: string | null
           sla_id?: number | null
+          space_id?: number | null
           status?: Database["public"]["Enums"]["maintenance_status"] | null
           type_id?: number | null
           updated_at?: string | null
@@ -4503,6 +4505,7 @@ export type Database = {
           priority_type_id?: number | null
           requester_by?: string | null
           sla_id?: number | null
+          space_id?: number | null
           status?: Database["public"]["Enums"]["maintenance_status"] | null
           type_id?: number | null
           updated_at?: string | null
@@ -4510,6 +4513,13 @@ export type Database = {
           updates?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_space_id"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_space"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "nd_maintenance_request_asset_id_fkey"
             columns: ["asset_id"]

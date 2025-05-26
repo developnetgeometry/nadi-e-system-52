@@ -91,6 +91,7 @@ const TeamFormDialog: React.FC<TeamFormDialogProps> = ({
         .from("nd_vendor_staff")
         .select("id, fullname, work_email, position_id")
         .eq("registration_number", vendorProfile.id)
+        .eq("position_id", 2) // Only fetch staff with position_id = 2
         .eq("is_active", true);
 
       if (error) throw error;
@@ -279,25 +280,31 @@ const TeamFormDialog: React.FC<TeamFormDialogProps> = ({
             />
 
             <div className="space-y-4">
-              <FormLabel>Select Staff Members</FormLabel>
+              <FormLabel>Select Staff Members (Position: Staff)</FormLabel>
               <div className="max-h-60 overflow-y-auto border rounded-md p-4 space-y-2">
-                {availableStaff.map((staff) => (
-                  <div key={staff.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`staff-${staff.id}`}
-                      checked={form.watch("selectedStaff").includes(staff.id)}
-                      onCheckedChange={(checked) => 
-                        handleStaffSelection(staff.id, checked as boolean)
-                      }
-                    />
-                    <label
-                      htmlFor={`staff-${staff.id}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                    >
-                      {staff.fullname} ({staff.work_email}) - {staff.position_id === 1 ? 'Admin' : 'Staff'}
-                    </label>
+                {availableStaff.length === 0 ? (
+                  <div className="text-center py-4 text-gray-500">
+                    No staff members available (position: Staff)
                   </div>
-                ))}
+                ) : (
+                  availableStaff.map((staff) => (
+                    <div key={staff.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`staff-${staff.id}`}
+                        checked={form.watch("selectedStaff").includes(staff.id)}
+                        onCheckedChange={(checked) => 
+                          handleStaffSelection(staff.id, checked as boolean)
+                        }
+                      />
+                      <label
+                        htmlFor={`staff-${staff.id}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        {staff.fullname} ({staff.work_email}) - Staff
+                      </label>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
