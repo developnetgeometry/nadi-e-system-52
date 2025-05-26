@@ -5346,6 +5346,33 @@ export type Database = {
           },
         ]
       }
+      nd_parcel_delivered_type: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: number
+          name: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: number
+          name?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: number
+          name?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       nd_parliaments: {
         Row: {
           created_at: string | null
@@ -5987,6 +6014,51 @@ export type Database = {
           name?: string | null
           updated_at?: string | null
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      nd_pudo_record: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: number
+          member_id: number | null
+          padi_amount: number | null
+          parcel_deliverd_type_id: number | null
+          pudo_provider_id: number | null
+          site_profile_id: number | null
+          tracking_number: string | null
+          updated_at: string | null
+          updated_by: string | null
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: number
+          member_id?: number | null
+          padi_amount?: number | null
+          parcel_deliverd_type_id?: number | null
+          pudo_provider_id?: number | null
+          site_profile_id?: number | null
+          tracking_number?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: number
+          member_id?: number | null
+          padi_amount?: number | null
+          parcel_deliverd_type_id?: number | null
+          pudo_provider_id?: number | null
+          site_profile_id?: number | null
+          tracking_number?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          weight?: number | null
         }
         Relationships: []
       }

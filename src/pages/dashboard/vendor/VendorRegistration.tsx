@@ -77,33 +77,36 @@ const VendorRegistration = () => {
         throw new Error("User not authenticated");
       }
 
-      // Insert vendor profile without specifying id (let it auto-generate)
+      // Prepare vendor profile data with proper types
       const vendorProfileData = {
         business_name: data.business_name,
         registration_number: data.registration_number,
         business_type: data.business_type,
         phone_number: data.phone_number,
         service_detail: data.service_detail,
-        bank_account_number: data.bank_account_number ? parseInt(data.bank_account_number) : null,
+        bank_account_number: data.bank_account_number ? BigInt(data.bank_account_number) : null,
         created_by: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       console.log("Inserting vendor profile:", vendorProfileData);
 
+      // Insert vendor profile - let the database auto-generate the ID
       const { data: vendorProfile, error: profileError } = await supabase
         .from("nd_vendor_profile")
         .insert(vendorProfileData)
-        .select()
+        .select("*")
         .single();
 
       if (profileError) {
         console.error("Vendor profile error:", profileError);
-        throw profileError;
+        throw new Error(`Failed to create vendor profile: ${profileError.message}`);
       }
 
       console.log("Vendor profile created:", vendorProfile);
 
-      // Insert vendor address
+      // Insert vendor address with proper types
       const addressData = {
         registration_number: data.registration_number,
         address1: data.address1,
@@ -114,6 +117,8 @@ const VendorRegistration = () => {
         district_id: data.district_id || null,
         is_active: true,
         created_by: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       console.log("Inserting vendor address:", addressData);
@@ -124,7 +129,7 @@ const VendorRegistration = () => {
 
       if (addressError) {
         console.error("Vendor address error:", addressError);
-        throw addressError;
+        throw new Error(`Failed to create vendor address: ${addressError.message}`);
       }
 
       toast({

@@ -59,6 +59,19 @@ const VendorStaffRegistration = () => {
   const onSubmit = async (data: VendorStaffFormData) => {
     setLoading(true);
     try {
+      console.log("Submitting vendor staff registration:", data);
+
+      // Validate required fields
+      if (!data.fullname || !data.ic_no || !data.work_email || !data.password) {
+        throw new Error("Please fill in all required fields");
+      }
+
+      // Get current user
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        throw new Error("You must be logged in to register staff");
+      }
+
       // Get vendor registration number from current vendor admin
       const { data: vendorData, error: vendorError } = await supabase
         .from("nd_vendor_staff")
@@ -67,6 +80,7 @@ const VendorStaffRegistration = () => {
         .maybeSingle();
 
       if (vendorError) {
+        console.error("Vendor lookup error:", vendorError);
         throw new Error(`Failed to fetch vendor data: ${vendorError.message}`);
       }
 
@@ -74,42 +88,57 @@ const VendorStaffRegistration = () => {
         throw new Error("Vendor registration number not found. Please ensure you are registered as a vendor admin.");
       }
 
-      // Create user account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.work_email,
-        password: data.password,
-        options: {
-          data: {
-            full_name: data.fullname,
-            user_type: data.user_type,
-            user_group: 5, // vendor group
-          },
+      console.log("Using registration number:", vendorData.registration_number);
+
+      // Create user account using the edge function
+      const { data: authData, error: authError } = await supabase.functions.invoke("create-user", {
+        body: {
+          email: data.work_email,
+          fullName: data.fullname,
+          userType: data.user_type,
+          userGroup: 5, // vendor group
+          phoneNumber: data.mobile_no,
+          icNumber: data.ic_no,
+          password: data.password,
         },
       });
 
-      if (authError) throw authError;
-
-      if (!authData.user?.id) {
-        throw new Error("Failed to create user account");
+      if (authError) {
+        console.error("Auth error:", authError);
+        throw new Error(`Failed to create user account: ${authError.message}`);
       }
 
-      // Insert vendor staff record with proper type handling
+      if (!authData?.id) {
+        throw new Error("Failed to create user account - no user ID returned");
+      }
+
+      console.log("User created with ID:", authData.id);
+
+      // Insert vendor staff record
       const staffData = {
-        user_id: authData.user.id,
+        user_id: authData.id,
         fullname: data.fullname,
         ic_no: data.ic_no,
         mobile_no: data.mobile_no,
         work_email: data.work_email,
         position_id: data.position_id || null,
-        registration_number: vendorData.registration_number,
+        registration_number: BigInt(vendorData.registration_number),
         is_active: true,
+        created_by: currentUser.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
+
+      console.log("Inserting vendor staff:", staffData);
 
       const { error: staffError } = await supabase
         .from("nd_vendor_staff")
         .insert(staffData);
 
-      if (staffError) throw staffError;
+      if (staffError) {
+        console.error("Staff creation error:", staffError);
+        throw new Error(`Failed to create staff record: ${staffError.message}`);
+      }
 
       toast({
         title: "Success",
