@@ -44,9 +44,9 @@ serve(async (req) => {
     const token = authHeader.replace('Bearer ', '');
     
     // Verify the token and get the user
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    const { data: { user }, error: userAuthError } = await supabaseAdmin.auth.getUser(token);
     
-    if (authError || !user) {
+    if (userAuthError || !user) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -81,7 +81,7 @@ serve(async (req) => {
     }
 
     // Parse the request body
-    const body = await req.text(); // Get raw text first
+    const body = await req.text();
     
     // Make sure the body is not empty
     if (!body || body.trim() === "") {
@@ -114,10 +114,10 @@ serve(async (req) => {
     }
 
     // 1. Create the user in Auth
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    const { data: authData, error: createAuthError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Auto-confirm the email
+      email_confirm: true,
       user_metadata: {
         full_name: fullName,
         user_type: userType,
@@ -125,10 +125,10 @@ serve(async (req) => {
       }
     });
 
-    if (authError) {
-      console.error("Auth error:", authError);
+    if (createAuthError) {
+      console.error("Auth error:", createAuthError);
       return new Response(
-        JSON.stringify({ error: authError.message }),
+        JSON.stringify({ error: createAuthError.message }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -143,14 +143,13 @@ serve(async (req) => {
     // Convert userGroup to number if it's a string
     const userGroupNumber = userGroup ? parseInt(userGroup, 10) : null;
 
-    // 2. Update profiles table with additional data if needed
-    // (The trigger should have created the basic profile)
+    // 2. Update profiles table with additional data
     const { error: profileUpdateError } = await supabaseAdmin
       .from("profiles")
       .update({
         phone_number: phoneNumber,
-        user_type: userType, // Ensure user_type is set correctly
-        user_group: userGroupNumber, // Add user_group as number
+        user_type: userType,
+        user_group: userGroupNumber,
         ic_number: icNumber,
       })
       .eq("id", authData.user.id);
