@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -59,14 +60,18 @@ const VendorStaffRegistration = () => {
     setLoading(true);
     try {
       // Get vendor registration number from current vendor admin
-      const { data: vendorData } = await supabase
+      const { data: vendorData, error: vendorError } = await supabase
         .from("nd_vendor_staff")
         .select("registration_number")
-        .eq("id", vendorID)
-        .single();
+        .eq("user_id", vendorID)
+        .maybeSingle();
+
+      if (vendorError) {
+        throw new Error(`Failed to fetch vendor data: ${vendorError.message}`);
+      }
 
       if (!vendorData?.registration_number) {
-        throw new Error("Vendor registration number not found");
+        throw new Error("Vendor registration number not found. Please ensure you are registered as a vendor admin.");
       }
 
       // Create user account
@@ -84,19 +89,25 @@ const VendorStaffRegistration = () => {
 
       if (authError) throw authError;
 
-      // Insert vendor staff record
+      if (!authData.user?.id) {
+        throw new Error("Failed to create user account");
+      }
+
+      // Insert vendor staff record with proper type handling
+      const staffData = {
+        user_id: authData.user.id,
+        fullname: data.fullname,
+        ic_no: data.ic_no,
+        mobile_no: data.mobile_no,
+        work_email: data.work_email,
+        position_id: data.position_id || null,
+        registration_number: vendorData.registration_number,
+        is_active: true,
+      };
+
       const { error: staffError } = await supabase
         .from("nd_vendor_staff")
-        .insert({
-          user_id: authData.user?.id,
-          fullname: data.fullname,
-          ic_no: data.ic_no,
-          mobile_no: data.mobile_no,
-          work_email: data.work_email,
-          position_id: data.position_id,
-          registration_number: vendorData.registration_number,
-          is_active: true,
-        });
+        .insert(staffData);
 
       if (staffError) throw staffError;
 
@@ -106,11 +117,11 @@ const VendorStaffRegistration = () => {
       });
 
       navigate("/vendor/staff");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error registering vendor staff:", error);
       toast({
         title: "Error",
-        description: "Failed to register vendor staff",
+        description: error.message || "Failed to register vendor staff",
         variant: "destructive",
       });
     } finally {
@@ -150,7 +161,7 @@ const VendorStaffRegistration = () => {
                       <FormItem>
                         <FormLabel>Full Name *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter full name" />
+                          <Input {...field} placeholder="Enter full name" required />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -164,7 +175,7 @@ const VendorStaffRegistration = () => {
                       <FormItem>
                         <FormLabel>IC Number *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter IC number" />
+                          <Input {...field} placeholder="Enter IC number" required />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -180,7 +191,7 @@ const VendorStaffRegistration = () => {
                       <FormItem>
                         <FormLabel>Mobile Number *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter mobile number" />
+                          <Input {...field} placeholder="Enter mobile number" required />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -198,6 +209,7 @@ const VendorStaffRegistration = () => {
                             {...field}
                             type="email"
                             placeholder="Enter work email"
+                            required
                           />
                         </FormControl>
                         <FormMessage />
@@ -241,10 +253,10 @@ const VendorStaffRegistration = () => {
                     name="position_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Position *</FormLabel>
+                        <FormLabel>Position</FormLabel>
                         <Select
                           onValueChange={(value) =>
-                            field.onChange(parseInt(value))
+                            field.onChange(value ? parseInt(value) : null)
                           }
                         >
                           <FormControl>
@@ -276,6 +288,7 @@ const VendorStaffRegistration = () => {
                           {...field}
                           type="password"
                           placeholder="Enter password"
+                          required
                         />
                       </FormControl>
                       <FormMessage />
