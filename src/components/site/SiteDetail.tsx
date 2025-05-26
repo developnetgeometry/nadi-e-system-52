@@ -11,7 +11,7 @@ import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import Membership from "@/components/dashboard/nadi-site/Membership";
 import Events from "@/components/dashboard/nadi-site/Events";
-import LocationMap from "@/components/dashboard/nadi-site/LocationMap";
+import { LocationMap } from "@/components/dashboard/nadi-site/LocationMap";
 import OperationHours from "@/components/dashboard/nadi-site/OperationHours";
 import ServiceProvider from "@/components/dashboard/nadi-site/ServiceProvider";
 import ContactInfo from "@/components/dashboard/nadi-site/ContactInfo";
@@ -20,7 +20,6 @@ import BuildingInfo from "../dashboard/nadi-site/BuildingInfo";
 import Facilities from "../dashboard/nadi-site/Facilities";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import SiteImage from "../dashboard/nadi-site/SiteImage";
-
 
 interface SiteDetailProps {
   siteId: string;
