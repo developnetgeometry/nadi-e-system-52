@@ -28,10 +28,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Search, Eye, Edit, Trash2, MoreHorizontal, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, Search, Eye, Edit, Trash2, MoreHorizontal, ToggleLeft, ToggleRight, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import VendorContractDialog from "@/components/vendor/VendorContractDialog";
 
 interface VendorCompany {
   id: number;
@@ -53,6 +54,7 @@ const VendorCompanies = () => {
   const [selectedCompany, setSelectedCompany] = useState<VendorCompany | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isContractDialogOpen, setIsContractDialogOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const { toast } = useToast();
 
@@ -110,6 +112,11 @@ const VendorCompanies = () => {
   const handleViewDetails = (company: VendorCompany) => {
     setSelectedCompany(company);
     setIsViewDialogOpen(true);
+  };
+
+  const handleContractManagement = (company: VendorCompany) => {
+    setSelectedCompany(company);
+    setIsContractDialogOpen(true);
   };
 
   const handleToggleActive = async (company: VendorCompany) => {
@@ -292,6 +299,10 @@ const VendorCompanies = () => {
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleContractManagement(company)}>
+                              <FileText className="mr-2 h-4 w-4" />
+                              Manage Contract
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleToggleActive(company)}>
                               {company.is_active ? (
                                 <ToggleLeft className="mr-2 h-4 w-4" />
@@ -399,6 +410,14 @@ const VendorCompanies = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Contract Management Dialog */}
+        <VendorContractDialog
+          isOpen={isContractDialogOpen}
+          onClose={() => setIsContractDialogOpen(false)}
+          vendorCompany={selectedCompany}
+          onContractUpdated={fetchCompanies}
+        />
       </PageContainer>
     </div>
   );

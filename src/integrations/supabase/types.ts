@@ -9720,7 +9720,7 @@ export type Database = {
           duration: number | null
           id: number
           is_active: boolean | null
-          registration_number: number | null
+          registration_number: string | null
           updated_at: string | null
           updated_by: string | null
           user_id: string | null
@@ -9734,7 +9734,7 @@ export type Database = {
           duration?: number | null
           id?: number
           is_active?: boolean | null
-          registration_number?: number | null
+          registration_number?: string | null
           updated_at?: string | null
           updated_by?: string | null
           user_id?: string | null
@@ -9748,7 +9748,7 @@ export type Database = {
           duration?: number | null
           id?: number
           is_active?: boolean | null
-          registration_number?: number | null
+          registration_number?: string | null
           updated_at?: string | null
           updated_by?: string | null
           user_id?: string | null
@@ -9760,7 +9760,7 @@ export type Database = {
             columns: ["registration_number"]
             isOneToOne: false
             referencedRelation: "nd_vendor_profile"
-            referencedColumns: ["id"]
+            referencedColumns: ["registration_number"]
           },
         ]
       }
@@ -11445,6 +11445,10 @@ export type Database = {
       }
     }
     Functions: {
+      check_all_contract_statuses: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       check_expired_closures_daily: {
         Args: Record<PropertyKey, never>
         Returns: undefined
