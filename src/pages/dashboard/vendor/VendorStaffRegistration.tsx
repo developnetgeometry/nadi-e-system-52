@@ -33,7 +33,7 @@ interface VendorStaffFormData {
   mobile_no: string;
   work_email: string;
   password: string;
-  registration_number: string;
+  vendor_profile_id: string;
 }
 
 interface VendorCompany {
@@ -56,7 +56,7 @@ const VendorStaffRegistration = () => {
       mobile_no: "",
       work_email: "",
       password: "",
-      registration_number: "",
+      vendor_profile_id: "",
     },
   });
 
@@ -91,7 +91,7 @@ const VendorStaffRegistration = () => {
       console.log("Submitting vendor admin registration:", data);
 
       // Validate required fields
-      if (!data.fullname || !data.ic_no || !data.work_email || !data.password || !data.registration_number) {
+      if (!data.fullname || !data.ic_no || !data.work_email || !data.password || !data.vendor_profile_id) {
         throw new Error("Please fill in all required fields");
       }
 
@@ -101,11 +101,17 @@ const VendorStaffRegistration = () => {
         throw new Error("You must be logged in to register staff");
       }
 
+      // Get the selected vendor company details
+      const selectedVendor = vendorCompanies.find(v => v.id.toString() === data.vendor_profile_id);
+      if (!selectedVendor) {
+        throw new Error("Selected vendor company not found");
+      }
+
       // Check if vendor admin already exists for this company
       const { data: existingAdmin, error: adminCheckError } = await supabase
         .from("nd_vendor_staff")
         .select("id")
-        .eq("registration_number", data.registration_number)
+        .eq("registration_number", selectedVendor.id)
         .eq("position_id", 1) // Admin position
         .maybeSingle();
 
@@ -142,7 +148,7 @@ const VendorStaffRegistration = () => {
 
       console.log("User created with ID:", authData.id);
 
-      // Insert vendor staff record with the selected registration number
+      // Insert vendor staff record with the vendor profile ID
       const staffData = {
         user_id: authData.id,
         fullname: data.fullname,
@@ -150,7 +156,7 @@ const VendorStaffRegistration = () => {
         mobile_no: data.mobile_no,
         work_email: data.work_email,
         position_id: 1, // Fixed to Admin position
-        registration_number: data.registration_number,
+        registration_number: selectedVendor.id, // Use the vendor profile ID
         is_active: true,
         created_by: currentUser.id,
         created_at: new Date().toISOString(),
@@ -219,7 +225,7 @@ const VendorStaffRegistration = () => {
 
                 <FormField
                   control={form.control}
-                  name="registration_number"
+                  name="vendor_profile_id"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Vendor Company *</FormLabel>
@@ -231,7 +237,7 @@ const VendorStaffRegistration = () => {
                         </FormControl>
                         <SelectContent>
                           {vendorCompanies.map((company) => (
-                            <SelectItem key={company.registration_number} value={company.registration_number}>
+                            <SelectItem key={company.id} value={company.id.toString()}>
                               {company.business_name} ({company.registration_number})
                             </SelectItem>
                           ))}
