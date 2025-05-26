@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/dashboard/PageHeader";
@@ -7,6 +7,13 @@ import { PageContainer } from "@/components/ui/dashboard/PageContainer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -26,10 +33,19 @@ interface VendorStaffFormData {
   mobile_no: string;
   work_email: string;
   password: string;
+  registration_number: string;
+}
+
+interface VendorCompany {
+  id: number;
+  business_name: string;
+  registration_number: string;
 }
 
 const VendorStaffRegistration = () => {
   const [loading, setLoading] = useState(false);
+  const [vendorCompanies, setVendorCompanies] = useState<VendorCompany[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -40,8 +56,34 @@ const VendorStaffRegistration = () => {
       mobile_no: "",
       work_email: "",
       password: "",
+      registration_number: "",
     },
   });
+
+  useEffect(() => {
+    fetchVendorCompanies();
+  }, []);
+
+  const fetchVendorCompanies = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("nd_vendor_profile")
+        .select("id, business_name, registration_number")
+        .order("business_name");
+
+      if (error) throw error;
+      setVendorCompanies(data || []);
+    } catch (error) {
+      console.error("Error fetching vendor companies:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load vendor companies",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingCompanies(false);
+    }
+  };
 
   const onSubmit = async (data: VendorStaffFormData) => {
     setLoading(true);
@@ -49,7 +91,7 @@ const VendorStaffRegistration = () => {
       console.log("Submitting vendor admin registration:", data);
 
       // Validate required fields
-      if (!data.fullname || !data.ic_no || !data.work_email || !data.password) {
+      if (!data.fullname || !data.ic_no || !data.work_email || !data.password || !data.registration_number) {
         throw new Error("Please fill in all required fields");
       }
 
@@ -59,37 +101,11 @@ const VendorStaffRegistration = () => {
         throw new Error("You must be logged in to register staff");
       }
 
-      // First try to get registration number from vendor profile created by current user
-      const { data: vendorProfile, error: vendorProfileError } = await supabase
-        .from("nd_vendor_profile")
-        .select("registration_number")
-        .eq("created_by", currentUser.id)
-        .maybeSingle();
-
-      let registrationNumber = vendorProfile?.registration_number;
-
-      // If not found in vendor profile, try to get from vendor staff records
-      if (!registrationNumber) {
-        const { data: vendorStaff, error: vendorStaffError } = await supabase
-          .from("nd_vendor_staff")
-          .select("registration_number")
-          .eq("user_id", currentUser.id)
-          .maybeSingle();
-
-        registrationNumber = vendorStaff?.registration_number;
-      }
-
-      if (!registrationNumber) {
-        throw new Error("No vendor company found. Please register a vendor company first before adding staff.");
-      }
-
-      console.log("Using registration number:", registrationNumber);
-
       // Check if vendor admin already exists for this company
       const { data: existingAdmin, error: adminCheckError } = await supabase
         .from("nd_vendor_staff")
         .select("id")
-        .eq("registration_number", registrationNumber)
+        .eq("registration_number", data.registration_number)
         .eq("position_id", 1) // Admin position
         .maybeSingle();
 
@@ -126,7 +142,7 @@ const VendorStaffRegistration = () => {
 
       console.log("User created with ID:", authData.id);
 
-      // Insert vendor staff record with fixed position_id = 1 (Admin)
+      // Insert vendor staff record with the selected registration number
       const staffData = {
         user_id: authData.id,
         fullname: data.fullname,
@@ -134,7 +150,7 @@ const VendorStaffRegistration = () => {
         mobile_no: data.mobile_no,
         work_email: data.work_email,
         position_id: 1, // Fixed to Admin position
-        registration_number: registrationNumber, // Keep as string/varchar, not BigInt
+        registration_number: data.registration_number,
         is_active: true,
         created_by: currentUser.id,
         created_at: new Date().toISOString(),
@@ -184,7 +200,7 @@ const VendorStaffRegistration = () => {
 
         <PageHeader
           title="Register Vendor Admin"
-          description="Register a new vendor admin for the company"
+          description="Register a new vendor admin for a specific company"
         />
 
         <Form {...form}>
@@ -200,6 +216,31 @@ const VendorStaffRegistration = () => {
                     Only one admin per company is allowed.
                   </p>
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="registration_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Vendor Company *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={loadingCompanies ? "Loading companies..." : "Select vendor company"} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {vendorCompanies.map((company) => (
+                            <SelectItem key={company.registration_number} value={company.registration_number}>
+                              {company.business_name} ({company.registration_number})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
@@ -308,7 +349,7 @@ const VendorStaffRegistration = () => {
               <Button type="button" variant="outline" asChild>
                 <Link to="/vendor/staff">Cancel</Link>
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading || loadingCompanies}>
                 <Save className="mr-2 h-4 w-4" />
                 {loading ? "Registering..." : "Register Admin"}
               </Button>
