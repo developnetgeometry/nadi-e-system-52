@@ -1765,6 +1765,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "nd_claim_log_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "nd_claim_log_status_id_fkey"
             columns: ["status_id"]
             isOneToOne: false
@@ -2726,7 +2733,7 @@ export type Database = {
         Row: {
           created_at: string | null
           created_by: string | null
-          event_id: number | null
+          event_id: string | null
           id: number
           name: string | null
           organization: string | null
@@ -2737,8 +2744,8 @@ export type Database = {
         Insert: {
           created_at?: string | null
           created_by?: string | null
-          event_id?: number | null
-          id: number
+          event_id?: string | null
+          id?: number
           name?: string | null
           organization?: string | null
           position?: string | null
@@ -2748,7 +2755,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           created_by?: string | null
-          event_id?: number | null
+          event_id?: string | null
           id?: number
           name?: string | null
           organization?: string | null
@@ -2756,7 +2763,15 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "nd_event_guest_nd_event_fk"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "nd_event"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nd_event_log: {
         Row: {
@@ -2854,7 +2869,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           event_id?: string | null
-          id: number
+          id?: number
           member_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -3361,6 +3376,7 @@ export type Database = {
       nd_inventory: {
         Row: {
           barcode: string | null
+          category_id: number | null
           created_at: string | null
           created_by: string | null
           deleted_at: string | null
@@ -3377,6 +3393,7 @@ export type Database = {
         }
         Insert: {
           barcode?: string | null
+          category_id?: number | null
           created_at?: string | null
           created_by?: string | null
           deleted_at?: string | null
@@ -3393,6 +3410,7 @@ export type Database = {
         }
         Update: {
           barcode?: string | null
+          category_id?: number | null
           created_at?: string | null
           created_by?: string | null
           deleted_at?: string | null
@@ -3422,6 +3440,13 @@ export type Database = {
             referencedRelation: "nd_inventory_type"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "nd_inventory_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "nd_inventory_category"
+            referencedColumns: ["id"]
+          },
         ]
       }
       nd_inventory_attachment: {
@@ -3429,8 +3454,8 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           file_path: string | null
-          id: number
-          inventory_id: number | null
+          id: string
+          inventory_id: string | null
           updated_at: string | null
           updated_by: string | null
         }
@@ -3438,8 +3463,8 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           file_path?: string | null
-          id: number
-          inventory_id?: number | null
+          id?: string
+          inventory_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -3447,8 +3472,43 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           file_path?: string | null
+          id?: string
+          inventory_id?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_nd_inventory_attachment_inventory"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "nd_inventory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nd_inventory_category: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: number
+          name: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
           id?: number
-          inventory_id?: number | null
+          name?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: number
+          name?: string | null
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -8900,11 +8960,11 @@ export type Database = {
           is_active: boolean | null
           location: string | null
           online_link: string | null
-          program_mode_id: string | null
+          program_mode_id: number | null
           start_date: string | null
           title: string | null
           trainer_name: string | null
-          type: number | null
+          training_type_id: number | null
           updated_at: string | null
           updated_by: string | null
         }
@@ -8913,15 +8973,15 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           end_date?: string | null
-          id: number
+          id?: number
           is_active?: boolean | null
           location?: string | null
           online_link?: string | null
-          program_mode_id?: string | null
+          program_mode_id?: number | null
           start_date?: string | null
           title?: string | null
           trainer_name?: string | null
-          type?: number | null
+          training_type_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -8934,20 +8994,27 @@ export type Database = {
           is_active?: boolean | null
           location?: string | null
           online_link?: string | null
-          program_mode_id?: string | null
+          program_mode_id?: number | null
           start_date?: string | null
           title?: string | null
           trainer_name?: string | null
-          type?: number | null
+          training_type_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "nd_training_nd_program_mode_fk"
-            columns: ["id"]
-            isOneToOne: true
+            columns: ["program_mode_id"]
+            isOneToOne: false
             referencedRelation: "nd_program_mode"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_training_nd_training_type_fk"
+            columns: ["training_type_id"]
+            isOneToOne: false
+            referencedRelation: "nd_training_type"
             referencedColumns: ["id"]
           },
         ]
@@ -8964,7 +9031,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           created_by?: string | null
-          id: number
+          id?: number
           name?: string | null
           updated_at?: string | null
           updated_by?: string | null

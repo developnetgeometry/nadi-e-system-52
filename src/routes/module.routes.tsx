@@ -69,6 +69,8 @@ import { RouteObject } from "react-router-dom";
 
 import ProgrammeRegistration from "@/pages/dashboard/programmes/ProgrammeRegistration";
 
+import { vendorRoutes } from "@/routes/vendor.routes";
+
 export const moduleRoutes: RouteObject[] = [
   // HR Routes
   {
@@ -656,4 +658,5 @@ export const moduleRoutes: RouteObject[] = [
       // </ProtectedRoute>
     ),
   },
+  ...vendorRoutes,
 ];
