@@ -38,8 +38,8 @@ export const posMenuItems = [
 
 export const claimItems = [
   { title: "Claims Dashboard", path: "/claim" },
+  { title: "Claim Registration", path: "/claim/register" },
   { title: "Claims Settings", path: "/claim/settings" },
-  // { title: "Registration", path: "/claim/registration" },
   // { title: "List Record", path: "/claim/list-record" },
   // { title: "Reports", path: "/claim/report" },
 ];
@@ -95,6 +95,7 @@ export const workflowItems = [
 
 export const memberManagementItems = [
   { title: "Member Management", path: "/member-management" },
+  { title: "Member Registration", path: "/member-management/registration" },
   { title: "Activity Logs", path: "/member-management/activity" },
 ];
 

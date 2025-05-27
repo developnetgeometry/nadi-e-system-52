@@ -1431,17 +1431,16 @@ export type Database = {
       nd_claim_application: {
         Row: {
           claim_status: number | null
+          claim_type: string | null
           created_at: string | null
           created_by: string | null
           date_paid: string | null
           id: number
-          item_ids: number[] | null
           month: number | null
           payment_status: boolean | null
           phase_id: number | null
           quarter: number | null
           ref_no: string | null
-          site_profile_ids: number[] | null
           tp_dusp_id: string | null
           updated_at: string | null
           updated_by: string | null
@@ -1449,17 +1448,16 @@ export type Database = {
         }
         Insert: {
           claim_status?: number | null
+          claim_type?: string | null
           created_at?: string | null
           created_by?: string | null
           date_paid?: string | null
           id?: number
-          item_ids?: number[] | null
           month?: number | null
           payment_status?: boolean | null
           phase_id?: number | null
           quarter?: number | null
           ref_no?: string | null
-          site_profile_ids?: number[] | null
           tp_dusp_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
@@ -1467,30 +1465,22 @@ export type Database = {
         }
         Update: {
           claim_status?: number | null
+          claim_type?: string | null
           created_at?: string | null
           created_by?: string | null
           date_paid?: string | null
           id?: number
-          item_ids?: number[] | null
           month?: number | null
           payment_status?: boolean | null
           phase_id?: number | null
           quarter?: number | null
           ref_no?: string | null
-          site_profile_ids?: number[] | null
           tp_dusp_id?: string | null
           updated_at?: string | null
           updated_by?: string | null
           year?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "nd_claim_application_app_settings_fk_1"
-            columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "app_settings"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "nd_claim_application_claim_status_fkey"
             columns: ["claim_status"]
@@ -1512,10 +1502,18 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "nd_claim_application_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       nd_claim_attachment: {
         Row: {
+          claim_id: number | null
           claim_type_id: number | null
           created_at: string | null
           created_by: string | null
@@ -1526,6 +1524,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          claim_id?: number | null
           claim_type_id?: number | null
           created_at?: string | null
           created_by?: string | null
@@ -1536,6 +1535,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          claim_id?: number | null
           claim_type_id?: number | null
           created_at?: string | null
           created_by?: string | null
@@ -1551,6 +1551,13 @@ export type Database = {
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "app_settings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_claim_attachment_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "nd_claim_application"
             referencedColumns: ["id"]
           },
           {
@@ -1787,8 +1794,9 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           id: number
-          item_ids: number[] | null
+          item_id: number | null
           remark: string | null
+          site_ids: number[] | null
           status_item: boolean | null
           updated_at: string | null
           updated_by: string | null
@@ -1799,8 +1807,9 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: number
-          item_ids?: number[] | null
+          item_id?: number | null
           remark?: string | null
+          site_ids?: number[] | null
           status_item?: boolean | null
           updated_at?: string | null
           updated_by?: string | null
@@ -1811,8 +1820,9 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: number
-          item_ids?: number[] | null
+          item_id?: number | null
           remark?: string | null
+          site_ids?: number[] | null
           status_item?: boolean | null
           updated_at?: string | null
           updated_by?: string | null
@@ -1830,6 +1840,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "nd_claim_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_claim_request_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "nd_claim_items"
             referencedColumns: ["id"]
           },
         ]
@@ -4469,6 +4486,7 @@ export type Database = {
           updated_at: string | null
           updated_by: string | null
           updates: Json | null
+          vendor_id: number | null
         }
         Insert: {
           asset_id?: number | null
@@ -4490,6 +4508,7 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
           updates?: Json | null
+          vendor_id?: number | null
         }
         Update: {
           asset_id?: number | null
@@ -4511,6 +4530,7 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
           updates?: Json | null
+          vendor_id?: number | null
         }
         Relationships: [
           {
@@ -4539,6 +4559,13 @@ export type Database = {
             columns: ["type_id"]
             isOneToOne: false
             referencedRelation: "nd_type_maintenance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_maintenance_request_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "nd_vendor_profile"
             referencedColumns: ["id"]
           },
         ]
@@ -10011,7 +10038,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           created_by: string
-          id: number
+          id?: number
           name?: string | null
           registration_number?: string | null
           updated_at?: string | null

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -91,18 +90,28 @@ const VendorStaffRegistration = () => {
       console.log("Submitting vendor admin registration:", data);
 
       // Validate required fields
-      if (!data.fullname || !data.ic_no || !data.work_email || !data.password || !data.vendor_profile_id) {
+      if (
+        !data.fullname ||
+        !data.ic_no ||
+        !data.work_email ||
+        !data.password ||
+        !data.vendor_profile_id
+      ) {
         throw new Error("Please fill in all required fields");
       }
 
       // Get current user
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
       if (!currentUser) {
         throw new Error("You must be logged in to register staff");
       }
 
       // Get the selected vendor company details
-      const selectedVendor = vendorCompanies.find(v => v.id.toString() === data.vendor_profile_id);
+      const selectedVendor = vendorCompanies.find(
+        (v) => v.id.toString() === data.vendor_profile_id
+      );
       if (!selectedVendor) {
         throw new Error("Selected vendor company not found");
       }
@@ -117,25 +126,30 @@ const VendorStaffRegistration = () => {
 
       if (adminCheckError) {
         console.error("Admin check error:", adminCheckError);
-        throw new Error(`Failed to check existing admin: ${adminCheckError.message}`);
+        throw new Error(
+          `Failed to check existing admin: ${adminCheckError.message}`
+        );
       }
 
       if (existingAdmin) {
-        throw new Error("A vendor admin already exists for this company. Only one admin per company is allowed.");
+        throw new Error(
+          "A vendor admin already exists for this company. Only one admin per company is allowed."
+        );
       }
 
       // Create user account using the edge function
-      const { data: authData, error: authError } = await supabase.functions.invoke("create-user", {
-        body: {
-          email: data.work_email,
-          fullName: data.fullname,
-          userType: "vendor_admin", // Fixed to vendor_admin only
-          userGroup: 5, // vendor group
-          phoneNumber: data.mobile_no,
-          icNumber: data.ic_no,
-          password: data.password,
-        },
-      });
+      const { data: authData, error: authError } =
+        await supabase.functions.invoke("create-user", {
+          body: {
+            email: data.work_email,
+            fullName: data.fullname,
+            userType: "vendor_admin", // Fixed to vendor_admin only
+            userGroup: 5, // vendor group
+            phoneNumber: data.mobile_no,
+            icNumber: data.ic_no,
+            password: data.password,
+          },
+        });
 
       if (authError) {
         console.error("Auth error:", authError);
@@ -218,8 +232,9 @@ const VendorStaffRegistration = () => {
               <CardContent className="space-y-4">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                   <p className="text-sm text-blue-800">
-                    <strong>Note:</strong> This form will create a Vendor Admin user with Admin position. 
-                    Only one admin per company is allowed.
+                    <strong>Note:</strong> This form will create a Vendor Admin
+                    user with Admin position. Only one admin per company is
+                    allowed.
                   </p>
                 </div>
 
@@ -229,16 +244,29 @@ const VendorStaffRegistration = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Vendor Company *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder={loadingCompanies ? "Loading companies..." : "Select vendor company"} />
+                            <SelectValue
+                              placeholder={
+                                loadingCompanies
+                                  ? "Loading companies..."
+                                  : "Select vendor company"
+                              }
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {vendorCompanies.map((company) => (
-                            <SelectItem key={company.id} value={company.id.toString()}>
-                              {company.business_name} ({company.registration_number})
+                            <SelectItem
+                              key={company.id}
+                              value={company.id.toString()}
+                            >
+                              {company.business_name} (
+                              {company.registration_number})
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -256,7 +284,11 @@ const VendorStaffRegistration = () => {
                       <FormItem>
                         <FormLabel>Full Name *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter full name" required />
+                          <Input
+                            {...field}
+                            placeholder="Enter full name"
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -270,7 +302,11 @@ const VendorStaffRegistration = () => {
                       <FormItem>
                         <FormLabel>IC Number *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter IC number" required />
+                          <Input
+                            {...field}
+                            placeholder="Enter IC number"
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -286,7 +322,11 @@ const VendorStaffRegistration = () => {
                       <FormItem>
                         <FormLabel>Mobile Number *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Enter mobile number" required />
+                          <Input
+                            {...field}
+                            placeholder="Enter mobile number"
+                            required
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -316,16 +356,24 @@ const VendorStaffRegistration = () => {
                 {/* Fixed User Type and Position Display */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">User Type</label>
+                    <label className="text-sm font-medium text-gray-700">
+                      User Type
+                    </label>
                     <div className="p-3 bg-gray-50 border rounded-md">
-                      <span className="text-sm text-gray-600">Vendor Admin (Fixed)</span>
+                      <span className="text-sm text-gray-600">
+                        Vendor Admin (Fixed)
+                      </span>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Position</label>
+                    <label className="text-sm font-medium text-gray-700">
+                      Position
+                    </label>
                     <div className="p-3 bg-gray-50 border rounded-md">
-                      <span className="text-sm text-gray-600">Admin (Fixed)</span>
+                      <span className="text-sm text-gray-600">
+                        Admin (Fixed)
+                      </span>
                     </div>
                   </div>
                 </div>

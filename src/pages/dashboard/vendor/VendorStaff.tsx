@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/dashboard/PageHeader";
@@ -21,7 +20,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Search, Eye, Edit, Trash2, MoreVertical, ToggleLeft, ToggleRight } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Trash2,
+  MoreVertical,
+  ToggleLeft,
+  ToggleRight,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -55,7 +63,9 @@ const VendorStaff = () => {
   const [staff, setStaff] = useState<VendorStaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStaff, setSelectedStaff] = useState<VendorStaffMember | null>(null);
+  const [selectedStaff, setSelectedStaff] = useState<VendorStaffMember | null>(
+    null
+  );
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -101,8 +111,12 @@ const VendorStaff = () => {
 
           return {
             ...member,
-            vendor_company: companyData || { business_name: "Unknown", registration_number: "", business_type: "" },
-            contract_status: contractData || { is_active: false }
+            vendor_company: companyData || {
+              business_name: "Unknown",
+              registration_number: "",
+              business_type: "",
+            },
+            contract_status: contractData || { is_active: false },
           };
         })
       );
@@ -126,14 +140,15 @@ const VendorStaff = () => {
       if (!member.is_active && !member.contract_status?.is_active) {
         toast({
           title: "Cannot Activate",
-          description: "Cannot activate staff member when vendor contract is inactive",
+          description:
+            "Cannot activate staff member when vendor contract is inactive",
           variant: "destructive",
         });
         return;
       }
 
       const newStatus = !member.is_active;
-      
+
       const { error } = await supabase
         .from("nd_vendor_staff")
         .update({ is_active: newStatus })
@@ -143,7 +158,9 @@ const VendorStaff = () => {
 
       toast({
         title: "Success",
-        description: `Staff member ${newStatus ? 'activated' : 'deactivated'} successfully`,
+        description: `Staff member ${
+          newStatus ? "activated" : "deactivated"
+        } successfully`,
       });
 
       fetchStaff(); // Refresh the list
@@ -175,19 +192,23 @@ const VendorStaff = () => {
   const getStatusBadge = (member: VendorStaffMember) => {
     const contractActive = member.contract_status?.is_active;
     const userActive = member.is_active;
-    
+
     if (!contractActive) {
       return <Badge variant="destructive">Contract Inactive</Badge>;
     }
-    
+
     if (contractActive && userActive) {
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Active</Badge>;
+      return (
+        <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+          Active
+        </Badge>
+      );
     }
-    
+
     if (contractActive && !userActive) {
       return <Badge variant="secondary">Inactive</Badge>;
     }
-    
+
     return <Badge variant="secondary">Inactive</Badge>;
   };
 
@@ -200,7 +221,9 @@ const VendorStaff = () => {
     (member) =>
       member.fullname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.work_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.vendor_company?.business_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      member.vendor_company?.business_name
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -267,18 +290,34 @@ const VendorStaff = () => {
                       <TableCell>{member.work_email}</TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{member.vendor_company?.business_name}</div>
-                          <div className="text-sm text-gray-500">({member.vendor_company?.registration_number})</div>
+                          <div className="font-medium">
+                            {member.vendor_company?.business_name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ({member.vendor_company?.registration_number})
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell>{member.vendor_company?.business_type}</TableCell>
                       <TableCell>
-                        <Badge variant={member.contract_status?.is_active ? "default" : "destructive"}>
-                          {member.contract_status?.is_active ? "Active" : "Inactive"}
+                        {member.vendor_company?.business_type}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            member.contract_status?.is_active
+                              ? "default"
+                              : "destructive"
+                          }
+                        >
+                          {member.contract_status?.is_active
+                            ? "Active"
+                            : "Inactive"}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={member.is_active ? "default" : "secondary"}>
+                        <Badge
+                          variant={member.is_active ? "default" : "secondary"}
+                        >
                           {member.is_active ? "Active" : "Inactive"}
                         </Badge>
                       </TableCell>
@@ -290,15 +329,19 @@ const VendorStaff = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleView(member)}>
+                            <DropdownMenuItem
+                              onClick={() => handleView(member)}
+                            >
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEdit(member)}>
+                            <DropdownMenuItem
+                              onClick={() => handleEdit(member)}
+                            >
                               <Edit className="mr-2 h-4 w-4" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleToggleActive(member)}
                               disabled={!canToggleUserStatus(member)}
                             >
@@ -314,7 +357,7 @@ const VendorStaff = () => {
                                 </>
                               )}
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleDelete(member)}
                               className="text-red-600"
                             >

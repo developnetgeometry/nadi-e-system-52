@@ -1,11 +1,18 @@
-
 import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/dashboard/PageHeader";
 import { PageContainer } from "@/components/ui/dashboard/PageContainer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, MapPin, FileText, Plus, Calendar, BarChart3 } from "lucide-react";
+import {
+  Users,
+  Building2,
+  MapPin,
+  FileText,
+  Plus,
+  Calendar,
+  BarChart3,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 

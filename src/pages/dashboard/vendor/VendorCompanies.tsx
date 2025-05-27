@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/dashboard/PageHeader";
@@ -28,7 +27,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Search, Eye, Edit, Trash2, MoreHorizontal, ToggleLeft, ToggleRight, FileText } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Trash2,
+  MoreHorizontal,
+  ToggleLeft,
+  ToggleRight,
+  FileText,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -51,7 +60,9 @@ const VendorCompanies = () => {
   const [companies, setCompanies] = useState<VendorCompany[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCompany, setSelectedCompany] = useState<VendorCompany | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<VendorCompany | null>(
+    null
+  );
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isContractDialogOpen, setIsContractDialogOpen] = useState(false);
@@ -122,7 +133,7 @@ const VendorCompanies = () => {
   const handleToggleActive = async (company: VendorCompany) => {
     try {
       const newStatus = !company.is_active;
-      
+
       // Update the contract status
       const { error } = await supabase
         .from("nd_vendor_contract")
@@ -133,7 +144,9 @@ const VendorCompanies = () => {
 
       toast({
         title: "Success",
-        description: `Vendor company ${newStatus ? 'activated' : 'deactivated'} successfully`,
+        description: `Vendor company ${
+          newStatus ? "activated" : "deactivated"
+        } successfully`,
       });
 
       // Refresh the companies list
@@ -295,23 +308,29 @@ const VendorCompanies = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleViewDetails(company)}>
+                            <DropdownMenuItem
+                              onClick={() => handleViewDetails(company)}
+                            >
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleContractManagement(company)}>
+                            <DropdownMenuItem
+                              onClick={() => handleContractManagement(company)}
+                            >
                               <FileText className="mr-2 h-4 w-4" />
                               Manage Contract
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleToggleActive(company)}>
+                            <DropdownMenuItem
+                              onClick={() => handleToggleActive(company)}
+                            >
                               {company.is_active ? (
                                 <ToggleLeft className="mr-2 h-4 w-4" />
                               ) : (
                                 <ToggleRight className="mr-2 h-4 w-4" />
                               )}
-                              {company.is_active ? 'Deactivate' : 'Activate'}
+                              {company.is_active ? "Deactivate" : "Activate"}
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleDeleteClick(company)}
                               className="text-destructive"
                             >
@@ -339,33 +358,61 @@ const VendorCompanies = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Business Name</label>
-                    <p className="text-sm text-gray-900">{selectedCompany.business_name}</p>
+                    <label className="text-sm font-medium text-gray-700">
+                      Business Name
+                    </label>
+                    <p className="text-sm text-gray-900">
+                      {selectedCompany.business_name}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Registration Number</label>
-                    <p className="text-sm text-gray-900">{selectedCompany.registration_number}</p>
+                    <label className="text-sm font-medium text-gray-700">
+                      Registration Number
+                    </label>
+                    <p className="text-sm text-gray-900">
+                      {selectedCompany.registration_number}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Business Type</label>
-                    <p className="text-sm text-gray-900">{selectedCompany.business_type}</p>
+                    <label className="text-sm font-medium text-gray-700">
+                      Business Type
+                    </label>
+                    <p className="text-sm text-gray-900">
+                      {selectedCompany.business_type}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Phone Number</label>
-                    <p className="text-sm text-gray-900">{selectedCompany.phone_number}</p>
+                    <label className="text-sm font-medium text-gray-700">
+                      Phone Number
+                    </label>
+                    <p className="text-sm text-gray-900">
+                      {selectedCompany.phone_number}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Bank Account Number</label>
-                    <p className="text-sm text-gray-900">{selectedCompany.bank_account_number || 'Not provided'}</p>
+                    <label className="text-sm font-medium text-gray-700">
+                      Bank Account Number
+                    </label>
+                    <p className="text-sm text-gray-900">
+                      {selectedCompany.bank_account_number || "Not provided"}
+                    </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Staff Count</label>
-                    <p className="text-sm text-gray-900">{selectedCompany.staff_count}</p>
+                    <label className="text-sm font-medium text-gray-700">
+                      Staff Count
+                    </label>
+                    <p className="text-sm text-gray-900">
+                      {selectedCompany.staff_count}
+                    </p>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Service Details</label>
-                  <p className="text-sm text-gray-900">{selectedCompany.service_detail || 'No details provided'}</p>
+                  <label className="text-sm font-medium text-gray-700">
+                    Service Details
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedCompany.service_detail || "No details provided"}
+                  </p>
                 </div>
               </div>
             )}
@@ -382,9 +429,13 @@ const VendorCompanies = () => {
               <DialogTitle>Confirm Deletion</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <p>Are you sure you want to delete "{selectedCompany?.business_name}"?</p>
+              <p>
+                Are you sure you want to delete "
+                {selectedCompany?.business_name}"?
+              </p>
               <p className="text-sm text-gray-600">
-                This will also delete all associated staff, contracts, and address records. This action cannot be undone.
+                This will also delete all associated staff, contracts, and
+                address records. This action cannot be undone.
               </p>
               <p className="text-sm font-medium">Type "DELETE" to confirm:</p>
               <Input
@@ -394,10 +445,13 @@ const VendorCompanies = () => {
               />
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => {
-                setIsDeleteDialogOpen(false);
-                setDeleteConfirmation("");
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsDeleteDialogOpen(false);
+                  setDeleteConfirmation("");
+                }}
+              >
                 Cancel
               </Button>
               <Button

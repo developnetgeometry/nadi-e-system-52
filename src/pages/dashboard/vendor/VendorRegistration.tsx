@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -72,7 +71,9 @@ const VendorRegistration = () => {
       console.log("Submitting vendor registration:", data);
 
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         throw new Error("User not authenticated");
       }
@@ -89,7 +90,8 @@ const VendorRegistration = () => {
         throw new Error(`Failed to get next ID: ${maxIdError.message}`);
       }
 
-      const nextId = (maxIdResult && maxIdResult.length > 0) ? maxIdResult[0].id + 1 : 1;
+      const nextId =
+        maxIdResult && maxIdResult.length > 0 ? maxIdResult[0].id + 1 : 1;
 
       // Prepare vendor profile data with explicit ID
       const vendorProfileData = {
@@ -116,7 +118,9 @@ const VendorRegistration = () => {
 
       if (profileError) {
         console.error("Vendor profile error:", profileError);
-        throw new Error(`Failed to create vendor profile: ${profileError.message}`);
+        throw new Error(
+          `Failed to create vendor profile: ${profileError.message}`
+        );
       }
 
       console.log("Vendor profile created:", vendorProfile);
@@ -144,7 +148,9 @@ const VendorRegistration = () => {
 
       if (addressError) {
         console.error("Vendor address error:", addressError);
-        throw new Error(`Failed to create vendor address: ${addressError.message}`);
+        throw new Error(
+          `Failed to create vendor address: ${addressError.message}`
+        );
       }
 
       toast({
