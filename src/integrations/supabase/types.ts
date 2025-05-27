@@ -1179,19 +1179,48 @@ export type Database = {
       }
       nd_brand: {
         Row: {
-          brand_type: string | null
+          brand_type_id: number | null
           id: number
           name: string | null
         }
         Insert: {
-          brand_type?: string | null
+          brand_type_id?: number | null
           id?: number
           name?: string | null
         }
         Update: {
-          brand_type?: string | null
+          brand_type_id?: number | null
           id?: number
           name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_brand_type_id"
+            columns: ["brand_type_id"]
+            isOneToOne: false
+            referencedRelation: "nd_brand_type"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nd_brand_type: {
+        Row: {
+          created_at: string | null
+          id: number
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          name?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -2552,7 +2581,7 @@ export type Database = {
           start_datetime: string | null
           status_id: number | null
           subcategory_id: number | null
-          target_participant: number | null
+          target_participants: string | null
           total_new_member: number | null
           total_participant: number | null
           trainer_name: string
@@ -2579,7 +2608,7 @@ export type Database = {
           start_datetime?: string | null
           status_id?: number | null
           subcategory_id?: number | null
-          target_participant?: number | null
+          target_participants?: string | null
           total_new_member?: number | null
           total_participant?: number | null
           trainer_name: string
@@ -2606,7 +2635,7 @@ export type Database = {
           start_datetime?: string | null
           status_id?: number | null
           subcategory_id?: number | null
-          target_participant?: number | null
+          target_participants?: string | null
           total_new_member?: number | null
           total_participant?: number | null
           trainer_name?: string
@@ -6611,7 +6640,8 @@ export type Database = {
           created_by: string | null
           file_path: string[] | null
           id: number
-          site_contract_id: number | null
+          remark: string | null
+          site_profile_id: number | null
           updated_at: string | null
           updated_by: string | null
         }
@@ -6620,7 +6650,8 @@ export type Database = {
           created_by?: string | null
           file_path?: string[] | null
           id?: number
-          site_contract_id?: number | null
+          remark?: string | null
+          site_profile_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
         }
@@ -6629,16 +6660,24 @@ export type Database = {
           created_by?: string | null
           file_path?: string[] | null
           id?: number
-          site_contract_id?: number | null
+          remark?: string | null
+          site_profile_id?: number | null
           updated_at?: string | null
           updated_by?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "nd_site_agreement_attachment_nd_site_contracts_fk"
-            columns: ["site_contract_id"]
+            foreignKeyName: "nd_site_agreement_attachment_nd_site_profile_fk"
+            columns: ["site_profile_id"]
             isOneToOne: false
-            referencedRelation: "nd_site_contracts"
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_site_agreement_attachment_nd_site_profile_fk"
+            columns: ["site_profile_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile_name"
             referencedColumns: ["id"]
           },
         ]
@@ -6681,18 +6720,68 @@ export type Database = {
           },
         ]
       }
+      nd_site_audit_attachment: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          file_path: string[] | null
+          id: number
+          remark: string | null
+          site_profile_id: number | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          file_path?: string[] | null
+          id?: number
+          remark?: string | null
+          site_profile_id?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          file_path?: string[] | null
+          id?: number
+          remark?: string | null
+          site_profile_id?: number | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nd_site_audit_attachment_nd_site_profile_fk"
+            columns: ["site_profile_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nd_site_audit_attachment_nd_site_profile_fk"
+            columns: ["site_profile_id"]
+            isOneToOne: false
+            referencedRelation: "nd_site_profile_name"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nd_site_closure: {
         Row: {
           affected_areas_id: number | null
           category_id: number | null
           close_end: string | null
           close_start: string | null
+          closed_marked: boolean | null
           created_at: string | null
           created_by: string | null
           duration: number | null
           end_time: string | null
           id: number
           remark: string | null
+          reopened_marked: boolean | null
           request_datetime: string | null
           requester_id: string | null
           session: number | null
@@ -6708,12 +6797,14 @@ export type Database = {
           category_id?: number | null
           close_end?: string | null
           close_start?: string | null
+          closed_marked?: boolean | null
           created_at?: string | null
           created_by?: string | null
           duration?: number | null
           end_time?: string | null
           id?: number
           remark?: string | null
+          reopened_marked?: boolean | null
           request_datetime?: string | null
           requester_id?: string | null
           session?: number | null
@@ -6729,12 +6820,14 @@ export type Database = {
           category_id?: number | null
           close_end?: string | null
           close_start?: string | null
+          closed_marked?: boolean | null
           created_at?: string | null
           created_by?: string | null
           duration?: number | null
           end_time?: string | null
           id?: number
           remark?: string | null
+          reopened_marked?: boolean | null
           request_datetime?: string | null
           requester_id?: string | null
           session?: number | null
@@ -7079,6 +7172,7 @@ export type Database = {
           is_active: boolean
           latitude: string | null
           level_id: number | null
+          local_authority: boolean | null
           longtitude: string | null
           mukim_id: number | null
           oku_friendly: boolean | null
@@ -7117,6 +7211,7 @@ export type Database = {
           is_active?: boolean
           latitude?: string | null
           level_id?: number | null
+          local_authority?: boolean | null
           longtitude?: string | null
           mukim_id?: number | null
           oku_friendly?: boolean | null
@@ -7155,6 +7250,7 @@ export type Database = {
           is_active?: boolean
           latitude?: string | null
           level_id?: number | null
+          local_authority?: boolean | null
           longtitude?: string | null
           mukim_id?: number | null
           oku_friendly?: boolean | null
@@ -10836,6 +10932,33 @@ export type Database = {
         }
         Relationships: []
       }
+      site_status_log: {
+        Row: {
+          change_reason: string
+          change_timestamp: string | null
+          log_id: number
+          new_status: number
+          previous_status: number
+          site_id: number
+        }
+        Insert: {
+          change_reason: string
+          change_timestamp?: string | null
+          log_id?: number
+          new_status: number
+          previous_status: number
+          site_id: number
+        }
+        Update: {
+          change_reason?: string
+          change_timestamp?: string | null
+          log_id?: number
+          new_status?: number
+          previous_status?: number
+          site_id?: number
+        }
+        Relationships: []
+      }
       staging_table: {
         Row: {
           address: string | null
@@ -11504,6 +11627,14 @@ export type Database = {
           type: Database["public"]["Enums"]["notification_type"] | null
           user_id: string | null
         }
+      }
+      fn_force_close_site: {
+        Args: { site_id: number }
+        Returns: undefined
+      }
+      fn_force_reopen_site: {
+        Args: { site_id: number }
+        Returns: undefined
       }
       get_asset_categories: {
         Args: Record<PropertyKey, never>

@@ -48,6 +48,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/file-saver": "^2.0.7",
     "@types/leaflet": "^1.9.16",
+    "@types/qrcode.react": "^3.0.0",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/styled-components": "^5.1.34",
     "class-variance-authority": "^0.7.1",
